@@ -19,5 +19,5 @@ Or join our Discord server? [Here](https://discord.gg/APFz459W)
 | `.wws`           | `.wws [region] <ign>`                        | `.wws asia B2U`<br>`.wws B2U`<br>`.wws me`                  | Show player's stats overview                                                                                                                          |
 | `.wws ship`      | `.wws [region] <ign> <ship> [battleType]`                 | `.wws asia B2U Ise`<br>`.wws B2U Yamato`<br>`.wws me Slava rank` | Show player's stats of a particular ship<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`          |
 | `.recent`        | `.recent [region] <ign> [battleType] [days]` | `.recent asia B2U`<br>`.wws B2U 7`<br>`.wws me rank 21`     | Show player's recent stats<br>`[days]`: `1`~`21` (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                    |
-| `.bonus` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Get the link for redeeming WG bonus codes for all regions |
+| `.bonus` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Generate a link to redeem one or more bonus codes |
 | `.invite`        |                                              |                                                             | Invite me to another server    |
