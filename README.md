@@ -9,15 +9,20 @@ Or join our Discord server? [Here](https://discord.gg/APFz459W)
 
 ## Commands list
 
-**❗ Arguments in `[]` are optional**
+### **❗ Arguments in `[]` are optional**
 
-| Command name     | Usage                                        | Example                                                     | Description                                                                                                                                           |
-|------------------|----------------------------------------------|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `.setwowsregion` | `.setwowsregion <region>`                    | `.setwowsregion na`                                         | Set the default region for this server<br>Valid values for `<region>`: `asia` (default), `na`, `eu`, `ru` <br>***Requires server admin permissions*** |
-| `.wowsregion`    | `.wowsregion`                                | `.wowsregion`                                               | Get the default region for this server                                                                                                                |
-| `.link`          | `.link <region> <ign>`                       | `.link asia B2U`                                            | Link your wows account<br>Afterwards you can use `me` as a shortcut to `[region] <ign>`                                                               |
-| `.wws`           | `.wws [region] <ign>`                        | `.wws asia B2U`<br>`.wws B2U`<br>`.wws me`                  | Show player's stats overview                                                                                                                          |
+| Command name     | Usage                                        | Example                                                     | Description |
+|------------------|----------------------------------------------|-------------------------------------------------------------|-------------|
+| `.link`          | `.link <region> <ign>` | `.link asia B2U`      | Link your wows account<br>Afterwards you can use `me` as a shortcut to `[region] <ign>`  |
+| `.wws`           | `.wws [region] <ign>`                        | `.wws asia B2U`<br>`.wws B2U`<br>`.wws me`                  | Show player's stats overview |
 | `.wws ship`      | `.wws [region] <ign> <ship> [battleType]`                 | `.wws asia B2U Ise`<br>`.wws B2U Yamato`<br>`.wws me Slava rank` | Show player's stats of a particular ship<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`          |
 | `.recent`        | `.recent [region] <ign> [battleType] [days]` | `.recent asia B2U`<br>`.wws B2U 7`<br>`.wws me rank 21`     | Show player's recent stats<br>`[days]`: `1`~`21` (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                    |
+
+
+### Others general commands
+| Command name     | Usage                                        | Example                                                     | Description |
+|------------------|----------------------------------------------|-------------------------------------------------------------|-------------|
+| `.setwowsregion` | `.setwowsregion <region>`                    | `.setwowsregion na`                                         | Set the default region for this server<br>Valid values for `<region>`: `asia` (default), `na`, `eu`, `ru` <br>***Requires server admin permissions*** |
+| `.wowsregion`    | `.wowsregion`                                | `.wowsregion`                                               | Get the default region for this server |
 | `.bonus` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Generate a link to redeem one or more bonus codes |
-| `.invite`        |                                              |                                                             | Invite me to another server    |
+| `.invite`  |  |   | Invite me to another server    |
