@@ -19,7 +19,7 @@ Or join our Discord server? [Here](https://discord.gg/APFz459W)
 | `.recent`        | `.recent [region] <ign> [battleType] [days]` | `.recent asia B2U`<br>`.wws B2U 7`<br>`.wws me rank 21`     | Show player's recent stats<br>`[days]`: `1`~`21` (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                    |
 | `.top`<br>`.dalao` | `.top [region] <shipName>` | `.top Yamato` <br> `.top NA Slava` | Show the top 15 players in that ship in the region <br> from https://wows-numbers.com/ |
 | `.clan` | `.clan [region] <clanName>` | `.clan me` <br> `.clan PANTS` <br> `.clan eu TCL` | Show the clan's overview & stats |
-| `.clan season` | `.clan [region] <clanName> <season>` | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15` | Show the clan's clan battle stats in particular season |
+| `.clan season` | `.clan [region] <clanName> <season>` | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15` | Show the clan members' clan battle stats in particular season |
 
 
 ### Others general commands
