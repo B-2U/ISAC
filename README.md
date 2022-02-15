@@ -27,5 +27,5 @@ Or join our Discord server? [Here](https://discord.gg/APFz459W)
 |------------------|----------------------------------------------|-------------------------------------------------------------|-------------|
 | `.setwowsregion` | `.setwowsregion <region>`                    | `.setwowsregion na`                                         | Set the default region for this server<br>Valid values for `<region>`: `asia` (default), `na`, `eu`, `ru` <br>***Requires server admin permissions*** |
 | `.wowsregion`    | `.wowsregion`                                | `.wowsregion`                                               | Get the default region for this server |
-| `.bonus` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Generate a link to redeem one or more bonus codes |
+| `.bonus`<br>`.code` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Generate a link to redeem one or more bonus codes |
 | `.invite`  |  |   | Invite me to another server    |
