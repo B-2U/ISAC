@@ -16,7 +16,7 @@ Or join our Discord server? [Here](https://discord.gg/APFz459W)
 | `.link`          | `.link <region> <ign>` | `.link asia B2U`      | Link your wows account<br>Afterwards you can use `me` as a shortcut to `[region] <ign>`  |
 | `.wws`           | `.wws [region] <ign>`                        | `.wws asia B2U`<br>`.wws B2U`<br>`.wws me`                  | Show player's stats overview |
 | `.wws ship`      | `.wws [region] <ign> <shipName> [battleType]`                 | `.wws asia B2U Ise`<br>`.wws B2U Yamato`<br>`.wws me Slava rank` | Show player's stats of a particular ship<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`          |
-| `.recent`        | `.recent [region] <ign> [battleType] [days]` | `.recent asia B2U`<br>`.wws B2U 7`<br>`.wws me rank 21`     | Show player's recent stats<br>`[days]`: `1`~`21` (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                    |
+| `.recent`        | `.recent [region] <ign> [battleType] [days]` | `.recent asia B2U`<br>`.recent B2U 7`<br>`.recent me rank 21`     | Show player's recent stats<br>`[days]`: `1`~`21` (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                    |
 | `.top`<br>`.dalao` | `.top [region] <shipName>` | `.top Yamato` <br> `.top NA Slava` | Show the top 15 players in that ship in the region <br> from https://wows-numbers.com/ |
 | `.clan` | `.clan [region] <clanName>` | `.clan me` <br> `.clan PANTS` <br> `.clan eu TCL` | Show the clan's overview & stats |
 | `.clan season` | `.clan [region] <clanName> <season>` | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15` | Show the clan members' clan battle stats in particular season |
