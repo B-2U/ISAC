@@ -1,5 +1,7 @@
 ![](https://cdn.discordapp.com/attachments/865923985891524638/936154921991041024/unknown.png)
 
+**English** | [中文](https://github.com/Fallen-Breath/MCDReforged/blob/master/README_zh.md) | [日本語](https://github.com/Fallen-Breath/MCDReforged/blob/master/README_ja.md)
+
 ## A World of Warships stats discord bot
 
 Want to add it to your server? Click [here](https://discord.com/api/oauth2/authorize?client_id=932457496642224178&permissions=0&scope=bot)
