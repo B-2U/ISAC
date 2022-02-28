@@ -1,6 +1,6 @@
 ![](https://cdn.discordapp.com/attachments/865923985891524638/936154921991041024/unknown.png)
 
-[English](https://github.com/B-2U/ISAC---wws-stats-bot/edit/main/README.md) | **中文** | [日本語](https://github.com/B-2U/ISAC---wws-stats-bot/edit/main/README_ja.md)
+[English](https://github.com/B-2U/ISAC---wws-stats-bot/blob/main/README.md) | **中文** | [日本語](https://github.com/B-2U/ISAC---wws-stats-bot/blob/main/README_ja.md)
 
 ## 戰艦世界戰績查詢機器人
 
