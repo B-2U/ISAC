@@ -13,7 +13,7 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
 
 ### **❗ Arguments in `[]` are optional**
 
-- The `<player>` can be:  
+#### In the following tables, `<player>` can be:  
   | valid values | example |  
   |-|-|
   | `[region] <ign>` | `.wws asia B2U` |  
