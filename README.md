@@ -16,7 +16,7 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
 #### In the following tables, `<player>` can be:  
   | valid values | example |  
   |-|-|
-  | `[region] <ign>` | `.wws asia B2U` |  
+  | `[region] <ign>` | `.wws asia B2U` or `.wws B2U` |  
   | `<@mention>` | `.wws @B2U#0900` |  
   | `<discordUserID>` | `.wws 930855839961591849` |  
   | `me` | `.wws me` |
