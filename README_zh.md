@@ -4,7 +4,7 @@
 
 ## 戰艦世界戰績查詢機器人
 
-想把機器人加進你的伺服器? 點 [這裡](https://discord.com/api/oauth2/authorize?client_id=932457496642224178&permissions=0&scope=bot)
+想把機器人加進你的伺服器? 點 [這裡](https://discord.com/api/oauth2/authorize?client_id=961882964034203648&permissions=0&scope=bot%20applications.commands)
 有其他問題? 加入我們的伺服器 [這裡](https://discord.gg/z6sV6kEZGV)
 
 ---
