@@ -4,7 +4,7 @@
 
 ## A World of Warships stats discord bot
 
-Want to add it to your server? Click [here](https://discord.com/api/oauth2/authorize?client_id=932457496642224178&permissions=0&scope=bot)
+Want to add it to your server? Click [here](https://discord.com/api/oauth2/authorize?client_id=961882964034203648&permissions=0&scope=bot%20applications.commands)
 Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
 
 ---
