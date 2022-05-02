@@ -4,7 +4,7 @@
 
 ## A World of Warships stats discord bot
 
-自分のサーバに追加したい？こちら [here](https://discord.com/api/oauth2/authorize?client_id=932457496642224178&permissions=0&scope=bot)  
+自分のサーバに追加したい？こちら [here](https://discord.com/api/oauth2/authorize?client_id=961882964034203648&permissions=0&scope=bot%20applications.commands)  
 をクリックもしくは私たちのサーバーに参加はこちら [Here](https://discord.gg/z6sV6kEZGV)
 
 ---
