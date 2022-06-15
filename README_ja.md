@@ -29,6 +29,7 @@
 |------------------|----------------------------------------------|-------------------------------------------------------------|-------------|
 | `.setwowsregion` | `.setwowsregion <region>`                    | `.setwowsregion na`                                         | Set the default region for this server<br>Valid values for `<region>`: `asia` (default), `na`, `eu`, `ru` <br>***Requires server admin permissions*** |
 | `.wowsregion`    | `.wowsregion`                                | `.wowsregion`                                               | Get the default region for this server |
+| `.map` | `.map` | `.map` | getting the specific map image |
 | `.uid` | `.uid [region] <ign>` | `.uid me`<br>`.uid B2U`<br>`.uid asia B2U` | Get the player's UID |
 | `.clanuid` | `.clanuid [region] <clanName>` | `.clanuid me`<br>`.clanuid PANTS`<br>`.clanuid eu TCL` | Get the clan's UID |
 | `.bonus`<br>`.code` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | Generate a link to redeem one or more bonus codes |
