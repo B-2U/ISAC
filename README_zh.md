@@ -37,6 +37,7 @@
 |------------------|----------------------------------------------|-------------------------------------------------------------|-------------|
 | `.setwowsregion` | `.setwowsregion <region>`                    | `.setwowsregion na`                                         | 更改這個伺服器預設的地區 `<地區>`: `asia` (預設), `na`, `eu`, `ru` <br>***需要伺服器管理員權限*** |
 | `.wowsregion`    | `.wowsregion`                                | `.wowsregion`                                               | 顯示這個伺服器目前預設的地區 |
+| `.map` | `.map` | `.map` | 獲取指定地圖圖檔 |
 | `.uid` | `.uid <player>` | `.uid me`<br>`.uid B2U`<br>`.uid asia B2U` | 顯示該玩家的 UID |
 | `.clanuid` | `.clanuid [region] <clanName>` | `.clanuid me`<br>`.clanuid PANTS`<br>`.clanuid eu TCL` | 顯示該公會的 UID |
 | `.bonus`<br>`.code` | `.bonus <codes>` | `.bonus CODE1`<br>`.bonus CODE1 CODE2` | 為一個或多個獎勵代碼生成官網兌換的連結 |
