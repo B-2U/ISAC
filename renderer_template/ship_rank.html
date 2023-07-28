@@ -1,0 +1,164 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("../font/Roboto.ttf") format('truetype');
+        }
+        .main {
+        font-family: "Roboto";
+        position: relative;
+        box-sizing: border-box;
+        width: 1000px;
+        padding: 1rem;
+        display: grid;
+        justify-items: stretch;
+        gap: 0.5rem 0;
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+        font-family: roboto, sans-serif;
+        font-size: 1.8em;
+        color: white;
+        background-color: #343434;
+    }
+
+    .divider {
+        padding: 2px 0 0 0;
+        background-color: grey;
+    }
+
+    /* Global stats section */
+
+    .global-section {
+        display: grid;
+        justify-items: center;
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+        font-size: 1.2em;
+    }
+
+    .warship {
+        padding-top: 0.5em;
+        font-size: 1.3em;
+    }
+
+    /* Division stats section */
+
+    .division-stats-section {
+        display: grid;
+        justify-content: stetch;
+    }
+
+    .division-stats-title {
+        justify-self: center;
+        padding: 0.4rem 0;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+
+    .per-ship-table {
+        position: relative;
+        display: grid;
+        justify-items: stretch;
+        grid-template-columns: 1fr;
+        grid-auto-flow: row;
+        font-family: roboto, sans-serif;
+        border-radius: 10px;
+        background-color: #404040;
+    }
+
+    .ship-table-row {
+        justify-self: stretch;
+        display: grid;
+        justify-items: center;
+        justify-content: space-between;
+        padding: 0.4em 0 0.4em;
+        grid-template-columns: 0.5fr 2.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
+        font-size: 0.9em;
+		align-items:center;
+    }
+
+    .ship-table-row:nth-child(2n) {
+        background-color: #404040;
+    }
+
+	.per-ship-name {
+		justify-self: left;
+        overflow-wrap: break-word;
+        font-size: 0.9em;
+	}
+    .break {
+        word-break: break-all;
+    }
+
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <div class="warship">{{ship.tier}} {{ship.name}}</div>
+            <img src='{{ship.img}}'>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="division-stats-title">Leaderboard ({{region}})</div>
+            <div class="per-ship-table">
+                <div class="ship-table-row">
+                    <div class="player-rank"></div>
+                    <div class="per-ship-lbl per-ship-name">Player</div>
+                    <div class="per-ship-lbl battles-label">Battles</div>
+                    <div class="per-ship-lbl pr-label">PR</div>
+                    <div class="per-ship-lbl winrate-label">Win rate</div>
+                    <div class="per-ship-lbl avg-dmg-label">Dmg</div>
+                    <div class="per-ship-lbl avg-frags-label">Frags</div>
+                    <div class="per-ship-lbl avg-planes-label">Planes</div>
+                </div>
+                {{#players}}  
+                <div class="ship-table-row">
+                    <div class="player-rank" style="color: {{id_color}};">{{rank}}</div>
+                    <div class="per-ship-name">
+                        <span style="color: {{id_color}};">{{clan}}</span>
+                        <span class="break" style="color: {{id_color}};">{{id}}</span>
+                    </div>
+                    <div class="per-ship-battles">{{battles}}</div>
+                    <div class="per-ship-pr" style="color: {{pr.color}};">{{pr.value}}</div>
+                    <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
+                    <div class="per-ship-dmg" style="color: {{dmg.color}};">{{dmg.value}}</div>
+                    <div class="per-ship-frags" style="color: {{frags.color}};">{{frags.value}}</div>
+                    <div class="per-ship-planes" style="color: {{planes.color}};">{{planes.value}}</div>
+                </div>
+                {{/players}}  
+            </div>
+
+        <!-- <div class="signature">[PANTS]B2U</div> -->
+    </div>
+</body>
+
+</html>
+<script>
+    // round corner stuff
+    let arr_ship_data = document.getElementsByClassName('ship-table-row');
+    for (let i = 0; i < arr_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (arr_ship_data.length - 1)) {
+            arr_ship_data[i].style.backgroundColor = "#393939";
+            arr_ship_data[i].style.borderBottomLeftRadius = "10px";
+            arr_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            arr_ship_data[i].style.backgroundColor = "#393939";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

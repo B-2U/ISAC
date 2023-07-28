@@ -1,0 +1,405 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("../font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
+
+        .divider {
+            padding: 1px 0 0 0;
+            background-color: grey;
+        }
+
+        /* Global stats section */
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+        .z-index-container {
+            z-index: 2;
+        }
+
+        .background {
+            top: 16px;
+            left: 16px;
+            width: 968px;
+            height: 216px;
+            position: absolute;
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(5, min-content);
+            gap: 0.2em;
+            justify-content: center;
+            align-items: center;
+            padding: 0.9em 0 0.7em;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dogtag-container {
+            position: relative;
+        }
+
+        .dogtag-patch {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, 0.15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.5em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-title {
+            padding: 0.4rem 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table {
+            padding: 15px 0px;
+            gap: 10px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row;
+        }
+
+        .label-text {
+            color: #EEEEEE;
+        }
+
+        .global-stats-box {
+            background-color: #393939;
+            border-radius: 10px;
+            padding: 0.3em;
+            gap: 0.3em;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+        }
+
+
+        .global-stats-data {
+            font-weight: bold;
+        }
+
+
+        /* Division stats section */
+
+        .division-stats-section {
+            padding: 0.4rem 0;
+            display: grid;
+            justify-content: stetch;
+            gap: 0.4rem 0;
+        }
+
+        .division-stats-table {
+            background-color: #404040;
+            border-radius: 10px;
+        }
+
+        .division-stats-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 8px 0 8px;
+            grid-template-columns: repeat(8, 1fr);
+            font-size: 0.9em;
+        }
+
+
+        .division-stats-data {
+            font-weight: bold;
+        }
+
+        .by-ship-stats-section {
+            padding: 0.4rem 0;
+            display: grid;
+            justify-content: stetch;
+            gap: 0.4rem 0;
+        }
+
+        .division-stats-title {
+            justify-self: center;
+            padding: 7px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .per-ship-table {
+            background-color: #404040;
+            border-radius: 10px;
+        }
+
+        .ship-storo {
+            font-weight: bold;
+        }
+
+        .ship-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: 0.8fr 2fr 0.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
+            font-size: 0.8em;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <div class="z-index-container">
+                <div class="user">
+                    <div class="dogtag-container">
+                        <img src="{{user.dog_tag}}" alt="dog_tag">
+                        <img class="dogtag-patch" src="{{user.patch}}">
+                    </div>
+                    <span style="color: {{clan.color}};">{{clan.name}}</span>
+                    <span class="user-id">{{user.nickname}}</span>
+                    <span class="region-box">{{user.region_upper}}</span>
+                </div>
+                <div class="global-title">Recent {{day}} days stats {{mode}}</div>
+            </div>
+            <div class="global-pr" style="background-color: {{avg_stats.main.pr.color}};"><span class="pr-data">PR
+                    {{avg_stats.main.pr.value}}</span></div>
+            <div class="global-stats-table">
+                <div class="global-stats-box">
+                    <div class="global-stats-label battles-label label-text">Battles</div>
+                    <div class="global-stats-data battles-data">{{avg_stats.main.battles}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label winrate-label label-text">Win rate</div>
+                    <div class="global-stats-data winrate-data" style="color: {{avg_stats.main.winrate.color}};">
+                        {{avg_stats.main.winrate.value}}%</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-dmg-label label-text">Dmg</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: {{avg_stats.main.dmg.color}};">
+                        {{avg_stats.main.dmg.value}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-frags-label label-text">Frags</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{avg_stats.main.frags.color}};">
+                        {{avg_stats.main.frags.value}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-planes-label label-text">Planes</div>
+                    <div class="global-stats-data avg-planes-data" style="color: {{avg_stats.main.planes.color}};">
+                        {{avg_stats.main.planes.value}}</div>
+                </div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="division-stats-title">By division type</div>
+            <div class="division-stats-table">
+                <div class="division-stats-row">
+                    <div class="division-stats-label empty"></div>
+                    <div class="division-stats-label battles-label label-text">BTL</div>
+                    <div class="division-stats-label exp-label label-text">Bxp</div>
+                    <div class="division-stats-label pr-label label-text">PR</div>
+                    <div class="division-stats-label winrate-label label-text">Win rate</div>
+                    <div class="division-stats-label avg-dmg-label label-text">Dmg</div>
+                    <div class="division-stats-label avg-frags-label label-text">Frags</div>
+                    <div class="division-stats-label avg-planes-label label-text">Planes</div>
+                </div>
+                {{#avg_stats.solo}}
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-solo">Solo</div>
+                    <div class="division-stats-data battles-data division-type-solo">{{avg_stats.solo.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-solo"
+                        style="color: {{avg_stats.solo.exp.color}};">{{avg_stats.solo.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-solo"
+                        style="color: {{avg_stats.solo.pr.color}};">{{avg_stats.solo.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-solo"
+                        style="color: {{avg_stats.solo.winrate.color}};">{{avg_stats.solo.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-solo"
+                        style="color: {{avg_stats.solo.dmg.color}};">{{avg_stats.solo.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-solo"
+                        style="color: {{avg_stats.solo.frags.color}};">{{avg_stats.solo.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-solo"
+                        style="color: {{avg_stats.solo.planes.color}};">{{avg_stats.solo.planes.value}}</div>
+                </div>
+                {{/avg_stats.solo}}
+                {{#avg_stats.div2}}
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div2">Div 2</div>
+                    <div class="division-stats-data battles-data division-type-div2">{{avg_stats.div2.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-div2"
+                        style="color: {{avg_stats.div2.exp.color}};">{{avg_stats.div2.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-div2"
+                        style="color: {{avg_stats.div2.pr.color}};">{{avg_stats.div2.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-div2"
+                        style="color: {{avg_stats.div2.winrate.color}};">{{avg_stats.div2.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-div2"
+                        style="color: {{avg_stats.div2.dmg.color}};">{{avg_stats.div2.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-div2"
+                        style="color: {{avg_stats.div2.frags.color}};">{{avg_stats.div2.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-div2"
+                        style="color: {{avg_stats.div2.planes.color}};">{{avg_stats.div2.planes.value}}</div>
+                </div>
+                {{/avg_stats.div2}}
+                {{#avg_stats.div3}}
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div3">Div 3</div>
+                    <div class="division-stats-data battles-data division-type-div3">{{avg_stats.div3.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-div3"
+                        style="color: {{avg_stats.div3.exp.color}};">{{avg_stats.div3.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-div3"
+                        style="color: {{avg_stats.div3.pr.color}};">{{avg_stats.div3.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-div3"
+                        style="color: {{avg_stats.div3.winrate.color}};">{{avg_stats.div3.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-div3"
+                        style="color: {{avg_stats.div3.dmg.color}};">{{avg_stats.div3.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-div3"
+                        style="color: {{avg_stats.div3.frags.color}};">{{avg_stats.div3.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-div3"
+                        style="color: {{avg_stats.div3.planes.color}};">{{avg_stats.div3.planes.value}}</div>
+                </div>
+                {{/avg_stats.div3}}
+                {{#avg_stats.rank}}
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-rank">Rank</div>
+                    <div class="division-stats-data battles-data division-type-rank">{{avg_stats.rank.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-rank"
+                        style="color: {{avg_stats.rank.exp.color}};">{{avg_stats.rank.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-rank"
+                        style="color: {{avg_stats.rank.pr.color}};">{{avg_stats.rank.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-rank"
+                        style="color: {{avg_stats.rank.winrate.color}};">{{avg_stats.rank.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-rank"
+                        style="color: {{avg_stats.rank.dmg.color}};">{{avg_stats.rank.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-rank"
+                        style="color: {{avg_stats.rank.frags.color}};">{{avg_stats.rank.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-rank"
+                        style="color: {{avg_stats.rank.planes.color}};">{{avg_stats.rank.planes.value}}</div>
+                </div>
+                {{/avg_stats.rank}}
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="by-ship-stats-section">
+            <div class="division-stats-title">Stats by ship</div>
+            <div class="per-ship-table">
+                <div class="ship-table-row">
+                    <div class="per-ship-lbl empty label-text">Tier</div>
+                    <div class="per-ship-lbl empty label-text">Warship</div>
+                    <div class="per-ship-lbl battles-label label-text">BTL</div>
+                    <div class="per-ship-lbl exp-label label-text">Bxp</div>
+                    <div class="per-ship-lbl pr-label label-text">PR</div>
+                    <div class="per-ship-lbl winrate-label label-text">Win rate</div>
+                    <div class="per-ship-lbl avg-dmg-label label-text">Dmg</div>
+                    <div class="per-ship-lbl avg-frags-label label-text">Frags</div>
+                    <div class="per-ship-lbl avg-planes-label label-text">Planes</div>
+                </div>
+                {{#all_ships}}
+                <div class="ship-table-row">
+                    <div class="per-ship-tier ship-storo">{{tier}}</div>
+                    <div class="per-ship-name ship-storo">{{name}}</div>
+                    <div class="per-ship-battles ship-storo">{{battles}}</div>
+                    <div class="per-ship-exp ship-storo" style="color: {{exp.color}};">{{exp.value}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{pr.color}};">{{pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{winrate.color}};">{{winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{dmg.color}};">{{dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{frags.color}};">{{frags.value}}</div>
+                    <div class="per-ship-planes ship-storo" style="color: {{planes.color}};">{{planes.value}}</div>
+                </div>
+                {{/all_ships}}
+            </div>
+
+            <!--  <div class="signature">[PANTS]B2U</div>  -->
+    </div>
+</body>
+
+</html>
+<script>
+    // round corner stuff
+    let arr_ship_data = document.getElementsByClassName('division-stats-row');
+    for (let i = 0; i < arr_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (arr_ship_data.length - 1)) {
+            arr_ship_data[i].style.backgroundColor = "#383838";
+            arr_ship_data[i].style.borderBottomLeftRadius = "10px";
+            arr_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            arr_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('ship-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

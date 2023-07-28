@@ -1,0 +1,12 @@
+
+DB
+.env
+recent_DB/players/*
+user_data/*
+web_src/*
+**/*.html.json
+temp/
+
+# Added by cargo
+
+/target

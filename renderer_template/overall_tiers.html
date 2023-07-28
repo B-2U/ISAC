@@ -1,0 +1,368 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("../font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey;
+        }
+
+        /* Global stats section */
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+        .z-index-container {
+            z-index: 2;
+        }
+
+        .background {
+            top: 16px;
+            left: 16px;
+            width: 968px;
+            height: 216px;
+            position: absolute;
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(5, min-content);
+            gap: 0.2em;
+            justify-content: center;
+            align-items: center;
+            padding: 0.9em 0 0.7em;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dogtag-container {
+            position: relative;
+        }
+
+        .dogtag-patch {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, 0.15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.5em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-title {
+            padding: 0.4rem 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row;
+        }
+
+
+        .global-stats-label {
+            padding-top: 0.8em;
+            padding-bottom: 0.4em;
+        }
+
+        .global-stats-data {
+            font-weight: bold;
+            padding: 0.4rem 0;
+        }
+
+        /* Division stats section */
+
+        .division-stats-section {
+            display: grid;
+            justify-content: stetch;
+        }
+
+        .division-stats-title {
+            justify-self: center;
+            padding: 0.4rem 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .per-ship-table {
+            position: relative;
+            display: grid;
+            justify-items: stretch;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+        }
+
+        .ship-storo {
+            font-weight: bold;
+        }
+
+        .ship-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 0.4em 0 0.4em;
+            grid-template-columns: 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
+            font-size: 0.9em;
+        }
+
+        .ship-table-row:nth-child(2n) {
+            background-color: #404040;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <div class="z-index-container">
+                <div class="user">
+                    <div class="dogtag-container">
+                        <img src="{{user.dog_tag}}" alt="dog_tag">
+                        <img class="dogtag-patch" src="{{user.patch}}">
+                    </div>
+                    <span style="color: {{clan.color}};">{{clan.name}}</span>
+                    <span class="user-id">{{user.nickname}}</span>
+                    <span class="region-box">{{user.region_upper}}</span>
+                </div>
+                <div class="global-title">Overall</div>
+            </div>
+            <div class="global-pr" style="background-color: {{div.pvp.pr.color}};"><span class="pr-data">PR
+                    {{div.pvp.pr.value}}</span></div>
+            <div class="global-stats-table">
+                <div class="global-stats-label battles-label">Battles</div>
+                <div class="global-stats-label winrate-label">Win rate</div>
+                <div class="global-stats-label avg-dmg-label">Avg. dmg</div>
+                <div class="global-stats-label avg-frags-label">Avg. frags</div>
+                <div class="global-stats-label avg-planes-label">Avg. planes</div>
+
+                <div class="global-stats-data battles-data">{{div.pvp.battles}}</div>
+                <div class="global-stats-data winrate-data" style="color: {{div.pvp.winrate.color}};">
+                    {{div.pvp.winrate.value}}%</div>
+                <div class="global-stats-data avg-dmg-data" style="color: {{div.pvp.dmg.color}};">{{div.pvp.dmg.value}}
+                </div>
+                <div class="global-stats-data avg-frags-data" style="color: {{div.pvp.frags.color}};">
+                    {{div.pvp.frags.value}}</div>
+                <div class="global-stats-data avg-planes-data" style="color: {{div.pvp.planes.color}};">
+                    {{div.pvp.planes.value}}</div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="division-stats-title">Stats by tiers</div>
+            <div class="per-ship-table">
+                <div class="ship-table-row">
+                    <div class="per-ship-lbl empty">Tier</div>
+                    <div class="per-ship-lbl battles-label">Battles</div>
+                    <div class="per-ship-lbl pr-label">PR</div>
+                    <div class="per-ship-lbl winrate-label">Win rate</div>
+                    <div class="per-ship-lbl avg-dmg-label">Dmg</div>
+                    <div class="per-ship-lbl avg-frags-label">Frags</div>
+                    <div class="per-ship-lbl avg-planes-label">Planes</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.1.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.1.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.1.pr.color}};">{{tier.1.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.1.winrate.color}};">
+                        {{tier.1.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.1.dmg.color}};">{{tier.1.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.1.frags.color}};">{{tier.1.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.1.planes.color}};">
+                        {{tier.1.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.2.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.2.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.2.pr.color}};">{{tier.2.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.2.winrate.color}};">
+                        {{tier.2.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.2.dmg.color}};">{{tier.2.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.2.frags.color}};">{{tier.2.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.2.planes.color}};">
+                        {{tier.2.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.3.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.3.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.3.pr.color}};">{{tier.3.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.3.winrate.color}};">
+                        {{tier.3.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.3.dmg.color}};">{{tier.3.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.3.frags.color}};">{{tier.3.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.3.planes.color}};">
+                        {{tier.3.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.4.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.4.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.4.pr.color}};">{{tier.4.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.4.winrate.color}};">
+                        {{tier.4.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.4.dmg.color}};">{{tier.4.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.4.frags.color}};">{{tier.4.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.4.planes.color}};">
+                        {{tier.4.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.5.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.5.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.5.pr.color}};">{{tier.5.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.5.winrate.color}};">
+                        {{tier.5.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.5.dmg.color}};">{{tier.5.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.5.frags.color}};">{{tier.5.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.5.planes.color}};">
+                        {{tier.5.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.6.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.6.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.6.pr.color}};">{{tier.6.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.6.winrate.color}};">
+                        {{tier.6.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.6.dmg.color}};">{{tier.6.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.6.frags.color}};">{{tier.6.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.6.planes.color}};">
+                        {{tier.6.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.7.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.7.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.7.pr.color}};">{{tier.7.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.7.winrate.color}};">
+                        {{tier.7.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.7.dmg.color}};">{{tier.7.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.7.frags.color}};">{{tier.7.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.7.planes.color}};">
+                        {{tier.7.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.8.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.8.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.8.pr.color}};">{{tier.8.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.8.winrate.color}};">
+                        {{tier.8.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.8.dmg.color}};">{{tier.8.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.8.frags.color}};">{{tier.8.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.8.planes.color}};">
+                        {{tier.8.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.9.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.9.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.9.pr.color}};">{{tier.9.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.9.winrate.color}};">
+                        {{tier.9.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.9.dmg.color}};">{{tier.9.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.9.frags.color}};">{{tier.9.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.9.planes.color}};">
+                        {{tier.9.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.10.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.10.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.10.pr.color}};">{{tier.10.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.10.winrate.color}};">
+                        {{tier.10.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.10.dmg.color}};">{{tier.10.dmg.value}}
+                    </div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.10.frags.color}};">
+                        {{tier.10.frags.value}}</div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.10.planes.color}};">
+                        {{tier.10.planes.value}}</div>
+                </div>
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{tier.11.roman}}</div>
+                    <div class="per-ship-battles ship-storo">{{tier.11.battles}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{tier.11.pr.color}};">{{tier.11.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{tier.11.winrate.color}};">
+                        {{tier.11.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{tier.11.dmg.color}};">{{tier.11.dmg.value}}
+                    </div>
+                    <div class="per-ship-frags ship-storo" style="color: {{tier.11.frags.color}};">
+                        {{tier.11.frags.value}}</div>
+                    <div class="per-ship-planes ship-storo" style="color: {{tier.11.planes.color}};">
+                        {{tier.11.planes.value}}</div>
+                </div>
+            </div>
+
+            <!--  <div class="signature">[PANTS]B2U</div>  -->
+    </div>
+</body>
+
+</html>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

@@ -1,0 +1,593 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("../font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey;
+        }
+
+        /* Global stats section */
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+
+        .z-index-container {
+            z-index: 2;
+        }
+
+        .background {
+            top: 16px;
+            left: 16px;
+            width: 968px;
+            height: 216px;
+            position: absolute;
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(5, min-content);
+            gap: 0.2em;
+            justify-content: center;
+            align-items: center;
+            padding: 0.9em 0 0.7em;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dogtag-container {
+            position: relative;
+        }
+
+        .dogtag-patch {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, 0.15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.5em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-title {
+            padding: 0.4rem 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table {
+            padding: 15px 0px;
+            gap: 10px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row;
+        }
+
+        .label-text {
+            color: #EEEEEE;
+        }
+
+        .global-stats-box {
+            background-color: #393939;
+            border-radius: 10px;
+            padding: 0.3em;
+            gap: 0.3em;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+        }
+
+        .global-stats-data {
+            font-weight: bold;
+        }
+
+        /* Division stats section */
+
+        .division-stats-section {
+            padding: 0.4rem 0;
+            display: grid;
+            justify-content: stetch;
+            gap: 1rem 0;
+        }
+
+        .division-stats-title {
+            justify-self: center;
+            padding: 7px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .division-stats-table {
+            background-color: #404040;
+            border-radius: 10px;
+        }
+
+        .division-stats-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(8, 1fr);
+            font-size: 0.9em;
+        }
+
+        .division-stats-data {
+            font-weight: bold;
+        }
+
+        /* Ship class stats section */
+
+        .ship-class-stats-section {
+            padding: 0.4rem 0;
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            justify-content: stretch;
+            gap: 1rem 1rem;
+            grid-template-columns: min-content 1fr;
+            grid-template-areas:
+                "title title"
+                "graph table";
+        }
+
+        .ship-class-stats-title {
+            grid-area: title;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .ship-class-stats-graph {
+            grid-area: graph;
+            max-width: 300px;
+            max-height: 240px;
+        }
+
+        .ship-class-stats-table {
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+        }
+
+        .ship-class-stats-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(6, 1fr);
+            font-size: 0.8em;
+        }
+
+        .ship-class-stats-data {
+            font-weight: bold;
+        }
+
+        .tier-bar-graph {
+            max-height: 250px;
+        }
+
+        .ship-icon {
+            max-height: 0.75em;
+        }
+
+        .ship-class-type-label {
+            align-items: center;
+            display: flex;
+        }
+
+        .filter-dd {
+            filter: invert(50%) sepia(35%) saturate(5684%) hue-rotate(181deg) brightness(101%) contrast(102%);
+        }
+
+        .filter-ca {
+            filter: invert(10%) sepia(89%) saturate(815%) hue-rotate(84deg) brightness(91%) contrast(75%);
+        }
+
+        .filter-bb {
+            filter: invert(50%) sepia(89%) saturate(4695%) hue-rotate(325deg) brightness(103%) contrast(103%);
+        }
+
+        .filter-cv {
+            filter: invert(19%) sepia(72%) saturate(1928%) hue-rotate(328deg) brightness(101%) contrast(101%);
+        }
+
+        .filter-ss {
+            filter: invert(46%) sepia(3%) saturate(8%) hue-rotate(325deg) brightness(99%) contrast(84%);
+        }
+    </style>
+    <script src="./renderer_template/chart.min.js">
+    </script>
+    <script>
+        // pie chart
+        window.addEventListener("load", () => {
+            let ctx = document.querySelector(".ship-class-stats-graph").getContext('2d');
+            new Chart(ctx, {
+                type: "doughnut", // 圖表類型
+                data: {
+                    labels: ["DD", "CA", "BB", "CV", "SS"], // 標題
+                    datasets: [{
+                        data: [{{ type.dd.battles }}, {{ type.ca.battles }}, {{ type.bb.battles }}, {{ type.cv.battles }}, {{ type.ss.battles }}], // 資料
+            backgroundColor: [ // 背景色
+            "#059bff",
+            "#22cfa4",
+            "#ff4069",
+            "#ffc234",
+            "#777777"
+        ],
+            animation: {
+            animateRotate: false,
+        },
+            borderColor: "#343434",
+                    }]
+                },
+            options: {
+            plugins: {
+                legend: {
+                    display: false,
+                }
+            }
+        }
+            });
+        let ctx2 = document.querySelector(".tier-bar-graph");
+        new Chart(ctx2, {
+            // 參數設定[註1]
+            type: "bar", // 圖表類型
+            data: {
+                labels: ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "★"], // 標題
+                datasets: [{
+                    label: "", // 標籤
+                    data: [{{ tier.1.battles }}, {{ tier.2.battles }}, {{ tier.3.battles }}, {{ tier.4.battles }}, {{ tier.5.battles }}, {{ tier.6.battles }}, {{ tier.7.battles }}, {{ tier.8.battles }}, {{ tier.9.battles }}, {{ tier.10.battles }}, {{ tier.11.battles }}], // 資料
+            backgroundColor: [ // 背景色
+            "#D0D0D0",
+            "#7B7B7B",
+            "#D0D0D0",
+            "#7B7B7B",
+            "#D0D0D0",
+            "#7B7B7B",
+            "#D0D0D0",
+            "#7B7B7B",
+            "#D0D0D0",
+            "#7B7B7B",
+            "#D0D0D0"
+        ],
+                    }]
+                },
+            options: {
+            animation: { duration: 0 },
+            plugins: {
+                legend: {
+                    labels: { boxWidth: 0 },
+                    dispaly: false,
+                },
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        color: "#fff",
+                        font: { size: 20 },
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: "#fff",
+                        font: { size: 20 },
+                    }
+                },
+            },
+        },
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <div class="z-index-container">
+                <div class="user">
+                    <div class="dogtag-container">
+                        <img src="{{user.dog_tag}}" alt="dog_tag">
+                        <img class="dogtag-patch" src="{{user.patch}}">
+                    </div>
+                    <span style="color: {{clan.color}};">{{clan.name}}</span>
+                    <span class="user-id">{{user.nickname}}
+                        <sup style="color:#AAAAAA;font-size:25px;">{{user.karma}}</sup>
+                    </span>
+                    <span class="region-box">{{user.region_upper}}</span>
+                </div>
+                <div class="global-title">Overall</div>
+            </div>
+            <div class="global-pr" style="background-color: {{div.pvp.pr.color}};"><span class="pr-data">PR
+                    {{div.pvp.pr.value}}</span></div>
+            <div class="global-stats-table">
+                <div class="global-stats-box">
+                    <div class="global-stats-label battles-label label-text">Battles</div>
+                    <div class="global-stats-data battles-data">{{div.pvp.battles}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label winrate-label label-text">Win rate</div>
+                    <div class="global-stats-data winrate-data" style="color: {{div.pvp.winrate.color}};">
+                        {{div.pvp.winrate.value}}%</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-dmg-label label-text">Dmg</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: {{div.pvp.dmg.color}};">
+                        {{div.pvp.dmg.value}}
+                    </div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-frags-label label-text">Frags</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{div.pvp.frags.color}};">
+                        {{div.pvp.frags.value}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-planes-label label-text">Planes</div>
+                    <div class="global-stats-data avg-planes-data" style="color: {{div.pvp.planes.color}};">
+                        {{div.pvp.planes.value}}</div>
+                </div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="division-stats-title">By division type</div>
+            <div class="division-stats-table">
+                <div class="division-stats-row">
+                    <div class="division-stats-label empty"></div>
+                    <div class="division-stats-label battles-label label-text">BTL</div>
+                    <div class="division-stats-label pr-label label-text">Bxp</div>
+                    <div class="division-stats-label pr-label label-text">PR</div>
+                    <div class="division-stats-label winrate-label label-text">Win rate</div>
+                    <div class="division-stats-label avg-dmg-label label-text">Dmg</div>
+                    <div class="division-stats-label avg-frags-label label-text">Frags</div>
+                    <div class="division-stats-label avg-planes-label label-text">Planes</div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-solo">Solo</div>
+                    <div class="division-stats-data battles-data division-type-solo">{{div.pvp_solo.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-solo"
+                        style="color: {{div.pvp_solo.exp.color}};">
+                        {{div.pvp_solo.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-solo"
+                        style="color: {{div.pvp_solo.pr.color}};">
+                        {{div.pvp_solo.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-solo"
+                        style="color: {{div.pvp_solo.winrate.color}};">{{div.pvp_solo.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-solo"
+                        style="color: {{div.pvp_solo.dmg.color}};">{{div.pvp_solo.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-solo"
+                        style="color: {{div.pvp_solo.frags.color}};">{{div.pvp_solo.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-solo"
+                        style="color: {{div.pvp_solo.planes.color}};">{{div.pvp_solo.planes.value}}</div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div2">Div 2</div>
+                    <div class="division-stats-data battles-data division-type-div2">{{div.pvp_div2.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-div2"
+                        style="color: {{div.pvp_div2.exp.color}};">
+                        {{div.pvp_div2.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-div2"
+                        style="color: {{div.pvp_div2.pr.color}};">
+                        {{div.pvp_div2.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-div2"
+                        style="color: {{div.pvp_div2.winrate.color}};">{{div.pvp_div2.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-div2"
+                        style="color: {{div.pvp_div2.dmg.color}};">{{div.pvp_div2.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-div2"
+                        style="color: {{div.pvp_div2.frags.color}};">{{div.pvp_div2.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-div2"
+                        style="color: {{div.pvp_div2.planes.color}};">{{div.pvp_div2.planes.value}}</div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div3">Div 3</div>
+                    <div class="division-stats-data battles-data division-type-div3">{{div.pvp_div3.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-div3"
+                        style="color: {{div.pvp_div3.exp.color}};">
+                        {{div.pvp_div3.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-div3"
+                        style="color: {{div.pvp_div3.pr.color}};">
+                        {{div.pvp_div3.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-div3"
+                        style="color: {{div.pvp_div3.winrate.color}};">{{div.pvp_div3.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-div3"
+                        style="color: {{div.pvp_div3.dmg.color}};">{{div.pvp_div3.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-div3"
+                        style="color: {{div.pvp_div3.frags.color}};">{{div.pvp_div3.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-div3"
+                        style="color: {{div.pvp_div3.planes.color}};">{{div.pvp_div3.planes.value}}</div>
+                </div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="ship-class-stats-section">
+            <div class="ship-class-stats-title">By ship class</div>
+            <canvas class="ship-class-stats-graph"></canvas>
+
+            <div class="ship-class-stats-table">
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label empty"></div>
+                    <div class="ship-class-stats-label battle-label">BTL</div>
+                    <div class="ship-class-stats-label exp-label">Bxp</div>
+                    <div class="ship-class-stats-label winrate-label">Win rate</div>
+                    <div class="ship-class-stats-label avg-dmg-label">Dmg</div>
+                    <div class="ship-class-stats-label avg-frags-label">Frags</div>
+                </div>
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label ship-class-type-label ship-class-destroyer">
+                        <img class="ship-icon ship-class-destroyer filter-dd"
+                            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTgzIDIyTDAgMFY0NEw4MyAyMloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
+                    </div>
+                    <div class="ship-class-stats-data battle-data ship-class-destroyer">{{type.dd.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-destroyer"
+                        style="color: {{type.dd.exp.color}};">
+                        {{type.dd.exp.value}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-destroyer"
+                        style="color: {{type.dd.winrate.color}};">{{type.dd.winrate.value}}%</div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-destroyer"
+                        style="color: {{type.dd.dmg.color}};">{{type.dd.dmg.value}}</div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-destroyer"
+                        style="color: {{type.dd.frags.color}};">{{type.dd.frags.value}}</div>
+                </div>
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label ship-class-type-label ship-class-cruiser">
+                        <img class="ship-icon ship-class-cruiser filter-ca"
+                            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgNDRIMTkuMzY2N0w0MS41IDBIMFY0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yNy42NjY3IDQ0TDQ5LjggMEg1OC4xTDgzIDIyTDU4LjEgNDRIMjcuNjY2N1oiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
+                    </div>
+                    <div class="ship-class-stats-data battle-data ship-class-cruiser">{{type.ca.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-cruiser"
+                        style="color: {{type.ca.exp.color}};">
+                        {{type.ca.exp.value}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-cruiser"
+                        style="color: {{type.ca.winrate.color}};">{{type.ca.winrate.value}}%</div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-cruiser"
+                        style="color: {{type.ca.dmg.color}};">{{type.ca.dmg.value}}</div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-cruiser"
+                        style="color: {{type.ca.frags.color}};">{{type.ca.frags.value}}</div>
+                </div>
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label ship-class-type-label ship-class-battleship">
+                        <img class="ship-icon ship-class-battleship filter-bb"
+                            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgNDRIMTEuMDY2N0wzMy4yIDBIMFY0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zNS45NjY3IDQ0TDU4LjEgMEw4MyAyMkw1OC4xIDQ0SDM1Ljk2NjdaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNDkuOCAwSDQxLjVMMTkuMzY2NyA0NEgyNy42NjY3TDQ5LjggMFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
+                    </div>
+                    <div class="ship-class-stats-data battle-data ship-class-battleship">{{type.bb.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-battleship"
+                        style="color: {{type.bb.exp.color}};">
+                        {{type.bb.exp.value}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-battleship"
+                        style="color: {{type.bb.winrate.color}};">{{type.bb.winrate.value}}%</div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-battleship"
+                        style="color: {{type.bb.dmg.color}};">{{type.bb.dmg.value}}</div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-battleship"
+                        style="color: {{type.bb.frags.color}};">{{type.bb.frags.value}}</div>
+                </div>
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label ship-class-type-label ship-class-carrier">
+                        <img class="ship-icon ship-class-carrier filter-cv"
+                            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgMTguNTYyNUg0MS41VjBIMFYxOC41NjI1WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTU4LjEgNDRINDguNDE2N1YwSDU4LjFMODMgMjJMNTguMSA0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00MS41IDI1LjQzNzVIMFY0NEg0MS41VjI1LjQzNzVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" />
+                    </div>
+                    <div class="ship-class-stats-data battle-data ship-class-carrier">{{type.cv.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-carrier"
+                        style="color: {{type.cv.exp.color}};">
+                        {{type.cv.exp.value}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-carrier"
+                        style="color: {{type.cv.winrate.color}};">{{type.cv.winrate.value}}%</div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-carrier"
+                        style="color: {{type.cv.dmg.color}};">{{type.cv.dmg.value}}</div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-carrier"
+                        style="color: {{type.cv.frags.color}};">{{type.cv.frags.value}}</div>
+                </div>
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label ship-class-type-label ship-class-sub">
+                        <img class="ship-icon ship-class-sub filter-ss"
+                            src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgd2lkdGg9IjgzcHgiIGhlaWdodD0iNDRweCIgc3R5bGU9InNoYXBlLXJlbmRlcmluZzpnZW9tZXRyaWNQcmVjaXNpb247IHRleHQtcmVuZGVyaW5nOmdlb21ldHJpY1ByZWNpc2lvbjsgaW1hZ2UtcmVuZGVyaW5nOm9wdGltaXplUXVhbGl0eTsgZmlsbC1ydWxlOmV2ZW5vZGQ7IGNsaXAtcnVsZTpldmVub2RkIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnPjxwYXRoIHN0eWxlPSJvcGFjaXR5OjAuOTc2IiBmaWxsPSIjZmVmZmZlIiBkPSJNIC0wLjUsLTAuNSBDIDAuODMzMzMzLC0wLjUgMi4xNjY2NywtMC41IDMuNSwtMC41QyA0LjU2NzY0LDAuNDM0NDc1IDUuOTAwOTcsMC43Njc4MDkgNy41LDAuNUMgNy41LDE0LjUgNy41LDI4LjUgNy41LDQyLjVDIDUuOTAwOTcsNDIuMjMyMiA0LjU2NzY0LDQyLjU2NTUgMy41LDQzLjVDIDIuMTY2NjcsNDMuNSAwLjgzMzMzMyw0My41IC0wLjUsNDMuNUMgLTAuNSwyOC44MzMzIC0wLjUsMTQuMTY2NyAtMC41LC0wLjUgWiIvPjwvZz4KPGc+PHBhdGggc3R5bGU9Im9wYWNpdHk6MC45MzgiIGZpbGw9IiNmZWZmZmUiIGQ9Ik0gODIuNSwyMC41IEMgODIuNSwyMS4xNjY3IDgyLjUsMjEuODMzMyA4Mi41LDIyLjVDIDYwLjEyNDIsMjguMDEwNiAzNy43OTA4LDMzLjY3NzMgMTUuNSwzOS41QyAxNS41LDI3LjUgMTUuNSwxNS41IDE1LjUsMy41QyAzNy43OTA4LDkuMzIyNzIgNjAuMTI0MiwxNC45ODk0IDgyLjUsMjAuNSBaIi8+PC9nPgo8L3N2Zz4K" />
+                    </div>
+                    <div class="ship-class-stats-data battle-data ship-class-sub">{{type.ss.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-sub" style="color: {{type.ss.exp.color}};">
+                        {{type.ss.exp.value}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-sub"
+                        style="color: {{type.ss.winrate.color}};">{{type.ss.winrate.value}}%</div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-sub"
+                        style="color: {{type.ss.dmg.color}};">
+                        {{type.ss.dmg.value}}</div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-sub"
+                        style="color: {{type.ss.frags.color}};">{{type.ss.frags.value}}</div>
+                </div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <canvas class="tier-bar-graph"></canvas>
+        <!-- <div class="divider"></div> 
+        <div class="signature">[PANTS]B2U</div>-->
+    </div>
+</body>
+
+</html>
+<script>
+    // round corner stuff
+    let arr_ship_data = document.getElementsByClassName('division-stats-row');
+    for (let i = 0; i < arr_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (arr_ship_data.length - 1)) {
+            arr_ship_data[i].style.backgroundColor = "#383838";
+            arr_ship_data[i].style.borderBottomLeftRadius = "10px";
+            arr_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            arr_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('ship-class-stats-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>
