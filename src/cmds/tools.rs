@@ -11,13 +11,62 @@ use poise::{
 use rand::seq::SliceRandom;
 
 use crate::{
-    dc_utils::InteractionAddon,
+    dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
     utils::{LoadFromJson, Ship, ShipsPara},
     Context, Error,
 };
 
+#[poise::command(prefix_command)]
+pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
+    let mut args = args.unwrap_or_default();
+    let temp = args.parse_user(&ctx).await?.get_player(&ctx).await?;
+    ctx.reply(format!("{:?}", temp)).await?;
+    // let args: Vec<_> = args.unwrap_or_default().into();
+    // ctx.reply(format!("{}", args.unwrap_or_default())).await?;
+    Ok(())
+}
+
+#[poise::command(slash_command, discard_spare_arguments)]
+pub async fn roulette(
+    ctx: Context<'_>,
+    #[description = "how many players in the div? default: 3"] players: Option<RoulettePlayer>,
+    #[description = "ships tier, default: 10"] tier: Option<RouletteTier>,
+) -> Result<(), Error> {
+    let players = players.unwrap_or(RoulettePlayer::Three);
+    let tier = tier.unwrap_or(RouletteTier::X);
+    let ship_js = ShipsPara::load_json("./web_src/ship/ships_para.json").await?;
+    let cadidates = ship_js
+        .0
+        .iter()
+        .filter(|(_ship_id, ship)| ship.tier == tier.to_int::<u32>() && ship.is_available())
+        .map(|(_ship_id, ship)| ship.clone())
+        .collect::<Vec<_>>();
+    // let mut ships: Vec<Ship> = cadidates
+    //     .choose_multiple(&mut rand::thread_rng(), players.to_int())
+    //     .map(|&m| m.clone())
+    //     .collect();
+
+    let mut view: RouletteView = RouletteView::new(cadidates, players, ctx.author().clone());
+
+    let embed = view.embed_build();
+    let inter_msg = ctx
+        .send(|b| {
+            b.embeds = vec![embed];
+            b.components(|f| f.set_action_row(view.build()))
+        })
+        .await?
+        .into_message()
+        .await?;
+
+    let timeout = std::time::Duration::from_secs(60 * 2);
+    let _interaction_result = view
+        .interactions(&ctx, ctx.author().id, inter_msg, timeout)
+        .await;
+    Ok(())
+}
+
 #[derive(Debug, Clone)]
-// ships are actually borrow of candidates, but lifetimes....
+// todo: ships are actually borrow of candidates, but lifetimes....
 struct RouletteView {
     players: RoulettePlayer,
     candidates: Vec<Ship>,
@@ -41,17 +90,17 @@ impl RouletteView {
             btn_1: CreateButton::default()
                 .label("1️⃣🔄")
                 .custom_id("roulette_1")
-                .style(btn_style.clone())
+                .style(btn_style)
                 .to_owned(),
             btn_2: CreateButton::default()
                 .label("2️⃣🔄")
                 .custom_id("roulette_2")
-                .style(btn_style.clone())
+                .style(btn_style)
                 .to_owned(),
             btn_3: CreateButton::default()
                 .label("3️⃣🔄")
                 .custom_id("roulette_3")
-                .style(btn_style.clone())
+                .style(btn_style)
                 .to_owned(),
         }
     }
@@ -75,7 +124,7 @@ impl RouletteView {
         for (index, ship) in self.ships.iter().enumerate() {
             msg_text += format!("{} {ship}\n\n", EMOJI[index]).as_str();
         }
-        let embed = CreateEmbed::default()
+        let embed = CreateEmbed::default_new()
             .description(msg_text)
             .set_author(author)
             .to_owned();
@@ -140,45 +189,6 @@ impl RouletteView {
     }
 }
 
-#[poise::command(slash_command, discard_spare_arguments)]
-pub async fn roulette(
-    ctx: Context<'_>,
-    #[description = "how many players in the div? default: 3"] players: Option<RoulettePlayer>,
-    #[description = "ships tier, default: 10"] tier: Option<RouletteTier>,
-) -> Result<(), Error> {
-    let players = players.unwrap_or(RoulettePlayer::Three);
-    let tier = tier.unwrap_or(RouletteTier::X);
-    let ship_js = ShipsPara::load_json("./web_src/ship/ships_para.json").await?;
-    let cadidates = ship_js
-        .0
-        .iter()
-        .filter(|(_ship_id, ship)| ship.tier == tier.to_int::<u32>() && ship.is_available())
-        .map(|(_ship_id, ship)| ship.clone())
-        .collect::<Vec<_>>();
-    // let mut ships: Vec<Ship> = cadidates
-    //     .choose_multiple(&mut rand::thread_rng(), players.to_int())
-    //     .map(|&m| m.clone())
-    //     .collect();
-
-    let mut view: RouletteView = RouletteView::new(cadidates, players, ctx.author().clone());
-
-    let embed = view.embed_build();
-    let inter_msg = ctx
-        .send(|b| {
-            b.embeds = vec![embed];
-            b.components(|f| f.set_action_row(view.build()))
-        })
-        .await?
-        .into_message()
-        .await?;
-
-    let timeout = std::time::Duration::from_secs(60 * 2);
-    let _interaction_result = view
-        .interactions(&ctx, ctx.author().id, inter_msg, timeout)
-        .await;
-    Ok(())
-}
-
 #[derive(Debug, poise::ChoiceParameter, Clone)]
 pub enum RoulettePlayer {
     #[name = "1"]
@@ -188,7 +198,7 @@ pub enum RoulettePlayer {
     #[name = "3"]
     Three,
 }
-// better to_int() way here? (poise require enum)
+// todo: better to_int() way here? (poise require enum)
 impl RoulettePlayer {
     fn to_int<T>(&self) -> T
     where
@@ -216,7 +226,7 @@ pub enum RouletteTier {
     X,
     XI,
 }
-// better local static map/array? (https://github.com/rust-phf/rust-phf ?)
+// todo: better local static map/array? (https://github.com/rust-phf/rust-phf ?)
 impl RouletteTier {
     fn to_int<T>(&self) -> T
     where

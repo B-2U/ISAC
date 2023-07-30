@@ -3,14 +3,20 @@ use cmds::*;
 mod dc_utils;
 mod utils;
 
-use poise::serenity_prelude::{self as serenity, Activity, UserId};
+use dc_utils::ContextAddon;
+use once_cell::sync::Lazy;
+use parking_lot::RwLock;
+use poise::serenity_prelude::{self as serenity, Activity, RoleId, UserId};
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     env,
-    time::{SystemTime, UNIX_EPOCH},
+    sync::Arc,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tracing::error;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+
+use crate::utils::{user::Linked, IsacError};
 
 // Types used by all command functions
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -40,6 +46,7 @@ async fn main() {
             owner::send(),
             owner::users(),
             tools::roulette(),
+            tools::rename(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -51,6 +58,8 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
+    let data = Data::new();
+    let patrons_arc = Arc::clone(&data.patron);
     let bot = poise::Framework::builder()
         .token(token)
         .setup(move |ctx, _ready, framework| {
@@ -58,7 +67,7 @@ async fn main() {
                 println!("Logged in as {}", _ready.user.name);
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 ctx.set_activity(Activity::listening(".help")).await;
-                Ok(Data::new())
+                Ok(data)
             })
         })
         .options(options)
@@ -71,35 +80,71 @@ async fn main() {
         .await
         .unwrap();
     let shard_manager = bot.client().shard_manager.clone();
-    // this is how to use serenity's `data`
-    // {
-    //     let mut data = bot.client().data.write().await;
-    //     data.insert::<ReqClient>(reqwest::Client::new());
-    // }
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
             .expect("Could not register ctrl+c handler");
         shard_manager.lock().await.shutdown_all().await;
     });
-
+    // update patreon
+    let http = bot.client().cache_and_http.http.clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(Duration::from_secs(180));
+        static GUILD_ID: Lazy<u64> = Lazy::new(|| env::var("GUILD_ID").unwrap().parse().unwrap());
+        static PATREON_ID: Lazy<RoleId> =
+            Lazy::new(|| RoleId(env::var("PATREON_ROLE_ID").unwrap().parse().unwrap()));
+        static SUP_ID: Lazy<RoleId> =
+            Lazy::new(|| RoleId(env::var("SUPPORTER_ROLE_ID").unwrap().parse().unwrap()));
+        loop {
+            interval.tick().await;
+            let linked_js: HashMap<_, _> = Linked::load().await.into();
+            let guild = http.get_guild(*GUILD_ID).await.unwrap();
+            let patrons = guild
+                .members(&http, None, None)
+                .await
+                .unwrap()
+                .into_iter()
+                .filter(|m| m.roles.contains(&PATREON_ID) || m.roles.contains(&SUP_ID))
+                .map(|m| Patron {
+                    uid: linked_js
+                        .get(&m.user.id)
+                        .map(|linked_user| linked_user.uid)
+                        .unwrap_or(0),
+                    discord_id: m.user.id,
+                })
+                .collect::<Vec<_>>();
+            *patrons_arc.write() = patrons;
+        }
+    });
+    // this is how to use serenity's `data`
+    // {
+    //     let mut data = bot.client().data.write().await;
+    //     data.insert::<ReqClient>(reqwest::Client::new());
+    // }
     if let Err(why) = bot.start().await {
         error!("Client error: {:?}", why);
     }
 }
 
 /// My custom Data
-#[allow(dead_code)]
 pub struct Data {
     client: reqwest::Client,
+    patron: Arc<RwLock<Vec<Patron>>>,
 }
 
 impl Data {
     fn new() -> Self {
         Data {
             client: reqwest::Client::new(),
+            patron: Arc::new(RwLock::new(vec![])),
         }
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Patron {
+    discord_id: UserId,
+    uid: u64,
 }
 
 async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
@@ -120,7 +165,38 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             let _ = ctx.send(|builder| builder.content(msg).reply(true)).await;
         }
         poise::FrameworkError::Command { error, ctx } => {
-            error!("Error in command `{}`: {:?}", ctx.command().name, error,);
+            if let Some(isac_error) = error.downcast_ref::<IsacError>() {
+                let msg = match isac_error {
+                    IsacError::LackOfArguments => {
+                        "Click the button to check commands' usage and examples".to_string()
+                    }
+                    IsacError::UserNotLinked { msg } => msg.clone(),
+                    IsacError::TooShortIgn { ign } => {
+                        format!("❌ At least 3 charactars for ign searching: `{ign}`")
+                    }
+                    IsacError::APIError { msg } => format!("❌ WG API error: **{msg}**"),
+                    IsacError::InvalidIgn { ign } => format!("❌ Invalid ign: `{ign}`"),
+                    IsacError::PlayerIgnNotFound { ign, region } => {
+                        format!("Player: `{ign}` not found in `{region}`")
+                    }
+                    IsacError::PlayerHidden { ign } => {
+                        format!("Player `{ign}`'s profile is hidden.")
+                    }
+                    IsacError::PlayerNoBattle { ign } => {
+                        format!("Player `{ign}` hasn't played any battle.")
+                    }
+                    IsacError::Cancelled => {
+                        return ();
+                    }
+                    IsacError::UnkownError(err) => {
+                        wws_error(&ctx, err).await;
+                        return ();
+                    }
+                };
+                let _r = ctx.reply(msg).await;
+            } else {
+                error!("Error in command `{}`: {:?}", ctx.command().name, error,);
+            }
         }
         // make the error become `debug` from `warning`
         // poise::FrameworkError::UnknownCommand {
@@ -143,16 +219,11 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     }
 }
 
-// #[derive(Serialize, Deserialize, Debug, Default)]
-// #[allow(dead_code)]
-// pub struct Setu {
-//     imgs: Vec<String>,
-// }
-// impl Setu {
-//     fn load<P: AsRef<Path> + std::fmt::Display>(path: P) -> Self {
-//         load_json(&path).unwrap_or_else(|err| {
-//             error!("{path} loading failed, use dafault. reason:\n{err}");
-//             Self::default()
-//         })
-//     }
-// }
+async fn wws_error(ctx: &Context<'_>, error: &Error) {
+    let user = ctx.author();
+    let user_id = user.id;
+    let channel_id = ctx.channel_id();
+    let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
+    let input = ctx.invocation_string();
+    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild}");
+}

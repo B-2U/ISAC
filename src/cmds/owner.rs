@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use crate::{dc_utils::ContextAddon, utils::LoadFromJson, Context, Error};
+use crate::{
+    dc_utils::ContextAddon,
+    utils::{user::Linked, LoadFromJson},
+    Context, Error,
+};
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
@@ -8,8 +12,6 @@ use poise::{
         ReactionType,
     },
 };
-use serde::Deserialize;
-use serde_json::Value;
 
 #[derive(Debug, Clone)]
 struct TestView {
@@ -134,13 +136,4 @@ pub async fn send(ctx: Context<'_>, channel_id: String, #[rest] msg: String) -> 
         .react(ctx, ReactionType::Unicode(result_emoji))
         .await?;
     Ok(())
-}
-
-#[derive(Deserialize, Debug)]
-struct Linked(pub HashMap<String, Value>);
-
-impl From<Linked> for HashMap<String, Value> {
-    fn from(value: Linked) -> Self {
-        value.0
-    }
 }

@@ -25,7 +25,6 @@ pub struct Ship {
     pub nation: String,
     pub icon: String,
 }
-// why is_available() never used?
 impl Ship {
     /// false for those CB or old ships
     ///
