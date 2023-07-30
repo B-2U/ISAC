@@ -1,6 +1,5 @@
-use std::collections::HashMap;
+use std::sync::Arc;
 
-use once_cell::sync::Lazy;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
@@ -37,9 +36,9 @@ pub async fn roulette(
     let ship_js = ShipsPara::load_json("./web_src/ship/ships_para.json").await?;
     let cadidates = ship_js
         .0
-        .iter()
-        .filter(|(_ship_id, ship)| ship.tier == tier.to_int::<u32>() && ship.is_available())
-        .map(|(_ship_id, ship)| ship.clone())
+        .into_iter()
+        .filter(|(_ship_id, ship)| ship.tier == tier as u32 && ship.is_available())
+        .map(|(_ship_id, ship)| ship)
         .collect::<Vec<_>>();
     // let mut ships: Vec<Ship> = cadidates
     //     .choose_multiple(&mut rand::thread_rng(), players.to_int())
@@ -66,11 +65,10 @@ pub async fn roulette(
 }
 
 #[derive(Debug, Clone)]
-// todo: ships are actually borrow of candidates, but lifetimes....
 struct RouletteView {
     players: RoulettePlayer,
-    candidates: Vec<Ship>,
-    ships: Vec<Ship>,
+    candidates: Vec<Arc<Ship>>,
+    ships: Vec<Arc<Ship>>,
     user: User,
     btn_1: CreateButton,
     btn_2: CreateButton,
@@ -79,10 +77,11 @@ struct RouletteView {
 impl RouletteView {
     fn new(candidates: Vec<Ship>, players: RoulettePlayer, user: User) -> Self {
         let btn_style = ButtonStyle::Secondary;
+        let candidates: Vec<_> = candidates.into_iter().map(Arc::new).collect();
         RouletteView {
             ships: candidates
-                .choose_multiple(&mut rand::thread_rng(), players.to_int())
-                .map(|m| m.clone())
+                .choose_multiple(&mut rand::thread_rng(), players as usize)
+                .cloned()
                 .collect(),
             players,
             candidates,
@@ -179,75 +178,37 @@ impl RouletteView {
     fn build(&self) -> CreateActionRow {
         let mut row = CreateActionRow::default();
         row.add_button(self.btn_1.clone());
-        if self.players.to_int::<u8>() >= 2 {
+        if self.players as usize >= 2 {
             row.add_button(self.btn_2.clone());
         }
-        if self.players.to_int::<u8>() >= 3 {
+        if self.players as usize >= 3 {
             row.add_button(self.btn_3.clone());
         }
         row.to_owned()
     }
 }
 
-#[derive(Debug, poise::ChoiceParameter, Clone)]
+#[derive(Debug, poise::ChoiceParameter, Clone, Copy)]
 pub enum RoulettePlayer {
     #[name = "1"]
-    One,
+    One = 1,
     #[name = "2"]
-    Two,
+    Two = 2,
     #[name = "3"]
-    Three,
-}
-// todo: better to_int() way here? (poise require enum)
-impl RoulettePlayer {
-    fn to_int<T>(&self) -> T
-    where
-        T: From<u8>,
-    {
-        match self {
-            Self::One => T::from(1_u8),
-            Self::Two => T::from(2_u8),
-            Self::Three => T::from(3_u8),
-        }
-    }
+    Three = 3,
 }
 
-#[derive(Debug, poise::ChoiceParameter)]
+#[derive(Debug, poise::ChoiceParameter, Clone, Copy)]
 pub enum RouletteTier {
-    I,
-    II,
-    III,
-    IV,
-    V,
-    VI,
-    VII,
-    VIII,
-    IX,
-    X,
-    XI,
-}
-// todo: better local static map/array? (https://github.com/rust-phf/rust-phf ?)
-impl RouletteTier {
-    fn to_int<T>(&self) -> T
-    where
-        T: From<u8>,
-    {
-        static TIER_ROMAN_TO_NUM_MAP: Lazy<HashMap<&'static str, u8>> = Lazy::new(|| {
-            HashMap::from([
-                ("I", 1),
-                ("II", 2),
-                ("III", 3),
-                ("IV", 4),
-                ("V", 5),
-                ("VI", 6),
-                ("VII", 7),
-                ("VIII", 8),
-                ("IX", 9),
-                ("X", 10),
-                ("XI", 11),
-            ])
-        });
-
-        T::from(*TIER_ROMAN_TO_NUM_MAP.get(self.name()).unwrap())
-    }
+    I = 1,
+    II = 2,
+    III = 3,
+    IV = 4,
+    V = 5,
+    VI = 6,
+    VII = 7,
+    VIII = 8,
+    IX = 9,
+    X = 10,
+    XI = 11,
 }

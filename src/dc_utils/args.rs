@@ -1,15 +1,15 @@
 use std::{collections::HashMap, error::Error, str::FromStr, time::Duration};
 
 use poise::serenity_prelude::{
-    ArgumentConvert, ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor,
-    Message, ReactionType, User, UserId,
+    ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
+    ReactionType, User, UserId,
 };
 
 use crate::{
     utils::{
         user::{Linked, PartialPlayer, Region},
         wws_api::{VortexPlayer, WowsApi},
-        IsacError,
+        IsacError, IsacHelp, IsacInfo,
     },
     Context,
 };
@@ -23,63 +23,65 @@ pub struct Args(Vec<String>);
 impl Args {
     pub async fn parse_user(&mut self, ctx: &Context<'_>) -> Result<PartialPlayer, IsacError> {
         let linked_js: HashMap<_, _> = Linked::load().await.into();
-        let Some(first_arg) = self.0.get(0) else {
-            Err(IsacError::LackOfArguments)?
-        };
+
+        let first_arg = self.check(0)?;
 
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
             match linked_js.get(&user.id) {
                 Some(linked_user) => {
-                    self.0.remove(0);
+                    self.remove(0)?;
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacError::UserNotLinked {
+                    return Err(IsacError::Info(IsacInfo::UserNotLinked {
                         msg: format!("**{}** haven't linked to any wows account yet", user.name),
-                    });
+                    }));
                 }
             }
-        } else if first_arg.as_str() == "me" {
+        } else if first_arg == "me" {
             match linked_js.get(&ctx.author().id) {
                 Some(linked_user) => {
-                    self.0.remove(0);
+                    self.remove(0)?;
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacError::UserNotLinked {
+                    return Err(IsacError::Info(IsacInfo::UserNotLinked {
                         msg: format!("You haven't linked your account yet.\nEnter `/link`"),
-                    });
+                    }));
                 }
             }
         } else {
             // parse region, player
             let region = match Region::parse(first_arg) {
                 Some(region) => {
-                    self.0.remove(0);
+                    self.remove(0)?;
                     region
                 }
                 None => Region::guild_default(ctx.guild_id()).await,
             };
-            let Some(player_id) = self.0.get(0) else {
-                Err(IsacError::LackOfArguments)?
-            };
+            let player_id = self.check(0)?;
+
             let api = WowsApi(&ctx.data().client);
             let candidates = match api.players(&region, player_id, 4).await {
                 Ok(result) => result,
                 Err(err) => Err(err)?,
             };
             let player = match candidates.len() {
-                0 => Err(IsacError::PlayerIgnNotFound {
+                0 => Err(IsacError::Info(IsacInfo::PlayerIgnNotFound {
                     ign: player_id.to_string(),
                     region,
-                })?,
-                1 => &candidates[0], // get user info
+                }))?,
+                1 => {
+                    self.remove(0)?;
+                    &candidates[0]
+                }
                 _ => {
                     let Ok(index) = Self::_pick_player(ctx, ctx.author(), &candidates).await else {
                         Err(IsacError::Cancelled)?
                     };
+                    self.remove(0)?;
                     &candidates[index]
                 }
             };
@@ -109,6 +111,23 @@ impl Args {
                 return Ok(index as usize);
             }
             None => Err(IsacError::Cancelled)?,
+        }
+    }
+    /// remove the given index in args safely, raise [`IsacError::LackOfArguments`] if it is out of index
+    fn remove(&mut self, index: usize) -> Result<(), IsacError> {
+        match index < self.0.len() {
+            true => {
+                self.0.remove(index);
+                Ok(())
+            }
+            false => Err(IsacError::Help(IsacHelp::LackOfArguments)),
+        }
+    }
+    /// check if the index is in args safely, raise [`IsacError::LackOfArguments`] if it is out of index
+    fn check(&self, index: usize) -> Result<&str, IsacError> {
+        match self.0.get(index) {
+            Some(player_id) => Ok(player_id),
+            None => Err(IsacError::Help(IsacHelp::LackOfArguments))?,
         }
     }
 }

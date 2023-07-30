@@ -5,7 +5,7 @@ pub mod user;
 pub mod wws_api;
 
 mod isac_error;
-pub use isac_error::IsacError;
+pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
 use std::path::Path;
 

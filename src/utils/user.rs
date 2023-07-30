@@ -8,7 +8,7 @@ use serde_json::Value;
 use serde_with::{serde_as, DisplayFromStr};
 use std::{collections::HashMap, fmt::Display, mem};
 
-use super::{wws_api::WowsApi, IsacError};
+use super::{wws_api::WowsApi, IsacError, IsacInfo};
 
 const LINKED_PATH: &'static str = "./user_data/linked.json";
 const GUILD_DEFAULT_PATH: &'static str = "./user_data/guild_default_region.json";
@@ -108,7 +108,7 @@ impl Player {
     fn _from(data: &Data, region: Region, input: Value) -> Result<Player, Error> {
         let first_layer = input.as_object().ok_or("parse Player")?;
         let "ok" = first_layer.get("status").and_then(|f|f.as_str()).ok_or("parse Player")? else {
-            Err(IsacError::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).ok_or("parse Player")?.to_string() })?
+            Err(IsacError::Info(super::IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).ok_or("parse Player")?.to_string() }))?
         };
         let (uid, sec_layer) = first_layer
             .get("data")
@@ -126,7 +126,7 @@ impl Player {
             .unwrap_or("Invalid Player")
             .to_string();
         if sec_layer.get("hidden_profile").is_some() {
-            Err(IsacError::PlayerHidden { ign: ign.clone() })?
+            Err(IsacError::Info(IsacInfo::PlayerHidden { ign: ign.clone() }))?
         }
         let statistics = sec_layer
             .get("statistics")
@@ -134,7 +134,9 @@ impl Player {
             .ok_or("parse Player")?;
 
         let karma = if statistics.len() == 0 {
-            Err(IsacError::PlayerNoBattle { ign: ign.clone() })?
+            Err(IsacError::Info(IsacInfo::PlayerNoBattle {
+                ign: ign.clone(),
+            }))?
         } else {
             statistics
                 .get("basic")
@@ -224,12 +226,10 @@ impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
         match value.to_lowercase().as_str() {
-            "asia" => Some(Self::Asia),
-            "sea" => Some(Self::Asia),
+            "asia" | "sea" => Some(Self::Asia),
             "na" => Some(Self::Na),
             "eu" => Some(Self::Eu),
-            "ru" => Some(Self::Ru),
-            "cis" => Some(Self::Ru),
+            "ru" | "cis" => Some(Self::Ru),
             _ => None,
         }
     }

@@ -15,6 +15,7 @@ use std::{
 };
 use tracing::error;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use utils::IsacInfo;
 
 use crate::utils::{user::Linked, IsacError};
 
@@ -165,35 +166,8 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             let _ = ctx.send(|builder| builder.content(msg).reply(true)).await;
         }
         poise::FrameworkError::Command { error, ctx } => {
-            if let Some(isac_error) = error.downcast_ref::<IsacError>() {
-                let msg = match isac_error {
-                    IsacError::LackOfArguments => {
-                        "Click the button to check commands' usage and examples".to_string()
-                    }
-                    IsacError::UserNotLinked { msg } => msg.clone(),
-                    IsacError::TooShortIgn { ign } => {
-                        format!("❌ At least 3 charactars for ign searching: `{ign}`")
-                    }
-                    IsacError::APIError { msg } => format!("❌ WG API error: **{msg}**"),
-                    IsacError::InvalidIgn { ign } => format!("❌ Invalid ign: `{ign}`"),
-                    IsacError::PlayerIgnNotFound { ign, region } => {
-                        format!("Player: `{ign}` not found in `{region}`")
-                    }
-                    IsacError::PlayerHidden { ign } => {
-                        format!("Player `{ign}`'s profile is hidden.")
-                    }
-                    IsacError::PlayerNoBattle { ign } => {
-                        format!("Player `{ign}` hasn't played any battle.")
-                    }
-                    IsacError::Cancelled => {
-                        return ();
-                    }
-                    IsacError::UnkownError(err) => {
-                        wws_error(&ctx, err).await;
-                        return ();
-                    }
-                };
-                let _r = ctx.reply(msg).await;
+            if let Some(isac_err) = error.downcast_ref::<IsacError>() {
+                isac_error_handler(&ctx, isac_err).await;
             } else {
                 error!("Error in command `{}`: {:?}", ctx.command().name, error,);
             }
@@ -219,11 +193,69 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     }
 }
 
+// todo: better error msg, python's tracback?
 async fn wws_error(ctx: &Context<'_>, error: &Error) {
     let user = ctx.author();
     let user_id = user.id;
     let channel_id = ctx.channel_id();
     let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
     let input = ctx.invocation_string();
-    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild}");
+    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
+}
+
+async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
+    match error {
+        IsacError::Help(help) => {
+            let msg = match help {
+                utils::IsacHelp::LackOfArguments => {
+                    "Click the button to check commands' usage and examples".to_string()
+                }
+            };
+            let _r = ctx
+                .send(|b| {
+                    b.components(|c| {
+                        c.create_action_row(|r| {
+                            r.create_button(|b| {
+                                b.label("Document")
+                                    .url("https://github.com/B-2U/ISAC")
+                                    .style(serenity::ButtonStyle::Link)
+                            })
+                            .create_button(|b| {
+                                b.label("Support server")
+                                    .url("https://discord.com/invite/z6sV6kEZGV")
+                                    .style(serenity::ButtonStyle::Link)
+                            })
+                        })
+                    })
+                    .content(msg)
+                    .reply(true)
+                })
+                .await;
+            if let Err(err) = _r {
+                println!("{err}")
+            }
+        }
+        IsacError::Info(info) => {
+            let msg = match info {
+                IsacInfo::UserNotLinked { msg } => msg.clone(),
+                IsacInfo::TooShortIgn { ign } => {
+                    format!("❌ At least 3 charactars for ign searching: `{ign}`")
+                }
+                IsacInfo::APIError { msg } => format!("❌ WG API error: **{msg}**"),
+                IsacInfo::InvalidIgn { ign } => format!("❌ Invalid ign: `{ign}`"),
+                IsacInfo::PlayerIgnNotFound { ign, region } => {
+                    format!("Player: `{ign}` not found in `{region}`")
+                }
+                IsacInfo::PlayerHidden { ign } => {
+                    format!("Player `{ign}`'s profile is hidden.")
+                }
+                IsacInfo::PlayerNoBattle { ign } => {
+                    format!("Player `{ign}` hasn't played any battle.")
+                }
+            };
+            let _r = ctx.reply(msg).await;
+        }
+        IsacError::Cancelled => (),
+        IsacError::UnkownError(err) => wws_error(&ctx, err).await,
+    };
 }
