@@ -28,9 +28,9 @@ impl WowsApi<'_> {
 
         let res = match self.0.get(url).send().await {
             Ok(res) => res,
-            Err(err) => Err(IsacError::Info(IsacInfo::APIError {
+            Err(err) => Err(IsacInfo::APIError {
                 msg: err.to_string(),
-            }))?,
+            })?,
         }
         .json::<Value>()
         .await
@@ -45,27 +45,27 @@ impl WowsApi<'_> {
         limit: u32,
     ) -> Result<Vec<VortexPlayer>, IsacError> {
         if ign.len() < 3 {
-            Err(IsacError::Info(IsacInfo::TooShortIgn {
+            Err(IsacInfo::TooShortIgn {
                 ign: ign.to_string(),
-            }))?
+            })?
         }
         let Ok(url) = region.vortex().join(format!("api/accounts/search/autocomplete/{ign}/?limit={limit}").as_str()) else {
-            Err(IsacError::Info(IsacInfo::InvalidIgn { ign: ign.to_string() }))?
+            Err(IsacInfo::InvalidIgn { ign: ign.to_string() })?
         };
         let res = match self.0.get(url).send().await {
             Ok(res) => res,
-            Err(err) => Err(IsacError::Info(IsacInfo::APIError {
+            Err(err) => Err(IsacInfo::APIError {
                 msg: err.to_string(),
-            }))?,
+            })?,
         }
         .json::<VortexPlayerJson>()
         .await
         .unwrap();
 
         let "ok" = res.status.as_str() else {
-            Err(IsacError::Info(IsacInfo::APIError {
+            Err(IsacInfo::APIError {
                 msg: res.error.unwrap_or_default(),
-            }))?
+            })?
         };
         Ok(res.data)
     }

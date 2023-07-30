@@ -108,7 +108,7 @@ impl Player {
     fn _from(data: &Data, region: Region, input: Value) -> Result<Player, Error> {
         let first_layer = input.as_object().ok_or("parse Player")?;
         let "ok" = first_layer.get("status").and_then(|f|f.as_str()).ok_or("parse Player")? else {
-            Err(IsacError::Info(super::IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).ok_or("parse Player")?.to_string() }))?
+            Err(IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).ok_or("parse Player")?.to_string() })?
         };
         let (uid, sec_layer) = first_layer
             .get("data")
@@ -126,7 +126,7 @@ impl Player {
             .unwrap_or("Invalid Player")
             .to_string();
         if sec_layer.get("hidden_profile").is_some() {
-            Err(IsacError::Info(IsacInfo::PlayerHidden { ign: ign.clone() }))?
+            Err(IsacInfo::PlayerHidden { ign: ign.clone() })?
         }
         let statistics = sec_layer
             .get("statistics")
@@ -134,9 +134,7 @@ impl Player {
             .ok_or("parse Player")?;
 
         let karma = if statistics.len() == 0 {
-            Err(IsacError::Info(IsacInfo::PlayerNoBattle {
-                ign: ign.clone(),
-            }))?
+            Err(IsacInfo::PlayerNoBattle { ign: ign.clone() })?
         } else {
             statistics
                 .get("basic")

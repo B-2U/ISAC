@@ -20,6 +20,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     let mut args = args.unwrap_or_default();
     let temp = args.parse_user(&ctx).await?.get_player(&ctx).await?;
     ctx.reply(format!("{:?}", temp)).await?;
+
     // let args: Vec<_> = args.unwrap_or_default().into();
     // ctx.reply(format!("{}", args.unwrap_or_default())).await?;
     Ok(())

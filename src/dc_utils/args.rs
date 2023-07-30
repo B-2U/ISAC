@@ -35,9 +35,9 @@ impl Args {
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacError::Info(IsacInfo::UserNotLinked {
+                    return Err(IsacInfo::UserNotLinked {
                         msg: format!("**{}** haven't linked to any wows account yet", user.name),
-                    }));
+                    })?;
                 }
             }
         } else if first_arg == "me" {
@@ -47,9 +47,9 @@ impl Args {
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacError::Info(IsacInfo::UserNotLinked {
+                    return Err(IsacInfo::UserNotLinked {
                         msg: format!("You haven't linked your account yet.\nEnter `/link`"),
-                    }));
+                    })?;
                 }
             }
         } else {
@@ -69,10 +69,10 @@ impl Args {
                 Err(err) => Err(err)?,
             };
             let player = match candidates.len() {
-                0 => Err(IsacError::Info(IsacInfo::PlayerIgnNotFound {
+                0 => Err(IsacInfo::PlayerIgnNotFound {
                     ign: player_id.to_string(),
                     region,
-                }))?,
+                })?,
                 1 => {
                     self.remove(0)?;
                     &candidates[0]
