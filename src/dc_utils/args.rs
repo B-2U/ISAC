@@ -19,7 +19,6 @@ use super::{EasyEmbed, UserAddon};
 #[derive(Clone, Debug)]
 pub struct Args(Vec<String>);
 
-// todo: improve the args removing logic
 impl Args {
     pub async fn parse_user(&mut self, ctx: &Context<'_>) -> Result<PartialPlayer, IsacError> {
         let linked_js: HashMap<_, _> = Linked::load().await.into();

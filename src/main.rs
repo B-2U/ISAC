@@ -252,6 +252,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::PlayerNoBattle { ign } => {
                     format!("Player `{ign}` hasn't played any battle.")
                 }
+                IsacInfo::GeneralError { msg } => msg.clone(),
             };
             let _r = ctx.reply(msg).await;
         }

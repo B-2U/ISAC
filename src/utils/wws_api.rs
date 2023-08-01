@@ -11,7 +11,6 @@ use super::{
     IsacError, IsacInfo,
 };
 
-// todo: is this good code?(wrapped client in new struct),
 pub struct WowsApi<'a>(pub &'a Client);
 
 impl WowsApi<'_> {
@@ -22,9 +21,7 @@ impl WowsApi<'_> {
     ) -> Result<Player, IsacError> {
         let url = partial_player
             .region
-            .vortex()
-            .join(format!("api/accounts/{}", partial_player.uid).as_str())
-            .unwrap();
+            .vortex_url(format!("/api/accounts/{}", partial_player.uid))?;
 
         let res = match self.0.get(url).send().await {
             Ok(res) => res,
@@ -49,7 +46,7 @@ impl WowsApi<'_> {
                 ign: ign.to_string(),
             })?
         }
-        let Ok(url) = region.vortex().join(format!("api/accounts/search/autocomplete/{ign}/?limit={limit}").as_str()) else {
+        let Ok(url) = region.vortex_url(format!("/api/accounts/search/autocomplete/{ign}/?limit={limit}")) else {
             Err(IsacInfo::InvalidIgn { ign: ign.to_string() })?
         };
         let res = match self.0.get(url).send().await {

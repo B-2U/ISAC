@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.26"
 dotenv = "0.15.0"
 expand = "0.3.0"
 indexmap = {version="2.0.0", features = ["serde"]}
@@ -18,7 +19,9 @@ poise = "0.5.5"
 # poise = {version = "0.5.5", path="D:/GitHub/poise/"}
 # serenity = {git = "https://github.com/serenity-rs/serenity/", branch="next"}
 rand = "0.8.5"
+regex = "1.9.1"
 reqwest = { version = "0.11.18", features = ["json", "serde_json"] }
+scraper = "0.17.1"
 serde = { version = "1.0.164", features = ["derive"] }
 serde_json = "1.0.99"
 serde_with = { version = "3.1.0", features = ["macros", "json"] }

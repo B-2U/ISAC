@@ -53,6 +53,7 @@ pub enum IsacInfo {
     PlayerIgnNotFound { ign: String, region: Region },
     PlayerHidden { ign: String },
     PlayerNoBattle { ign: String },
+    GeneralError { msg: String },
 }
 
 impl std::error::Error for IsacInfo {}

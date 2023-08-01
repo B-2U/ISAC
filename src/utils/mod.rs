@@ -7,6 +7,9 @@ pub mod wws_api;
 mod isac_error;
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
+mod wows_number;
+pub use wows_number::WowsNumber;
+
 use std::path::Path;
 
 use poise::async_trait;

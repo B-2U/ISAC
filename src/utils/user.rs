@@ -88,14 +88,14 @@ impl PartialPlayer {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct Player {
-    uid: u64,
-    ign: String,
-    region: Region,
-    karma: u64,
-    dog_tag: String,
-    patch: String,
-    premium: bool,
-    pfp: String,
+    pub uid: u64,
+    pub ign: String,
+    pub region: Region,
+    pub karma: u64,
+    pub dog_tag: String,
+    pub patch: String,
+    pub premium: bool,
+    pub pfp: String,
 }
 // todo: fix this shit code, use serde_with?
 impl Player {
@@ -231,21 +231,30 @@ impl Region {
             _ => None,
         }
     }
-    // todo: remove clone() ?
     /// return the corresponding vortex url
-    pub fn vortex(&self) -> Url {
-        match self {
-            Region::Asia => {
-                Lazy::new(|| Url::parse("https://vortex.worldofwarships.asia").unwrap()).clone()
-            }
-            Region::Na => {
-                Lazy::new(|| Url::parse("https://vortex.worldofwarships.com").unwrap()).clone()
-            }
-            Region::Eu => {
-                Lazy::new(|| Url::parse("https://vortex.worldofwarships.eu").unwrap()).clone()
-            }
-            Region::Ru => Lazy::new(|| Url::parse("https://vortex.korabli.su").unwrap()).clone(),
-        }
+    pub fn vortex_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+        let base = match self {
+            Region::Asia => "https://vortex.worldofwarships.asia",
+            Region::Na => "https://vortex.worldofwarships.com",
+            Region::Eu => "https://vortex.worldofwarships.eu",
+            Region::Ru => "https://vortex.korabli.su",
+        };
+        Self::_construct_url(base, sub_url)
+    }
+    /// return the corresponding vortex url
+    pub fn number_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+        let base = match self {
+            Region::Asia => "https://asia.wows-numbers.com",
+            Region::Na => "https://na.wows-numbers.com",
+            Region::Eu => "https://wows-numbers.com",
+            Region::Ru => "https://wows-numbers.com",
+        };
+        Self::_construct_url(base, sub_url)
+    }
+
+    fn _construct_url(base: &str, sub: impl AsRef<str>) -> Result<Url, IsacError> {
+        Url::parse(format!("{}{}", base, sub.as_ref()).as_str())
+            .map_err(|err| IsacError::UnkownError(Box::new(err)))
     }
     /// get guild default region setting if exist,
     /// otherwirse return [`Region::Asia`]
