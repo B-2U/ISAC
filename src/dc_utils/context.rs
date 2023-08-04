@@ -39,7 +39,7 @@ pub struct MyTyping {
 impl MyTyping {
     fn new(typing: Option<Typing>) -> Self {
         Self {
-            typing: typing.into(),
+            typing,
         }
     }
 }

@@ -26,7 +26,7 @@ impl UserAddon for User {
         channel_id: Option<ChannelId>,
         s: &str,
     ) -> Result<Self, Self::Err> {
-        if s.chars().all(|c| c.is_digit(10)) || s.chars().any(|c| ['<', '@', '>'].contains(&c)) {
+        if s.chars().all(|c| c.is_ascii_digit()) || s.chars().any(|c| ['<', '@', '>'].contains(&c)) {
             User::convert(ctx, guild_id, channel_id, s).await
         } else {
             Err(UserParseError::NotFoundOrMalformed)

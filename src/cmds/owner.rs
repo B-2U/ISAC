@@ -1,56 +1,48 @@
-use std::{collections::HashMap, time::Duration};
+use std::collections::HashMap;
 
-use crate::{
-    dc_utils::ContextAddon,
-    utils::{structs::Linked, LoadFromJson},
-    Context, Error,
-};
-use poise::{
-    futures_util::StreamExt,
-    serenity_prelude::{
-        self as serenity, ArgumentConvert, CacheHttp, Channel, CreateActionRow, CreateButton,
-        ReactionType,
-    },
-};
+use crate::utils::structs::Linked;
+use crate::utils::LoadFromJson;
+use crate::{dc_utils::ContextAddon, Context, Error};
+use poise::serenity_prelude::{ArgumentConvert, CacheHttp, Channel, ReactionType};
 use serde_json::json;
-use tokio::{fs, time::sleep};
+use tokio::fs;
 
-#[derive(Debug, Clone)]
-struct TestView {
-    btn_1: CreateButton,
-    btn_2: CreateButton,
-    btn_3: CreateButton,
-}
-impl Default for TestView {
-    fn default() -> Self {
-        TestView {
-            btn_1: CreateButton::default()
-                .label("1")
-                .custom_id("owner_test_1")
-                .to_owned(),
-            btn_2: CreateButton::default()
-                .label("2")
-                .custom_id("owner_test_2")
-                .to_owned(),
-            btn_3: CreateButton::default()
-                .label("3")
-                .custom_id("owner_test_3")
-                .to_owned(),
-        }
-    }
-}
-impl TestView {
-    fn build(&self) -> CreateActionRow {
-        CreateActionRow::default()
-            .add_button(self.btn_1.clone())
-            .add_button(self.btn_2.clone())
-            .add_button(self.btn_3.clone())
-            .to_owned()
-    }
-}
+// #[derive(Debug, Clone)]
+// struct TestView {
+//     btn_1: CreateButton,
+//     btn_2: CreateButton,
+//     btn_3: CreateButton,
+// }
+// impl Default for TestView {
+//     fn default() -> Self {
+//         TestView {
+//             btn_1: CreateButton::default()
+//                 .label("1")
+//                 .custom_id("owner_test_1")
+//                 .to_owned(),
+//             btn_2: CreateButton::default()
+//                 .label("2")
+//                 .custom_id("owner_test_2")
+//                 .to_owned(),
+//             btn_3: CreateButton::default()
+//                 .label("3")
+//                 .custom_id("owner_test_3")
+//                 .to_owned(),
+//         }
+//     }
+// }
+// impl TestView {
+//     fn build(&self) -> CreateActionRow {
+//         CreateActionRow::default()
+//             .add_button(self.btn_1.clone())
+//             .add_button(self.btn_2.clone())
+//             .add_button(self.btn_3.clone())
+//             .to_owned()
+//     }
+// }
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
-pub async fn test(ctx: Context<'_>, #[rest] args: Option<String>) -> Result<(), Error> {
+pub async fn test(_ctx: Context<'_>, #[rest] args: Option<String>) -> Result<(), Error> {
     let _args: Vec<String> = args
         .unwrap_or_default()
         .split_whitespace()

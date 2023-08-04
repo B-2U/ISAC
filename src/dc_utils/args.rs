@@ -17,6 +17,7 @@ use crate::{
 use super::{EasyEmbed, UserAddon};
 
 #[derive(Clone, Debug)]
+#[derive(Default)]
 pub struct Args(Vec<String>);
 
 impl Args {
@@ -34,9 +35,9 @@ impl Args {
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacInfo::UserNotLinked {
+                    Err(IsacInfo::UserNotLinked {
                         msg: format!("**{}** haven't linked to any wows account yet", user.name),
-                    })?;
+                    })?
                 }
             }
         } else if first_arg == "me" {
@@ -47,7 +48,7 @@ impl Args {
                 }
                 None => {
                     return Err(IsacInfo::UserNotLinked {
-                        msg: format!("You haven't linked your account yet.\nEnter `/link`"),
+                        msg: "You haven't linked your account yet.\nEnter `/link`".to_string(),
                     })?;
                 }
             }
@@ -62,7 +63,7 @@ impl Args {
             };
             let player_id = self.check(0)?;
 
-            let api = WowsApi::new(&ctx);
+            let api = WowsApi::new(ctx);
             let candidates = match api.players(&region, player_id, 4).await {
                 Ok(result) => result,
                 Err(err) => Err(err)?,
@@ -94,7 +95,7 @@ impl Args {
         let linked_js: HashMap<_, _> = Linked::load().await.into();
 
         let first_arg = self.check(0)?;
-        let api = WowsApi::new(&ctx);
+        let api = WowsApi::new(ctx);
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
@@ -104,9 +105,9 @@ impl Args {
                     api.player_clan(&linked_user.region, linked_user.uid).await
                 }
                 None => {
-                    return Err(IsacInfo::UserNotLinked {
+                    Err(IsacInfo::UserNotLinked {
                         msg: format!("**{}** haven't linked to any wows account yet", user.name),
-                    })?;
+                    })?
                 }
             }
         } else if first_arg == "me" {
@@ -117,7 +118,7 @@ impl Args {
                 }
                 None => {
                     return Err(IsacInfo::UserNotLinked {
-                        msg: format!("You haven't linked your account yet.\nEnter `/link`"),
+                        msg: "You haven't linked your account yet.\nEnter `/link`".to_string(),
                     })?;
                 }
             }
@@ -139,7 +140,7 @@ impl Args {
         author: &User,
         players: &Vec<VortexPlayer>,
     ) -> Result<usize, Box<dyn Error + Send + Sync>> {
-        let view = PickView::new(&players, author);
+        let view = PickView::new(players, author);
         let embed = view.embed_build();
         let inter_msg = ctx
             .send(|b| {
@@ -149,9 +150,9 @@ impl Args {
             .await?
             .into_message()
             .await?;
-        match view.interactions(&ctx, ctx.author().id, inter_msg).await {
+        match view.interactions(ctx, ctx.author().id, inter_msg).await {
             Some(index) => {
-                return Ok(index as usize);
+                Ok(index as usize)
             }
             None => Err(IsacError::Cancelled)?,
         }
@@ -190,11 +191,7 @@ impl From<Args> for Vec<String> {
         value.0
     }
 }
-impl Default for Args {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
+
 
 struct PickView<'a, T> {
     candidates: &'a Vec<T>,
@@ -232,7 +229,7 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     }
     async fn interactions(&self, ctx: &Context<'_>, author: UserId, msg: Message) -> Option<u8> {
         let result = match msg
-            .await_component_interaction(&ctx)
+            .await_component_interaction(ctx)
             .timeout(Duration::from_secs(15))
             .author_id(author)
             .await
@@ -255,7 +252,7 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     fn build(&self) -> CreateActionRow {
         const BTN_STYLE: ButtonStyle = ButtonStyle::Secondary;
         let mut row = CreateActionRow::default();
-        if self.candidates.len() >= 1 {
+        if !self.candidates.is_empty() {
             let btn_1 = CreateButton::default()
                 .emoji(ReactionType::Unicode(self.emoji[0].to_string()))
                 .custom_id("select_1")

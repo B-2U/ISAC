@@ -1,20 +1,9 @@
 use crate::{
-    utils::{IsacError, IsacInfo, LoadFromJson},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo},
+    Error,
 };
 
-use once_cell::sync::Lazy;
-use poise::serenity_prelude::{GuildId, UserId};
-use reqwest::Url;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, fmt::Display, hash::Hash, mem};
-use strum::EnumIter;
-
-const LINKED_PATH: &'static str = "./user_data/linked.json";
-const GUILD_DEFAULT_PATH: &'static str = "./user_data/guild_default_region.json";
-const PFP_PATH: &'static str = "./user_data/pfp.json";
 
 pub struct Clan {
     pub tag: String,

@@ -1,12 +1,6 @@
-use crate::{utils::LoadFromJson, Context, Data, Error};
+use serde::Deserialize;
 
-use once_cell::sync::Lazy;
-use poise::serenity_prelude::{GuildId, UserId};
-use reqwest::Url;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, fmt::Display, hash::Hash, mem};
+use std::hash::Hash;
 use strum::EnumIter;
 
 #[derive(

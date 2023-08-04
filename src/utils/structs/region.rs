@@ -1,20 +1,12 @@
-use crate::{
-    utils::{IsacError, LoadFromJson},
-    Context, Data, Error,
-};
+use crate::utils::{IsacError, LoadFromJson};
 
-use once_cell::sync::Lazy;
-use poise::serenity_prelude::{GuildId, UserId};
+use poise::serenity_prelude::GuildId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, fmt::Display, hash::Hash, mem};
-use strum::EnumIter;
 
-const LINKED_PATH: &'static str = "./user_data/linked.json";
-const GUILD_DEFAULT_PATH: &'static str = "./user_data/guild_default_region.json";
-const PFP_PATH: &'static str = "./user_data/pfp.json";
+use std::{collections::HashMap, fmt::Display, mem};
+
+const GUILD_DEFAULT_PATH: &str = "./user_data/guild_default_region.json";
 
 /// wows server
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]

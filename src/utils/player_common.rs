@@ -26,7 +26,7 @@ impl PlayerCommon for PartialPlayer {
     }
 
     async fn clan(&self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
-        let api = WowsApi::new(&ctx);
+        let api = WowsApi::new(ctx);
         api.player_clan(&self.region, self.uid).await
     }
 }
@@ -37,7 +37,7 @@ impl PlayerCommon for Player {
         self.region.number_url(format!("/player/{},/", self.uid))
     }
     async fn clan(&self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
-        let api = WowsApi::new(&ctx);
+        let api = WowsApi::new(ctx);
         api.player_clan(&self.region, self.uid).await
     }
 }

@@ -1,20 +1,12 @@
-use crate::{
-    utils::{structs::PartialPlayer, LoadFromJson},
-    Context, Data, Error,
-};
+use crate::utils::{structs::PartialPlayer, LoadFromJson};
 
-use once_cell::sync::Lazy;
-use poise::serenity_prelude::{GuildId, UserId};
-use reqwest::Url;
+use poise::serenity_prelude::UserId;
+
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, fmt::Display, hash::Hash, mem};
-use strum::EnumIter;
 
-const LINKED_PATH: &'static str = "./user_data/linked.json";
-const GUILD_DEFAULT_PATH: &'static str = "./user_data/guild_default_region.json";
-const PFP_PATH: &'static str = "./user_data/pfp.json";
+use std::collections::HashMap;
+
+const LINKED_PATH: &str = "./user_data/linked.json";
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Linked(pub HashMap<UserId, PartialPlayer>);
@@ -27,7 +19,7 @@ impl Linked {
     pub async fn load() -> Self {
         Self::load_json(LINKED_PATH)
             .await
-            .expect(format!("can't find linked.json in {LINKED_PATH}").as_str())
+            .unwrap_or_else(|_| panic!("can't find linked.json in {LINKED_PATH}"))
     }
 }
 

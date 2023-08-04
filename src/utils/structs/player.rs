@@ -7,18 +7,12 @@ use crate::{
     Context, Data, Error,
 };
 
-use once_cell::sync::Lazy;
-use poise::serenity_prelude::{GuildId, UserId};
-use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_with::{serde_as, DisplayFromStr};
-use std::{collections::HashMap, fmt::Display, hash::Hash, mem};
-use strum::EnumIter;
 
-const LINKED_PATH: &'static str = "./user_data/linked.json";
-const GUILD_DEFAULT_PATH: &'static str = "./user_data/guild_default_region.json";
-const PFP_PATH: &'static str = "./user_data/pfp.json";
+use std::collections::HashMap;
+
+const PFP_PATH: &str = "./user_data/pfp.json";
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct PartialPlayer {
@@ -27,7 +21,7 @@ pub struct PartialPlayer {
 }
 impl PartialPlayer {
     pub async fn get_player(&self, ctx: &Context<'_>) -> Result<Player, IsacError> {
-        let api = WowsApi::new(&ctx);
+        let api = WowsApi::new(ctx);
         api.player_personal_data(ctx, self.region, self.uid).await
     }
 }
@@ -81,7 +75,7 @@ impl Player {
             .and_then(|f| f.as_object())
             .unwrap();
 
-        let karma = if statistics.len() == 0 {
+        let karma = if statistics.is_empty() {
             Err(IsacInfo::PlayerNoBattle { ign: ign.clone() })?
         } else {
             statistics
@@ -104,8 +98,7 @@ impl Player {
             .get("slots")
             .unwrap()
             .get("1")
-            .map(|v| v.as_u64())
-            .flatten();
+            .and_then(|v| v.as_u64());
 
         let dog_tag = Dogtag::get(dog_tag).unwrap_or_default();
         let patch = Dogtag::get(patch).unwrap_or_default();

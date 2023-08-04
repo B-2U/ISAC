@@ -1,8 +1,4 @@
-use std::{
-    fmt::{format, Display},
-    mem,
-    sync::Arc,
-};
+use std::{fmt::Display, mem};
 
 use futures::{stream, StreamExt};
 use reqwest::{Client, IntoUrl, Response};
@@ -98,7 +94,7 @@ impl<'a> WowsApi<'a> {
             .unwrap();
         let clan = res
             .search_autocomplete_result
-            .and_then(|mut clans| clans.get_mut(0).map(|clan| mem::take(clan)));
+            .and_then(|mut clans| clans.get_mut(0).map(mem::take));
 
         match clan {
             Some(clan) => Ok(clan.into()),
@@ -144,7 +140,7 @@ impl<'a> WowsApi<'a> {
         uid: u64,
         ship_id: Option<u32>,
     ) -> Result<(), IsacError> {
-        if let Some(ship_id) = ship_id {
+        if let Some(_ship_id) = ship_id {
             todo!()
         } else {
             // todo: 這個語法...? 來源: https://stackoverflow.com/questions/51044467/how-can-i-perform-parallel-asynchronous-http-get-requests-with-reqwest
@@ -162,7 +158,7 @@ impl<'a> WowsApi<'a> {
             while let Some(response) = responses.next().await {
                 // handle response
                 match response {
-                    Ok(Ok(res)) => {} // TODO
+                    Ok(Ok(_res)) => {} // TODO
                     Ok(Err(err)) => Err(IsacError::UnknownError(Box::new(err)))?,
                     Err(err) => Err(IsacError::UnknownError(Box::new(err)))?,
                 }
@@ -188,7 +184,7 @@ impl<'a> WowsApi<'a> {
     //     let res = self.client.get(url).query(&query).send();
     // }
 
-    pub async fn clan_detail(&self, clan: Clan) {}
+    pub async fn clan_detail(&self, _clan: Clan) {}
 }
 
 pub struct PlayerShipBuilder {}
@@ -210,7 +206,7 @@ pub struct VortexPlayer {
 }
 impl Display for VortexPlayer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.name.replace("_", r"\_"))
+        write!(f, "{}", &self.name.replace('_', r"\_"))
     }
 }
 
@@ -220,23 +216,12 @@ struct ClanSearchJson {
 }
 
 /// this is just a temp struct wait for converting to [`Clan`]
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 struct ClanSearchJsonClan {
     id: u64,
     tag: String,
     hex_color: String,
     name: String,
-}
-
-impl Default for ClanSearchJsonClan {
-    fn default() -> Self {
-        Self {
-            id: Default::default(),
-            tag: Default::default(),
-            hex_color: Default::default(),
-            name: Default::default(),
-        }
-    }
 }
 
 impl From<ClanSearchJsonClan> for Clan {
