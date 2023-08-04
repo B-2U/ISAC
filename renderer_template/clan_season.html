@@ -9,6 +9,7 @@
             font-family: "Roboto";
             src: url("../font/Roboto.ttf") format('truetype');
         }
+
         .main {
             font-family: "Roboto";
             position: relative;
@@ -107,13 +108,14 @@
         .ship-icon {
             max-height: 1em;
         }
+
         .per-ship-table {
-        position: relative;
-        display: grid;
-        justify-items: stretch;
-        grid-template-columns: 1fr;
-        grid-auto-flow: row;
-        font-family: roboto, sans-serif;
+            position: relative;
+            display: grid;
+            justify-items: stretch;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-family: roboto, sans-serif;
         }
 
         .per-ship-name {
@@ -131,9 +133,10 @@
             padding: 0.4em 0.1em 0.4em;
             grid-template-columns: 280px 1fr 1.2fr;
             font-size: 0.9em;
-            align-items:center;
+            align-items: center;
             gap: 0.1em;
         }
+
         .ship-table-row:nth-child(2n) {
             background-color: #404040;
         }
@@ -160,7 +163,7 @@
         .rank-container {
             letter-spacing: 0px;
             word-spacing: 0px;
-            }
+        }
 
         .rank-score {
             vertical-align: middle;
@@ -196,7 +199,7 @@
         <section class="global-section">
             <div class="user">
                 <span style="font-size:0.5em; color: #343434;">{{region}}</span>
-                <span style="color: {{clan.color}}">{{clan.name}}</span>
+                <span style="color: {{clan.color}}">{{clan.tag}}</span>
                 <span style="font-size:0.5em; color: #999999;">{{region}}</span>
             </div>
             <div class="global-title">{{clan.fullname}}</div>
@@ -214,10 +217,12 @@
 
                 <div class="global-stats-label team-tag">Alpha</div>
                 <div class="global-stats-data battles-data">{{season.battles}}</div>
-                <div class="global-stats-data winrate-data" style="color: {{season.winrate.color}};">{{season.winrate.value}}%</div>
+                <div class="global-stats-data winrate-data" style="color: {{season.winrate.color}};">
+                    {{season.winrate.value}}%</div>
                 <div class="global-stats-data battles-data rank-container">
                     <span class="division-flex">
-                        <div class="division-color" style="border-color:{{season.max.color}};">{{season.max.division}}</div>
+                        <div class="division-color" style="border-color:{{season.max.color}};">{{season.max.division}}
+                        </div>
                     </span>
                     <span class="rank-score">{{season.max.division_rating}}</span>
                 </div>
@@ -225,10 +230,12 @@
 
                 <div class="global-stats-label team-tag">Bravo</div>
                 <div class="global-stats-data battles-data">{{season.bravo.battles}}</div>
-                <div class="global-stats-data winrate-data" style="color: {{season.bravo.winrate.color}};">{{season.bravo.winrate.value}}%</div>
+                <div class="global-stats-data winrate-data" style="color: {{season.bravo.winrate.color}};">
+                    {{season.bravo.winrate.value}}%</div>
                 <div class="global-stats-data battles-data rank-container">
                     <span class="division-flex">
-                        <div class="division-color" style="border-color:{{season.bravo.max.color}};">{{season.bravo.max.division}}</div>
+                        <div class="division-color" style="border-color:{{season.bravo.max.color}};">
+                            {{season.bravo.max.division}}</div>
                     </span>
                     <span class="rank-score">{{season.bravo.max.division_rating}}</span>
                 </div>
@@ -245,14 +252,14 @@
                             <div class="per-ship-lbl per-ship-name">Player</div>
                             <div class="per-ship-lbl battles-label">Battles</div>
                             <div class="per-ship-lbl winrate-label">Win rate</div>
-                        </div>  
+                        </div>
                         {{#season.players_left}}
                         <div class="ship-table-row">
                             <div class="per-ship-name">{{name}}</div>
                             <div class="per-ship-battles">{{battles}}</div>
                             <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
-                        </div> 
-                        {{/season.players_left}} 
+                        </div>
+                        {{/season.players_left}}
                     </div>
                 </div>
                 <div class="players-right">
@@ -261,18 +268,18 @@
                             <div class="per-ship-lbl per-ship-name">Player</div>
                             <div class="per-ship-lbl battles-label">Battles</div>
                             <div class="per-ship-lbl winrate-label">Win rate</div>
-                        </div>  
+                        </div>
                         {{#season.players_right}}
                         <div class="ship-table-row">
                             <div class="per-ship-name">{{name}}</div>
                             <div class="per-ship-battles">{{battles}}</div>
                             <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
-                        </div>  
+                        </div>
                         {{/season.players_right}}
                     </div>
                 </div>
             </div>
-        <!-- <div class="divider"></div> 
+            <!-- <div class="divider"></div> 
         <div class="signature">[PANTS]B2U</div>-->
     </div>
 </body>

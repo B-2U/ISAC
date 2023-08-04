@@ -15,9 +15,9 @@ use std::{
 };
 use tracing::error;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
-use utils::IsacInfo;
+use utils::{IsacHelp, IsacInfo};
 
-use crate::utils::{user::Linked, IsacError};
+use crate::utils::{structs::Linked, IsacError};
 
 // Types used by all command functions
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -48,6 +48,10 @@ async fn main() {
             owner::users(),
             tools::roulette(),
             tools::rename(),
+            tools::map(),
+            tools::code(),
+            tools::uid(),
+            tools::clanuid(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -131,6 +135,7 @@ async fn main() {
 pub struct Data {
     client: reqwest::Client,
     patron: Arc<RwLock<Vec<Patron>>>,
+    wg_api_token: String,
 }
 
 impl Data {
@@ -138,6 +143,7 @@ impl Data {
         Data {
             client: reqwest::Client::new(),
             patron: Arc::new(RwLock::new(vec![])),
+            wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
         }
     }
 }
@@ -165,6 +171,12 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             );
             let _ = ctx.send(|builder| builder.content(msg).reply(true)).await;
         }
+        poise::FrameworkError::ArgumentParse {
+            error: _,
+            input: _,
+            ctx,
+        } => isac_error_handler(&ctx, &IsacHelp::LackOfArguments.into()).await,
+
         poise::FrameworkError::Command { error, ctx } => {
             if let Some(isac_err) = error.downcast_ref::<IsacError>() {
                 isac_error_handler(&ctx, isac_err).await;
@@ -186,21 +198,15 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         //     "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
         // }
         error => {
-            if let Err(e) = poise::builtins::on_error(error).await {
-                error!("Error while handling error: {}", e)
+            if let Some(ctx) = error.ctx() {
+                help_buttons_msg(&ctx, OOPS).await;
+            } else {
+                if let Err(e) = poise::builtins::on_error(error).await {
+                    error!("Error while handling error: {}", e)
+                }
             }
         }
     }
-}
-
-// todo: better error msg, python's tracback?
-async fn wws_error(ctx: &Context<'_>, error: &Error) {
-    let user = ctx.author();
-    let user_id = user.id;
-    let channel_id = ctx.channel_id();
-    let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
-    let input = ctx.invocation_string();
-    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
 }
 
 async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
@@ -211,29 +217,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     "Click the button to check commands' usage and examples".to_string()
                 }
             };
-            let _r = ctx
-                .send(|b| {
-                    b.components(|c| {
-                        c.create_action_row(|r| {
-                            r.create_button(|b| {
-                                b.label("Document")
-                                    .url("https://github.com/B-2U/ISAC")
-                                    .style(serenity::ButtonStyle::Link)
-                            })
-                            .create_button(|b| {
-                                b.label("Support server")
-                                    .url("https://discord.com/invite/z6sV6kEZGV")
-                                    .style(serenity::ButtonStyle::Link)
-                            })
-                        })
-                    })
-                    .content(msg)
-                    .reply(true)
-                })
-                .await;
-            if let Err(err) = _r {
-                println!("{err}")
-            }
+            help_buttons_msg(&ctx, msg).await;
         }
         IsacError::Info(info) => {
             let msg = match info {
@@ -253,10 +237,60 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     format!("Player `{ign}` hasn't played any battle.")
                 }
                 IsacInfo::GeneralError { msg } => msg.clone(),
+                IsacInfo::InvalidClan { clan } => format!("❌ Invalid clan name: `{clan}`"),
+                IsacInfo::ClanNotFound { clan, region } => {
+                    format!("Clan: `{clan}` not found in `{region}`")
+                }
             };
             let _r = ctx.reply(msg).await;
         }
         IsacError::Cancelled => (),
-        IsacError::UnkownError(err) => wws_error(&ctx, err).await,
+        IsacError::UnknownError(err) => {
+            wws_error_logging(&ctx, err).await;
+            help_buttons_msg(&ctx, OOPS).await;
+        }
     };
 }
+
+// todo: better error msg, python's tracback?
+/// loging to the terminal and discord channel
+async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
+    let user = ctx.author();
+    let user_id = user.id;
+    let channel_id = ctx.channel_id();
+    let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
+    let input = ctx.invocation_string();
+    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
+}
+
+async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
+    let result = ctx
+        .send(|b| {
+            b.components(|c| {
+                c.create_action_row(|r| {
+                    r.create_button(|b| {
+                        b.label("Document")
+                            .url("https://github.com/B-2U/ISAC")
+                            .style(serenity::ButtonStyle::Link)
+                    })
+                    .create_button(|b| {
+                        b.label("Support server")
+                            .url("https://discord.com/invite/z6sV6kEZGV")
+                            .style(serenity::ButtonStyle::Link)
+                    })
+                })
+            })
+            .content(msg.as_ref())
+            .reply(true)
+        })
+        .await;
+    if let Err(err) = result {
+        eprintln!("help_buttons_msg error: {err}");
+    }
+}
+
+// todo: might need to be moved to a file for consts
+const OOPS: &str = r#"***Oops! Something went wrong!***
+click the `Document` button to check the doc
+If this error keep coming out, please join our support server to report it
+"#;

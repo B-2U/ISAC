@@ -1,15 +1,13 @@
 use std::fmt;
 
-use crate::Error;
-
-use super::user::Region;
+use crate::{utils::structs::Region, Error};
 
 #[derive(Debug)]
 pub enum IsacError {
     Help(IsacHelp),
     Info(IsacInfo),
     Cancelled,
-    UnkownError(Error),
+    UnknownError(Error),
 }
 
 impl std::error::Error for IsacError {}
@@ -50,9 +48,11 @@ pub enum IsacInfo {
     TooShortIgn { ign: String },
     APIError { msg: String },
     InvalidIgn { ign: String },
+    InvalidClan { clan: String },
     PlayerIgnNotFound { ign: String, region: Region },
     PlayerHidden { ign: String },
     PlayerNoBattle { ign: String },
+    ClanNotFound { clan: String, region: Region },
     GeneralError { msg: String },
 }
 

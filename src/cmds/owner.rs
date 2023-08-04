@@ -1,8 +1,8 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use crate::{
     dc_utils::ContextAddon,
-    utils::{user::Linked, LoadFromJson},
+    utils::{structs::Linked, LoadFromJson},
     Context, Error,
 };
 use poise::{
@@ -12,6 +12,8 @@ use poise::{
         ReactionType,
     },
 };
+use serde_json::json;
+use tokio::{fs, time::sleep};
 
 #[derive(Debug, Clone)]
 struct TestView {
@@ -55,46 +57,59 @@ pub async fn test(ctx: Context<'_>, #[rest] args: Option<String>) -> Result<(), 
         .map(|s| s.to_string())
         .collect();
 
-    let mut view = TestView::default();
-    let inter_msg = ctx
-        .send(|b| {
-            b.components(|f| f.set_action_row(view.build()))
-                .ephemeral(true)
-        })
-        .await?;
-    while let Some(interaction) = inter_msg
-        .message()
-        .await?
-        .await_component_interactions(ctx)
-        .build()
-        .next()
-        .await
-    {
-        match interaction.data.custom_id.as_str() {
-            "owner_test_1" => {
-                view.btn_1.disabled(true);
-                view.btn_2.disabled(false);
-                view.btn_3.disabled(false);
-            }
-            "owner_test_2" => {
-                view.btn_1.disabled(false);
-                view.btn_2.disabled(true);
-                view.btn_3.disabled(false);
-            }
-            "owner_test_3" => {
-                view.btn_1.disabled(false);
-                view.btn_2.disabled(false);
-                view.btn_3.disabled(true);
-            }
-            _ => (),
-        }
-        interaction
-            .create_interaction_response(ctx, |b| {
-                b.kind(serenity::InteractionResponseType::UpdateMessage);
-                b.interaction_response_data(|a| a.components(|c| c.set_action_row(view.build())))
-            })
-            .await?;
-    }
+    let data = json!({
+        "name": "John",
+        "age": 30,
+        "email": "john@example.com"
+    });
+    let json_bytes = serde_json::to_vec(&data)?;
+
+    // Define the file path
+    let file_path = "output.json";
+
+    // Write the JSON data to the file
+    fs::write(file_path, json_bytes).await?;
+
+    // let mut view = TestView::default();
+    // let inter_msg = ctx
+    //     .send(|b| {
+    //         b.components(|f| f.set_action_row(view.build()))
+    //             .ephemeral(true)
+    //     })
+    //     .await?;
+    // while let Some(interaction) = inter_msg
+    //     .message()
+    //     .await?
+    //     .await_component_interactions(ctx)
+    //     .build()
+    //     .next()
+    //     .await
+    // {
+    //     match interaction.data.custom_id.as_str() {
+    //         "owner_test_1" => {
+    //             view.btn_1.disabled(true);
+    //             view.btn_2.disabled(false);
+    //             view.btn_3.disabled(false);
+    //         }
+    //         "owner_test_2" => {
+    //             view.btn_1.disabled(false);
+    //             view.btn_2.disabled(true);
+    //             view.btn_3.disabled(false);
+    //         }
+    //         "owner_test_3" => {
+    //             view.btn_1.disabled(false);
+    //             view.btn_2.disabled(false);
+    //             view.btn_3.disabled(true);
+    //         }
+    //         _ => (),
+    //     }
+    //     interaction
+    //         .create_interaction_response(ctx, |b| {
+    //             b.kind(serenity::InteractionResponseType::UpdateMessage);
+    //             b.interaction_response_data(|a| a.components(|c| c.set_action_row(view.build())))
+    //         })
+    //         .await?;
+    // }
     Ok(())
 }
 

@@ -9,6 +9,7 @@
             font-family: "Roboto";
             src: url("../font/Roboto.ttf") format('truetype');
         }
+
         .main {
             font-family: "Roboto";
             position: relative;
@@ -147,7 +148,7 @@
         }
     </style>
     <script src="./renderer_template/chart.min.js">
-        </script>
+    </script>
     <script>
         // pie chart
         window.addEventListener("load", () => {
@@ -157,47 +158,47 @@
                 data: {
                     labels: ["Cruiser", "CV", "DD", "BB", "Total", "CW"], // 標題
                     datasets: [{
-                        data: [{{strength.ca}}, {{strength.cv}}, {{strength.dd}}, {{strength.bb}}, {{strength.total}}, {{strength.cw}}], // 資料
-                        borderColor: "#196ba7",
-                        backgroundColor: "rgba(25, 107, 167, 0.5)"
+                        data: [{{ strength.ca }}, {{ strength.cv }}, {{ strength.dd }}, {{ strength.bb }}, {{ strength.total }}, {{ strength.cw }}], // 資料
+            borderColor: "#196ba7",
+            backgroundColor: "rgba(25, 107, 167, 0.5)"
                     }]
                 },
-                options: {
-                    animation: { duration: 0 },
-                    scale: {
-                        min: 0,
-                        max: 100
+            options: {
+            animation: { duration: 0 },
+            scale: {
+                min: 0,
+                max: 100
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                r: {
+                    ticks: {
+                        display: false
                     },
-                    plugins: {
-                        legend: {
-                            display: false
+                    pointLabels: {
+                        color: "white",
+                        font: {
+                            size: 15
                         }
                     },
-                    scales: {
-                        r: {
-                            ticks: {
-                                display: false
-                            },
-                            pointLabels:{
-                                color:"white",
-                                font: {
-                                    size:15
-                                }
-                            },
-                            grid: {
-                                color: "#505050"
-                            },
-                            angleLines: {
-                                color: "#505050"
-                            }
-                        }
+                    grid: {
+                        color: "#505050"
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+                    angleLines: {
+                        color: "#505050"
                     }
                 }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
             });
         });
 
@@ -209,11 +210,12 @@
         <section class="global-section">
             <div class="user">
                 <span style="font-size:0.5em; color: #343434;">{{region}}</span>
-                <span style="color:{{clan.color}};">{{clan.name}}</span>
+                <span style="color:{{clan.color}};">{{clan.tag}}</span>
                 <span style="font-size:0.5em; color: #999999;">{{region}}</span>
             </div>
             <div class="global-title">{{clan.fullname}}</div>
-            <div class="global-pr" style="background-color: {{pr.color}};"><span class="pr-data">PR {{pr.value}}</span></div>
+            <div class="global-pr" style="background-color: {{pr.color}};"><span class="pr-data">PR {{pr.value}}</span>
+            </div>
             <div class="global-stats-table">
                 <div class="global-stats-label battles-label">MBRs</div>
                 <div class="global-stats-label battles-label">Active MBRs</div>
@@ -237,10 +239,11 @@
                 <div class="ship-class-stats-label avg-dmg-label">Rating</div>
                 <div class="ship-class-stats-label avg-frags-label">Record</div>
 
-                {{#clan.seasons}} 
+                {{#clan.seasons}}
                 <div class="ship-class-stats-data" style="color: {{color}}">S{{season}}</div>
                 <div class="ship-class-stats-data pr-data ship-class-destroyer">{{battles}}</div>
-                <div class="ship-class-stats-data winrate-data ship-class-destroyer" style="color:{{winrate.color}}">{{winrate.value}}%</div>
+                <div class="ship-class-stats-data winrate-data ship-class-destroyer" style="color:{{winrate.color}}">
+                    {{winrate.value}}%</div>
                 <div class="ship-class-stats-data avg-dmg-data ship-class-destroyer">
                     <span style="color:{{color}};font-weight:bold;">{{division}}</span>
                     <span>{{division_rating}}</span>
@@ -249,13 +252,13 @@
                     <span style="color:{{max.color}};font-weight:bold;">{{max.division}}</span>
                     <span>{{max.division_rating}}</span>
                 </div>
-                {{/clan.seasons}} 
+                {{/clan.seasons}}
             </div>
         </section>
-        {{#clan.renamed}} 
+        {{#clan.renamed}}
         <div class="divider"></div>
         <div class="former-name">Former: [{{name}}] {{fullname}} ({{date}})</div>
-        {{/clan.renamed}} 
+        {{/clan.renamed}}
         <!-- <div class="divider"></div> 
         <div class="signature">[PANTS]B2U</div>-->
     </div>

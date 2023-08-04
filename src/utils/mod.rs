@@ -1,14 +1,14 @@
 mod ship;
 pub use ship::*;
 
-pub mod user;
+pub mod structs;
 pub mod wws_api;
 
 mod isac_error;
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
-mod wows_number;
-pub use wows_number::WowsNumber;
+mod player_common;
+pub use player_common::PlayerCommon;
 
 use std::path::Path;
 

@@ -7,7 +7,7 @@ use poise::serenity_prelude::{
 
 use crate::{
     utils::{
-        user::{Linked, PartialPlayer, Region},
+        structs::{Clan, Linked, PartialPlayer, Region},
         wws_api::{VortexPlayer, WowsApi},
         IsacError, IsacHelp, IsacInfo,
     },
@@ -62,7 +62,7 @@ impl Args {
             };
             let player_id = self.check(0)?;
 
-            let api = WowsApi(&ctx.data().client);
+            let api = WowsApi::new(&ctx);
             let candidates = match api.players(&region, player_id, 4).await {
                 Ok(result) => result,
                 Err(err) => Err(err)?,
@@ -90,6 +90,50 @@ impl Args {
             })
         }
     }
+    pub async fn parse_clan(&mut self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
+        let linked_js: HashMap<_, _> = Linked::load().await.into();
+
+        let first_arg = self.check(0)?;
+        let api = WowsApi::new(&ctx);
+        if let Ok(user) =
+            User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
+        {
+            match linked_js.get(&user.id) {
+                Some(linked_user) => {
+                    self.remove(0)?;
+                    api.player_clan(&linked_user.region, linked_user.uid).await
+                }
+                None => {
+                    return Err(IsacInfo::UserNotLinked {
+                        msg: format!("**{}** haven't linked to any wows account yet", user.name),
+                    })?;
+                }
+            }
+        } else if first_arg == "me" {
+            match linked_js.get(&ctx.author().id) {
+                Some(linked_user) => {
+                    self.remove(0)?;
+                    api.player_clan(&linked_user.region, linked_user.uid).await
+                }
+                None => {
+                    return Err(IsacInfo::UserNotLinked {
+                        msg: format!("You haven't linked your account yet.\nEnter `/link`"),
+                    })?;
+                }
+            }
+        } else {
+            // parse region, player
+            let region = match Region::parse(first_arg) {
+                Some(region) => {
+                    self.remove(0)?;
+                    region
+                }
+                None => Region::guild_default(ctx.guild_id()).await,
+            };
+            let clan_name = self.check(0)?;
+            api.clans(&region, clan_name).await
+        }
+    }
     async fn _pick_player(
         ctx: &Context<'_>,
         author: &User,
@@ -111,6 +155,10 @@ impl Args {
             }
             None => Err(IsacError::Cancelled)?,
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
     }
     /// remove the given index in args safely, raise [`IsacError::LackOfArguments`] if it is out of index
     fn remove(&mut self, index: usize) -> Result<(), IsacError> {
