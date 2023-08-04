@@ -15,7 +15,10 @@ use scraper::{Element, Html, Selector};
 
 use crate::{
     dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
-    utils::{structs::PartialPlayer, IsacError, LoadFromJson, PlayerCommon, Ship, ShipsPara},
+    utils::{
+        structs::{PartialPlayer, Ship, ShipsPara},
+        IsacError, LoadFromJson, PlayerCommon,
+    },
     Context, Data, Error,
 };
 

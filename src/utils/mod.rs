@@ -1,6 +1,3 @@
-mod ship;
-pub use ship::*;
-
 pub mod structs;
 pub mod wws_api;
 

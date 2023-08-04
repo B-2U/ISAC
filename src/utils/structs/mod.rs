@@ -19,3 +19,6 @@ pub use clan::*;
 
 mod mode;
 pub use mode::*;
+
+mod ship;
+pub use ship::*;
