@@ -1,0 +1,346 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey;
+        }
+
+        /* Global stats section */
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+        .z-index-container {
+            z-index: 2;
+        }
+
+        .background {
+            top: 16px;
+            left: 16px;
+            width: 968px;
+            height: 216px;
+            object-fit: cover;
+            position: absolute;
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(5, min-content);
+            gap: 0.2em;
+            justify-content: center;
+            align-items: center;
+            padding: 0.9em 0 0.7em;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dogtag-container {
+            position: relative;
+        }
+
+        .dogtag-patch {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, 0.15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.5em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-title {
+            padding: 0.4rem 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: grid;
+            grid-template-columns: min-content min-content;
+            gap: 0.4em;
+            align-items: center;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ship-name {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table {
+            padding: 15px 0px;
+            gap: 10px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(4, 1fr);
+            grid-auto-flow: row;
+        }
+
+        .label-text {
+            color: #EEEEEE;
+        }
+
+        .ranking-box {
+            background-color: rgba(255, 255, 255, 0.25);
+            justify-content: center;
+            border-radius: 15px;
+            font-size: 0.8em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-stats-box {
+            background-color: #393939;
+            border-radius: 10px;
+            padding: 1rem;
+            gap: 1rem;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+        }
+
+
+        .global-stats-data {
+            font-weight: bold;
+        }
+
+        /* Division stats section */
+
+        .division-stats-section {
+            padding: 0.4rem 0;
+            display: grid;
+            justify-content: stetch;
+            gap: 0.4rem 0;
+        }
+
+        .division-stats-table {
+            background-color: #404040;
+            border-radius: 10px;
+        }
+
+        .division-stats-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 8px 0 8px;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            font-size: 0.9em;
+        }
+
+        /* Ship class stats section */
+
+        .division-stats-title {
+            justify-self: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .division-stats-data {
+            font-weight: bold;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <img src=https://cdn.discordapp.com/attachments/990246406566596608/1096421169604853900/imageedit_1_5053788974.png
+                class="background" alt="" onerror="this.style.display='none'" />
+            <div class="z-index-container">
+                <div class="user">
+                    <div class="dogtag-container">
+                        <img src="https://glossary-wows-global.gcdn.co/icons/dog_tags/small/PCNU065_7cbbe1665dba43e86a0f67dbb904b825705707fa7718262694fab55a2d0fa729.png"
+                            alt="dog_tag">
+                        <img class="dogtag-patch" src="">
+                    </div>
+                    <span style="color: #e3d6a0;">[PANTS]</span>
+                    <span class="user-id">B2U</span>
+                    <span class="region-box">ASIA</span>
+                </div>
+                <div class="global-title">
+                    <span class="ship-name">IX Groningen</span>
+                    <span class="ranking-box">#6</span>
+                </div>
+            </div>
+            <div class="global-pr" style="background-color: #9d42f3;">
+                <span class="pr-data">PR 3232</span>
+            </div>
+            <div class="global-stats-table">
+                <div class="global-stats-box">
+                    <div class="global-stats-label battles-label label-text">Battles</div>
+                    <div class="global-stats-data battles-data">254</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label winrate-label label-text">Win rate</div>
+                    <div class="global-stats-data winrate-data" style="color: #9d42f3;">
+                        77.95%</div>
+
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-dmg-label label-text">Avg. dmg</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: #d042f3;">94,540
+                    </div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-frags-label label-text">Avg. frags</div>
+                    <div class="global-stats-data avg-frags-data" style="color: #d042f3;">
+                        1.5</div>
+
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-planes-label label-text">Avg. planes</div>
+                    <div class="global-stats-data avg-planes-data" style="color: #d042f3;">
+                        9.87</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-potential-label label-text">
+                        Potential</div>
+                    <div class="global-stats-data avg-potential-data">600,092</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-potential-label label-text">Scout dmg</div>
+                    <div class="global-stats-data avg-potential-data"">47,840</div>
+                </div>
+                <div class=" global-stats-box">
+                        <div class="global-stats-label avg-potential-label label-text">Hit rate</div>
+                        <div class="global-stats-data avg-potential-data">47.58%</div>
+                    </div>
+
+
+                </div>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="division-stats-title">By division type</div>
+            <div class="division-stats-table">
+                <div class="division-stats-row">
+                    <div class="division-stats-label empty label-text"></div>
+                    <div class="division-stats-label battles-label label-text">Battles</div>
+                    <div class="division-stats-label pr-label label-text">PR</div>
+                    <div class="division-stats-label winrate-label label-text">Win rate</div>
+                    <div class="division-stats-label avg-dmg-label label-text">Dmg</div>
+                    <div class="division-stats-label avg-frags-label label-text">Frags</div>
+                    <div class="division-stats-label avg-planes-label label-text">Planes</div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-solo label-text">Solo</div>
+                    <div class="division-stats-data battles-data division-type-solo">95</div>
+                    <div class="division-stats-data pr-data division-type-solo" style="color: #9d42f3;">
+                        3378</div>
+                    <div class="division-stats-data winrate-data division-type-solo" style="color: #9d42f3;">73.68%
+                    </div>
+                    <div class="division-stats-data avg-dmg-data division-type-solo" style="color: #d042f3;">101,314
+                    </div>
+                    <div class="division-stats-data avg-frags-data division-type-solo" style="color: #d042f3;">1.52
+                    </div>
+                    <div class="division-stats-data avg-planes-data division-type-solo" style="color: #d042f3;">10.02
+                    </div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div2 label-text">Div 2</div>
+                    <div class="division-stats-data battles-data division-type-div2">20</div>
+                    <div class="division-stats-data pr-data division-type-div2" style="color: #9d42f3;">
+                        3107</div>
+                    <div class="division-stats-data winrate-data division-type-div2" style="color: #9d42f3;">75.0%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-div2" style="color: #d042f3;">92,903
+                    </div>
+                    <div class="division-stats-data avg-frags-data division-type-div2" style="color: #02c9b3;">1.4</div>
+                    <div class="division-stats-data avg-planes-data division-type-div2" style="color: #44b300;">3.6
+                    </div>
+                </div>
+                <div class="division-stats-row">
+                    <div class="division-stats-label division-type-label division-type-div3 label-text">Div 3</div>
+                    <div class="division-stats-data battles-data division-type-div3">139</div>
+                    <div class="division-stats-data pr-data division-type-div3" style="color: #9d42f3;">
+                        3150</div>
+                    <div class="division-stats-data winrate-data division-type-div3" style="color: #9d42f3;">81.29%
+                    </div>
+                    <div class="division-stats-data avg-dmg-data division-type-div3" style="color: #d042f3;">90,146
+                    </div>
+                    <div class="division-stats-data avg-frags-data division-type-div3" style="color: #d042f3;">1.5</div>
+                    <div class="division-stats-data avg-planes-data division-type-div3" style="color: #d042f3;">10.67
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!--  <div class="signature">[PANTS]B2U</div>  -->
+    </div>
+</body>
+
+</html>
+
+<script>
+    // round corner stuff
+    let arr_ship_data = document.getElementsByClassName('division-stats-row');
+    for (let i = 0; i < arr_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (arr_ship_data.length - 1)) {
+            arr_ship_data[i].style.backgroundColor = "#393939";
+            arr_ship_data[i].style.borderBottomLeftRadius = "10px";
+            arr_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            arr_ship_data[i].style.backgroundColor = "#393939";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

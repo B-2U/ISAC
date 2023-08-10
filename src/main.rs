@@ -1,23 +1,29 @@
 mod cmds;
+mod tasks;
 use cmds::*;
 mod dc_utils;
 mod utils;
 
 use dc_utils::ContextAddon;
-use once_cell::sync::Lazy;
 use parking_lot::RwLock;
-use poise::serenity_prelude::{self as serenity, Activity, RoleId, UserId};
+use poise::serenity_prelude::{self as serenity, Activity, UserId};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     env,
     sync::Arc,
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH},
 };
 use tracing::error;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 use utils::{IsacHelp, IsacInfo};
 
-use crate::utils::{structs::Linked, IsacError};
+use crate::{
+    tasks::launch_renderer,
+    utils::{
+        structs::{ExpectedJs, ShipsPara},
+        IsacError,
+    },
+};
 
 // Types used by all command functions
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -30,6 +36,7 @@ async fn main() {
         .with(fmt::layer())
         .with(EnvFilter::from_env("LOGGER"))
         .init();
+    launch_renderer().await;
 
     let (prefix, token) = if cfg!(windows) {
         ("-", env::var("WIP_TOKEN").expect("Missing TOKEN"))
@@ -52,6 +59,7 @@ async fn main() {
             tools::code(),
             tools::uid(),
             tools::clanuid(),
+            wws::wws(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -63,13 +71,16 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    let data = Data::new();
+    // TODO better way than cloning everything? seems the framwork doesn't accept Arc<Data>....
+    let data = Data::new().await;
     let patrons_arc = Arc::clone(&data.patron);
+    let expected_js_arc = Arc::clone(&data.expected_js);
+    let client_clone = data.client.clone();
     let bot = poise::Framework::builder()
         .token(token)
-        .setup(move |ctx, _ready, framework| {
+        .setup(move |ctx, ready, framework| {
             Box::pin(async move {
-                println!("Logged in as {}", _ready.user.name);
+                println!("Logged in as {}", ready.user.name);
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 ctx.set_activity(Activity::listening(".help")).await;
                 Ok(data)
@@ -84,7 +95,7 @@ async fn main() {
         .build()
         .await
         .unwrap();
-    let shard_manager = bot.client().shard_manager.clone();
+    let shard_manager = Arc::clone(&bot.shard_manager());
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
@@ -93,34 +104,11 @@ async fn main() {
     });
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(Duration::from_secs(180));
-        static GUILD_ID: Lazy<u64> = Lazy::new(|| env::var("GUILD_ID").unwrap().parse().unwrap());
-        static PATREON_ID: Lazy<RoleId> =
-            Lazy::new(|| RoleId(env::var("PATREON_ROLE_ID").unwrap().parse().unwrap()));
-        static SUP_ID: Lazy<RoleId> =
-            Lazy::new(|| RoleId(env::var("SUPPORTER_ROLE_ID").unwrap().parse().unwrap()));
-        loop {
-            interval.tick().await;
-            let linked_js: HashMap<_, _> = Linked::load().await.into();
-            let guild = http.get_guild(*GUILD_ID).await.unwrap();
-            let patrons = guild
-                .members(&http, None, None)
-                .await
-                .unwrap()
-                .into_iter()
-                .filter(|m| m.roles.contains(&PATREON_ID) || m.roles.contains(&SUP_ID))
-                .map(|m| Patron {
-                    uid: linked_js
-                        .get(&m.user.id)
-                        .map(|linked_user| linked_user.uid)
-                        .unwrap_or(0),
-                    discord_id: m.user.id,
-                })
-                .collect::<Vec<_>>();
-            *patrons_arc.write() = patrons;
-        }
-    });
+    tokio::spawn(async move { tasks::patron_updater(http, patrons_arc).await });
+    // update expected json
+
+    tokio::spawn(async move { tasks::expected_updater(client_clone, expected_js_arc).await });
+
     // this is how to use serenity's `data`
     // {
     //     let mut data = bot.client().data.write().await;
@@ -135,31 +123,38 @@ async fn main() {
 pub struct Data {
     client: reqwest::Client,
     patron: Arc<RwLock<Vec<Patron>>>,
+    expected_js: Arc<RwLock<ExpectedJs>>,
+    ship_js: Arc<RwLock<ShipsPara>>,
     wg_api_token: String,
+    // browser: Arc<fantoccini::Client>,
 }
 
 impl Data {
-    fn new() -> Self {
+    async fn new() -> Self {
         Data {
             client: reqwest::Client::new(),
             patron: Arc::new(RwLock::new(vec![])),
+            expected_js: Arc::new(RwLock::new(ExpectedJs::new())),
+            ship_js: Arc::new(RwLock::new(ShipsPara::new())),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
+            // browser: Arc::new(
+            //     fantoccini::ClientBuilder::native()
+            //         .connect("http://localhost:4444")
+            //         .await
+            //         .expect("failed to connect to WebDriver"),
+            // ),
         }
     }
 }
 
 #[derive(Clone, Copy, Debug)]
-struct Patron {
+pub struct Patron {
     discord_id: UserId,
     uid: u64,
 }
 
 async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
-    // This is our custom error handler
-    // They are many errors that can occur, so we only handle the ones we want to customize
-    // and forward the rest to the default handler
     match error {
-        poise::FrameworkError::Setup { error, .. } => panic!("Failed to start bot: {:?}", error),
         poise::FrameworkError::CooldownHit {
             remaining_cooldown,
             ctx,
@@ -225,7 +220,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::TooShortIgn { ign } => {
                     format!("❌ At least 3 charactars for ign searching: `{ign}`")
                 }
-                IsacInfo::APIError { msg } => format!("❌ WG API error: **{msg}**"),
+                IsacInfo::APIError { msg } => format!("❌ API error: **{msg}**"),
                 IsacInfo::InvalidIgn { ign } => format!("❌ Invalid ign: `{ign}`"),
                 IsacInfo::PlayerIgnNotFound { ign, region } => {
                     format!("Player: `{ign}` not found in `{region}`")
@@ -241,6 +236,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::ClanNotFound { clan, region } => {
                     format!("Clan: `{clan}` not found in `{region}`")
                 }
+                IsacInfo::ShipNotFound { ship_name } => format!("Warship: `{ship_name}` not found"),
             };
             let _r = ctx.reply(msg).await;
         }
@@ -252,7 +248,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
     };
 }
 
-// todo: better error msg, python's tracback?
+// TODO better error msg, python's tracback?
 /// loging to the terminal and discord channel
 async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
     let user = ctx.author();
@@ -289,7 +285,7 @@ async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
     }
 }
 
-// todo: might need to be moved to a file for consts
+// TODO might need to be moved to a file for consts
 const OOPS: &str = r#"***Oops! Something went wrong!***
 click the `Document` button to check the doc
 If this error keep coming out, please join our support server to report it

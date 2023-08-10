@@ -1,16 +1,17 @@
 use crate::{
     utils::{
-        structs::{Dogtag, Region},
+        structs::{Clan, Dogtag, Region, Ship, ShipStatsCollection},
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadFromJson,
     },
-    Context, Data, Error,
+    Context, Data,
 };
 
+use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Deref};
 
 const PFP_PATH: &str = "./user_data/pfp.json";
 
@@ -20,34 +21,67 @@ pub struct PartialPlayer {
     pub uid: u64,
 }
 impl PartialPlayer {
+    /// turn partial player into [`Player`]
     pub async fn get_player(&self, ctx: &Context<'_>) -> Result<Player, IsacError> {
         let api = WowsApi::new(ctx);
         api.player_personal_data(ctx, self.region, self.uid).await
     }
+    /// the link of player's wow-number page
+    pub fn wows_number_url(&self) -> Result<Url, IsacError> {
+        self.region.number_url(format!("/player/{},/", self.uid))
+    }
+    /// the link of player's official profile
+    pub fn profile_url(&self) -> Result<Url, IsacError> {
+        self.region.profile_url(format!("/statistics/{}", self.uid))
+    }
+    /// player's clan data
+    pub async fn clan(&self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
+        let api = WowsApi::new(ctx);
+        api.player_clan(&self.region, self.uid).await
+    }
+    /// all ships' statistics
+    pub async fn all_ships(&self, ctx: &Context<'_>) -> Result<ShipStatsCollection, IsacError> {
+        let api = WowsApi::new(ctx);
+        api.statistics_of_player_ships(self.region, self.uid, None)
+            .await
+    }
+    /// specific ship's statistics
+    pub async fn single_ship(
+        &self,
+        ctx: &Context<'_>,
+        ship: &Ship,
+    ) -> Result<ShipStatsCollection, IsacError> {
+        let api = WowsApi::new(ctx);
+        api.statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
+            .await
+    }
 }
 
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
+    #[serde(skip_serializing)]
+    partial_player: PartialPlayer,
     pub uid: u64,
     pub ign: String,
     pub region: Region,
     pub karma: u64,
-    pub dog_tag: String,
-    pub patch: String,
+    pub dog_tag: String, // might be emblem or dogtag
+    pub patch: String,   // the patch on dotag, should be optional
     pub premium: bool,
     pub pfp: String,
 }
-// todo: fix this shit code, use serde_with?
+
+impl Deref for Player {
+    type Target = PartialPlayer;
+
+    fn deref(&self) -> &Self::Target {
+        &self.partial_player
+    }
+}
+// TODO fix this shit code, use serde_with?
 impl Player {
     /// parsing player from returned json
     pub fn parse(data: &Data, region: Region, input: Value) -> Result<Player, IsacError> {
-        Self::_parse(data, region, input).map_err(|e| match e.downcast::<IsacError>() {
-            Ok(isac) => *isac,
-            Err(err) => IsacError::UnknownError(err),
-        })
-    }
-    fn _parse(data: &Data, region: Region, input: Value) -> Result<Player, Error> {
         let first_layer = input.as_object().unwrap();
         let "ok" = first_layer.get("status").and_then(|f|f.as_str()).unwrap() else {
             Err(IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).unwrap().to_string() })?
@@ -59,7 +93,7 @@ impl Player {
             .iter()
             .last()
             .unwrap();
-        let uid = uid.parse::<u64>()?;
+        let uid = uid.parse::<u64>().unwrap();
 
         let ign = sec_layer
             .get("name")
@@ -104,13 +138,14 @@ impl Player {
         let patch = Dogtag::get(patch).unwrap_or_default();
         let premium = data.patron.read().iter().any(|p| p.uid == uid);
         let pfp = if premium {
-            let mut pfp_js: HashMap<_, _> = Pfp::load_json_sync(PFP_PATH)?.into();
+            let mut pfp_js: HashMap<_, _> = Pfp::load_json_sync(PFP_PATH).unwrap().into();
             pfp_js.remove(&uid).unwrap_or_default().url
         } else {
             "".to_string()
         };
 
         Ok(Player {
+            partial_player: PartialPlayer { region, uid },
             uid,
             ign,
             region,

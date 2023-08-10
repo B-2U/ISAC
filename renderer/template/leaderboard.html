@@ -7,94 +7,95 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
+
         .main {
-        font-family: "Roboto";
-        position: relative;
-        box-sizing: border-box;
-        width: 1000px;
-        padding: 1rem;
-        display: grid;
-        justify-items: stretch;
-        gap: 0.5rem 0;
-        grid-template-columns: 1fr;
-        grid-auto-flow: row;
-        font-family: roboto, sans-serif;
-        font-size: 1.8em;
-        color: white;
-        background-color: #343434;
-    }
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-family: roboto, sans-serif;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
 
-    .divider {
-        padding: 2px 0 0 0;
-        background-color: grey;
-    }
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey;
+        }
 
-    /* Global stats section */
+        /* Global stats section */
 
-    .global-section {
-        display: grid;
-        justify-items: center;
-        grid-template-columns: 1fr;
-        grid-auto-flow: row;
-        font-size: 1.2em;
-    }
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
 
-    .warship {
-        padding-top: 0.5em;
-        font-size: 1.3em;
-    }
+        .warship {
+            padding-top: 0.5em;
+            font-size: 1.3em;
+        }
 
-    /* Division stats section */
+        /* Division stats section */
 
-    .division-stats-section {
-        display: grid;
-        justify-content: stetch;
-    }
+        .division-stats-section {
+            display: grid;
+            justify-content: stetch;
+        }
 
-    .division-stats-title {
-        justify-self: center;
-        padding: 0.4rem 0;
-        font-size: 1.2em;
-        font-weight: bold;
-    }
+        .division-stats-title {
+            justify-self: center;
+            padding: 0.4rem 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
-    .per-ship-table {
-        position: relative;
-        display: grid;
-        justify-items: stretch;
-        grid-template-columns: 1fr;
-        grid-auto-flow: row;
-        font-family: roboto, sans-serif;
-        border-radius: 10px;
-        background-color: #404040;
-    }
+        .per-ship-table {
+            position: relative;
+            display: grid;
+            justify-items: stretch;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-family: roboto, sans-serif;
+            border-radius: 10px;
+            background-color: #404040;
+        }
 
-    .ship-table-row {
-        justify-self: stretch;
-        display: grid;
-        justify-items: center;
-        justify-content: space-between;
-        padding: 0.4em 0 0.4em;
-        grid-template-columns: 0.5fr 2.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
-        font-size: 0.9em;
-		align-items:center;
-    }
+        .ship-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 0.4em 0 0.4em;
+            grid-template-columns: 0.5fr 2.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
+            font-size: 0.9em;
+            align-items: center;
+        }
 
-    .ship-table-row:nth-child(2n) {
-        background-color: #404040;
-    }
+        .ship-table-row:nth-child(2n) {
+            background-color: #404040;
+        }
 
-	.per-ship-name {
-		justify-self: left;
-        overflow-wrap: break-word;
-        font-size: 0.9em;
-	}
-    .break {
-        word-break: break-all;
-    }
+        .per-ship-name {
+            justify-self: left;
+            overflow-wrap: break-word;
+            font-size: 0.9em;
+        }
 
+        .break {
+            word-break: break-all;
+        }
     </style>
 
 </head>
@@ -119,7 +120,7 @@
                     <div class="per-ship-lbl avg-frags-label">Frags</div>
                     <div class="per-ship-lbl avg-planes-label">Planes</div>
                 </div>
-                {{#players}}  
+                {{#players}}
                 <div class="ship-table-row">
                     <div class="player-rank" style="color: {{id_color}};">{{rank}}</div>
                     <div class="per-ship-name">
@@ -133,10 +134,10 @@
                     <div class="per-ship-frags" style="color: {{frags.color}};">{{frags.value}}</div>
                     <div class="per-ship-planes" style="color: {{planes.color}};">{{planes.value}}</div>
                 </div>
-                {{/players}}  
+                {{/players}}
             </div>
 
-        <!-- <div class="signature">[PANTS]B2U</div> -->
+            <!-- <div class="signature">[PANTS]B2U</div> -->
     </div>
 </body>
 

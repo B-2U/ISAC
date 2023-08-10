@@ -38,8 +38,11 @@ pub struct MyTyping {
 
 impl MyTyping {
     fn new(typing: Option<Typing>) -> Self {
-        Self {
-            typing,
+        Self { typing }
+    }
+    pub fn stop(mut self) {
+        if let Some(typing) = self.typing.take() {
+            let _r = typing.stop();
         }
     }
 }

@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
 
         .main {
@@ -179,9 +179,9 @@
                         <img src="{{user.dog_tag}}" alt="dog_tag">
                         <img class="dogtag-patch" src="{{user.patch}}">
                     </div>
-                    <span style="color: {{clan.color}};">{{clan.tag}}</span>
-                    <span class="user-id">{{user.nickname}}</span>
-                    <span class="region-box">{{user.region_upper}}</span>
+                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    <span class="user-id">{{user.ign}}</span>
+                    <span class="region-box">{{user.region}}</span>
                 </div>
                 <div class="global-title">Overall</div>
             </div>
@@ -219,7 +219,7 @@
                     <div class="per-ship-lbl avg-planes-label">Planes</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.1.roman}}</div>
+                    <div class="per-ship-name ship-storo">I</div>
                     <div class="per-ship-battles ship-storo">{{tier.1.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.1.pr.color}};">{{tier.1.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.1.winrate.color}};">
@@ -231,7 +231,7 @@
                         {{tier.1.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.2.roman}}</div>
+                    <div class="per-ship-name ship-storo">II</div>
                     <div class="per-ship-battles ship-storo">{{tier.2.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.2.pr.color}};">{{tier.2.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.2.winrate.color}};">
@@ -243,7 +243,7 @@
                         {{tier.2.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.3.roman}}</div>
+                    <div class="per-ship-name ship-storo">III</div>
                     <div class="per-ship-battles ship-storo">{{tier.3.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.3.pr.color}};">{{tier.3.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.3.winrate.color}};">
@@ -255,7 +255,7 @@
                         {{tier.3.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.4.roman}}</div>
+                    <div class="per-ship-name ship-storo">IV</div>
                     <div class="per-ship-battles ship-storo">{{tier.4.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.4.pr.color}};">{{tier.4.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.4.winrate.color}};">
@@ -267,7 +267,7 @@
                         {{tier.4.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.5.roman}}</div>
+                    <div class="per-ship-name ship-storo">V</div>
                     <div class="per-ship-battles ship-storo">{{tier.5.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.5.pr.color}};">{{tier.5.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.5.winrate.color}};">
@@ -279,7 +279,7 @@
                         {{tier.5.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.6.roman}}</div>
+                    <div class="per-ship-name ship-storo">VI</div>
                     <div class="per-ship-battles ship-storo">{{tier.6.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.6.pr.color}};">{{tier.6.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.6.winrate.color}};">
@@ -291,7 +291,7 @@
                         {{tier.6.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.7.roman}}</div>
+                    <div class="per-ship-name ship-storo">VII</div>
                     <div class="per-ship-battles ship-storo">{{tier.7.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.7.pr.color}};">{{tier.7.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.7.winrate.color}};">
@@ -303,7 +303,7 @@
                         {{tier.7.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.8.roman}}</div>
+                    <div class="per-ship-name ship-storo">VIII</div>
                     <div class="per-ship-battles ship-storo">{{tier.8.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.8.pr.color}};">{{tier.8.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.8.winrate.color}};">
@@ -315,7 +315,7 @@
                         {{tier.8.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.9.roman}}</div>
+                    <div class="per-ship-name ship-storo">IX</div>
                     <div class="per-ship-battles ship-storo">{{tier.9.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.9.pr.color}};">{{tier.9.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.9.winrate.color}};">
@@ -327,7 +327,7 @@
                         {{tier.9.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.10.roman}}</div>
+                    <div class="per-ship-name ship-storo">X</div>
                     <div class="per-ship-battles ship-storo">{{tier.10.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.10.pr.color}};">{{tier.10.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.10.winrate.color}};">
@@ -340,7 +340,7 @@
                         {{tier.10.planes.value}}</div>
                 </div>
                 <div class="ship-table-row">
-                    <div class="per-ship-name ship-storo">{{tier.11.roman}}</div>
+                    <div class="per-ship-name ship-storo">★</div>
                     <div class="per-ship-battles ship-storo">{{tier.11.battles}}</div>
                     <div class="per-ship-pr ship-storo" style="color: {{tier.11.pr.color}};">{{tier.11.pr.value}}</div>
                     <div class="per-ship-winrate ship-storo" style="color: {{tier.11.winrate.color}};">

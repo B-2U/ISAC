@@ -1,25 +1,23 @@
 use std::{fmt::Display, mem};
 
-use futures::{stream, StreamExt};
-use reqwest::{Client, IntoUrl, Response};
+use futures::future::try_join_all;
+use reqwest::{Client, IntoUrl, Response, Url};
 use serde::Deserialize;
 use serde_json::Value;
 use strum::IntoEnumIterator;
 
 use crate::{
-    utils::structs::{Clan, Mode, Player, Region},
+    utils::structs::{Clan, Mode, Player, Region, ShipId, ShipStatsCollection, VortexShipResponse},
     Context,
 };
 
 use super::{IsacError, IsacInfo};
 
-// todo: 建立這個struct的成本? 每個internal call都建一個有關係嗎? 真的有必要把他單獨出來?
 pub struct WowsApi<'a> {
     pub client: &'a Client,
     token: &'a str,
 }
 
-// todo: 這個lifetime聲明怎麼對嗎? 怎麼理解 impl<'a> WowsApi<'a> {}
 impl<'a> WowsApi<'a> {
     pub fn new(ctx: &'a Context<'_>) -> WowsApi<'a> {
         Self {
@@ -109,11 +107,11 @@ impl<'a> WowsApi<'a> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"))?;
         // again, custom parsing? test url: https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
         let js_value = self._get(url).await?.json::<Value>().await.unwrap();
-        Clan::parse(js_value)
+        Ok(Clan::try_from(js_value)?)
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still
-    // todo: make a builder pattern for wows api
+    // TODO make a builder pattern for wows api
     /// player's all ships stats
     // pub async fn statistics_of_player_ships(
     //     &self,
@@ -133,61 +131,62 @@ impl<'a> WowsApi<'a> {
     //     }
     //     let res = self.client.get(url).query(&query).send();
     // }
-
+    /// if `ship_id` is None, it will return all ships statistics
     pub async fn statistics_of_player_ships(
         &self,
         region: Region,
         uid: u64,
-        ship_id: Option<u32>,
-    ) -> Result<(), IsacError> {
-        if let Some(_ship_id) = ship_id {
-            todo!()
-        } else {
-            // todo: 這個語法...? 來源: https://stackoverflow.com/questions/51044467/how-can-i-perform-parallel-asynchronous-http-get-requests-with-reqwest
-            let mut responses = stream::iter(Mode::iter())
+        ship_id: Option<ShipId>,
+    ) -> Result<ShipStatsCollection, IsacError> {
+        let urls: Vec<Url> = if let Some(ship_id) = ship_id {
+            Mode::iter()
                 .map(|mode| {
-                    let client = self.client.clone();
-                    let url = region
-                        .vortex_url(format!("/api/accounts/{uid}/ships/{}/", mode.api_name()))
-                        .unwrap();
-                    tokio::spawn(async move { client.get(url).send().await?.json::<Value>().await })
+                    region
+                        .vortex_url(format!(
+                            "/api/accounts/{uid}/ships/{ship_id}/{}/",
+                            mode.api_name()
+                        ))
+                        .unwrap()
                 })
-                .buffer_unordered(5);
-
-            // let mut tank = vec![];
-            while let Some(response) = responses.next().await {
-                // handle response
-                match response {
-                    Ok(Ok(_res)) => {} // TODO
-                    Ok(Err(err)) => Err(IsacError::UnknownError(Box::new(err)))?,
-                    Err(err) => Err(IsacError::UnknownError(Box::new(err)))?,
+                .collect()
+        } else {
+            Mode::iter()
+                .map(|mode| {
+                    region
+                        .vortex_url(format!("/api/accounts/{uid}/ships/{}/", mode.api_name()))
+                        .unwrap()
+                })
+                .collect()
+        };
+        let requests: Vec<_> = urls
+            .into_iter()
+            .map(|url| {
+                let client = self.client.clone();
+                async move {
+                    client
+                        .get(url)
+                        .send()
+                        .await?
+                        .json::<VortexShipResponse>()
+                        .await
                 }
-            }
-            todo!()
-        }
-    }
-    //     &self,
-    //     region: Region,
-    //     uid: u64,
-    //     ship_id: Option<u64>,
-    // ) -> Result<(), IsacError> {
-    //     let url = region.api_url("/wows/ships/stats/")?;
-    //     let mut query = vec![
-    //         ("application_id", self.token.to_string()),
-    //         ("lang", "en".to_string()),
-    //         ("account_id", uid.to_string()),
-    //         ("extra", "pvp_div2, pvp_div3, pvp_solo".to_string()),
-    //     ];
-    //     if let Some(ship_id) = ship_id {
-    //         query.push(("ship_id", ship_id.to_string()));
-    //     }
-    //     let res = self.client.get(url).query(&query).send();
-    // }
+            })
+            .collect();
 
+        let ship_stats_merged = try_join_all(requests)
+            .await
+            .map_err(|err| IsacError::UnknownError(Box::new(err)))?
+            .into_iter()
+            .map(ShipStatsCollection::try_from)
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .reduce(|base, other| base.merge(other))
+            .expect("Received 0 responses unexpectedly");
+
+        Ok(ship_stats_merged)
+    }
     pub async fn clan_detail(&self, _clan: Clan) {}
 }
-
-pub struct PlayerShipBuilder {}
 
 #[derive(Deserialize, Debug)]
 struct VortexPlayerJson {

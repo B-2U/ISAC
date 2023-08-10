@@ -1,3 +1,5 @@
+pub mod template_data;
+
 mod dogtag;
 
 pub use dogtag::*;
@@ -22,3 +24,9 @@ pub use mode::*;
 
 mod ship;
 pub use ship::*;
+
+mod statistic;
+pub use statistic::*;
+
+mod expected_js;
+pub use expected_js::*;

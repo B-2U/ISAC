@@ -11,11 +11,11 @@ const GUILD_DEFAULT_PATH: &str = "./user_data/guild_default_region.json";
 /// wows server
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum Region {
-    #[serde(rename = "asia")]
+    #[serde(rename(serialize = "ASIA", deserialize = "asia"))]
     Asia,
-    #[serde(rename = "na")]
+    #[serde(rename(serialize = "NA", deserialize = "na"))]
     Na,
-    #[serde(rename = "eu")]
+    #[serde(rename(serialize = "EU", deserialize = "eu"))]
     Eu,
 }
 impl Region {
@@ -68,6 +68,16 @@ impl Region {
             Region::Asia => "https://api.worldofwarships.asia",
             Region::Na => "https://api.worldofwarships.com",
             Region::Eu => "https://api.worldofwarships.eu",
+        };
+        Self::_construct_url(base, sub_url)
+    }
+
+    /// player profile url
+    pub fn profile_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+        let base = match self {
+            Region::Asia => "https://profile.worldofwarships.asia",
+            Region::Na => "https://profile.worldofwarships.com",
+            Region::Eu => "https://profile.worldofwarships.eu",
         };
         Self::_construct_url(base, sub_url)
     }

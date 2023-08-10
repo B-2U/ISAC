@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
 
         .main {
@@ -147,7 +147,7 @@
             max-height: 1em;
         }
     </style>
-    <script src="./renderer_template/chart.min.js">
+    <script src="./renderer/script/chart.min.js">
     </script>
     <script>
         // pie chart
@@ -210,10 +210,10 @@
         <section class="global-section">
             <div class="user">
                 <span style="font-size:0.5em; color: #343434;">{{region}}</span>
-                <span style="color:{{clan.color}};">{{clan.tag}}</span>
+                <span style="color:{{clan.color}};">[{{clan.tag}}]</span>
                 <span style="font-size:0.5em; color: #999999;">{{region}}</span>
             </div>
-            <div class="global-title">{{clan.fullname}}</div>
+            <div class="global-title">{{clan.name}}</div>
             <div class="global-pr" style="background-color: {{pr.color}};"><span class="pr-data">PR {{pr.value}}</span>
             </div>
             <div class="global-stats-table">

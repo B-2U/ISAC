@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
 
         .main {
@@ -212,9 +212,9 @@
                         <img src="{{user.dog_tag}}" alt="dog_tag">
                         <img class="dogtag-patch" src="{{user.patch}}">
                     </div>
-                    <span style="color: {{clan.color}};">{{clan.tag}}</span>
-                    <span class="user-id">{{user.nickname}}</span>
-                    <span class="region-box">{{user.region_upper}}</span>
+                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    <span class="user-id">{{user.ign}}</span>
+                    <span class="region-box">{{user.region}}</span>
                 </div>
                 <div class="global-title">Recent {{day}} days stats {{mode}}</div>
             </div>

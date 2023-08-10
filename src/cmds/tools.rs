@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, collections::HashSet, sync::Arc};
 
 use chrono::NaiveDate;
 use poise::{
@@ -16,11 +16,13 @@ use scraper::{Element, Html, Selector};
 use crate::{
     dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
     utils::{
-        structs::{PartialPlayer, Ship, ShipsPara},
-        IsacError, LoadFromJson, PlayerCommon,
+        structs::{PartialPlayer, Ship},
+        IsacError,
     },
     Context, Data, Error,
 };
+
+pub const SHIPS_PARA_PATH: &str = "./web_src/ship/ships_para.json";
 
 /// The link to wargaming wiki maps page
 #[poise::command(prefix_command, slash_command, discard_spare_arguments)]
@@ -134,7 +136,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     let res = ctx
         .data()
         .client
-        .get(player.wows_number()?)
+        .get(player.wows_number_url()?)
         .send()
         .await
         .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
@@ -142,10 +144,8 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     let record_clans_uid =
         _rename_parse_player(text).map_err(|err| IsacError::UnknownError(err))?;
 
-    // todo: since theres async function inside, guess i can't use map() or flat_map() to replace for loop?
     let mut name_history = vec![];
     for clan_uid in record_clans_uid {
-        // todo: is boxing error a good practice?
         let res = ctx
             .data()
             .client
@@ -197,7 +197,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     Ok(())
 }
 
-fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, Error> {
+fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<HashSet<u64>, Error> {
     let html = Html::parse_document(html_text.as_ref());
 
     let table_selector = Selector::parse(".table-styled").unwrap();
@@ -221,7 +221,7 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, Error> {
             let _clan_href = cell
                 .select(&a_selector)
                 .nth(0)
-                .and_then(|f| f.value().attr("href"))?; //todo: why i can "?" a Option here?
+                .and_then(|f| f.value().attr("href"))?;
             clan_regex
                 .captures(_clan_href)?
                 .get(1)
@@ -286,13 +286,15 @@ pub async fn roulette(
 ) -> Result<(), Error> {
     let players = players.unwrap_or(RoulettePlayer::Three);
     let tier = tier.unwrap_or(RouletteTier::X);
-    let ship_js = ShipsPara::load_json("./web_src/ship/ships_para.json").await?;
-    let cadidates = ship_js
-        .0
-        .into_iter()
-        .filter(|(_ship_id, ship)| ship.tier == tier as u8 && ship.is_available())
-        .map(|(_ship_id, ship)| ship)
-        .collect::<Vec<_>>();
+    let cadidates = {
+        let ship_js = ctx.data().ship_js.read();
+        ship_js
+            .0
+            .iter()
+            .filter(|(_ship_id, ship)| ship.tier as u8 == tier as u8 && ship.is_available())
+            .map(|(_ship_id, ship)| ship.clone())
+            .collect::<Vec<_>>()
+    };
     // let mut ships: Vec<Ship> = cadidates
     //     .choose_multiple(&mut rand::thread_rng(), players.to_int())
     //     .map(|&m| m.clone())

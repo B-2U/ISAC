@@ -24,42 +24,35 @@ impl From<IsacInfo> for IsacError {
     }
 }
 
-impl fmt::Display for IsacError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self, f)
+impl From<Error> for IsacError {
+    fn from(err: Error) -> Self {
+        IsacError::UnknownError(err)
     }
 }
 
-#[derive(Debug)]
+impl fmt::Display for IsacError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "IsacError")
+    }
+}
+
+#[derive(Debug, strum::Display, thiserror::Error)]
 pub enum IsacHelp {
     LackOfArguments,
 }
-impl std::error::Error for IsacHelp {}
-
-impl fmt::Display for IsacHelp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self, f)
-    }
-}
-
-#[derive(Debug)]
+#[derive(Debug, strum::Display, thiserror::Error)]
 pub enum IsacInfo {
     UserNotLinked { msg: String },
     TooShortIgn { ign: String },
-    APIError { msg: String },
     InvalidIgn { ign: String },
-    InvalidClan { clan: String },
     PlayerIgnNotFound { ign: String, region: Region },
     PlayerHidden { ign: String },
     PlayerNoBattle { ign: String },
+
+    InvalidClan { clan: String },
     ClanNotFound { clan: String, region: Region },
+
+    ShipNotFound { ship_name: String },
+    APIError { msg: String },
     GeneralError { msg: String },
-}
-
-impl std::error::Error for IsacInfo {}
-
-impl fmt::Display for IsacInfo {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Display::fmt(&self, f)
-    }
 }

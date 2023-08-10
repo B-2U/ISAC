@@ -4,9 +4,6 @@ pub mod wws_api;
 mod isac_error;
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
-mod player_common;
-pub use player_common::PlayerCommon;
-
 use std::path::Path;
 
 use poise::async_trait;
@@ -37,8 +34,13 @@ where
         let path = path.as_ref().to_owned();
         let result = tokio::task::spawn_blocking(move || {
             let reader =
-                std::io::BufReader::new(std::fs::File::open(path).expect("Failed to open file"));
-            serde_json::from_reader(reader).expect("Failed to deserialize")
+                std::io::BufReader::new(std::fs::File::open(&path).expect("Failed to open file"));
+            serde_json::from_reader(reader).unwrap_or_else(|err| {
+                panic!(
+                    "Failed to deserialize file: {path:?} to struct: {}\n Err: {err}",
+                    std::any::type_name::<Self>()
+                )
+            })
         })
         .await?;
         Ok(result)
@@ -51,7 +53,12 @@ where
     {
         let path = path.as_ref().to_owned();
         let reader =
-            std::io::BufReader::new(std::fs::File::open(path).expect("Failed to open file"));
-        Ok(serde_json::from_reader(reader).expect("Failed to deserialize"))
+            std::io::BufReader::new(std::fs::File::open(&path).expect("Failed to open file"));
+        Ok(serde_json::from_reader(reader).unwrap_or_else(|err| {
+            panic!(
+                "Failed to deserialize file: {path:?} to struct: {}\n Err: {err}",
+                std::any::type_name::<Self>()
+            )
+        }))
     }
 }

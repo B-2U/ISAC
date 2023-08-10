@@ -4,11 +4,12 @@ use std::hash::Hash;
 use strum::EnumIter;
 
 #[derive(
-    Debug, poise::ChoiceParameter, Clone, Copy, EnumIter, Deserialize, PartialEq, Eq, Hash,
+    Debug, poise::ChoiceParameter, Clone, Copy, EnumIter, Deserialize, PartialEq, Eq, Hash, Default,
 )]
 pub enum Mode {
     #[serde(rename = "pvp")]
     #[name = "pvp"]
+    #[default]
     Pvp,
     #[serde(rename = "pvp_solo")]
     #[name = "solo"]
@@ -47,5 +48,16 @@ impl Mode {
             Mode::Rank => "rank_solo",
         }
         .to_string()
+    }
+
+    pub fn parse(value: &str) -> Option<Self> {
+        Some(match value.to_lowercase().as_str() {
+            "pvp" => Self::Pvp,
+            "solo" => Self::Solo,
+            "div2" => Self::Div2,
+            "div3" => Self::Div3,
+            "rank" | "ranked" => Self::Rank,
+            _ => None?,
+        })
     }
 }
