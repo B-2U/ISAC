@@ -8,20 +8,20 @@ use strum::EnumIter;
 )]
 pub enum Mode {
     #[serde(rename = "pvp")]
-    #[name = "pvp"]
+    #[name = "Pvp"]
     #[default]
     Pvp,
     #[serde(rename = "pvp_solo")]
-    #[name = "solo"]
+    #[name = "Solo"]
     Solo,
     #[serde(rename = "pvp_div2")]
-    #[name = "div2"]
+    #[name = "Div2"]
     Div2,
     #[serde(rename = "pvp_div3")]
-    #[name = "div3"]
+    #[name = "Div3"]
     Div3,
     #[serde(rename = "rank_solo")]
-    #[name = "rank"]
+    #[name = "Rank"]
     Rank,
 }
 

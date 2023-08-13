@@ -1,16 +1,20 @@
-use crate::utils::{IsacError, LoadFromJson};
+use crate::{
+    utils::{IsacError, LoadFromJson},
+    Context,
+};
 
 use poise::serenity_prelude::GuildId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
-use std::{collections::HashMap, fmt::Display, mem};
+use std::{collections::HashMap, fmt::Display};
 
 const GUILD_DEFAULT_PATH: &str = "./user_data/guild_default_region.json";
 
 /// wows server
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(Default, Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum Region {
+    #[default]
     #[serde(rename(serialize = "ASIA", deserialize = "asia"))]
     Asia,
     #[serde(rename(serialize = "NA", deserialize = "na"))]
@@ -36,13 +40,6 @@ impl Display for Region {
         write!(f, "{}", self.upper())
     }
 }
-
-impl Default for Region {
-    fn default() -> Self {
-        Self::Asia
-    }
-}
-
 impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
@@ -108,11 +105,11 @@ impl Region {
     }
     /// get guild default region setting if exist,
     /// otherwirse return [`Region::Asia`]
-    pub async fn guild_default(guild_id: Option<GuildId>) -> Self {
-        if let Some(guild_id) = guild_id {
-            let mut guild_js: HashMap<_, _> = GuildDefaultRegion::load().await.into();
-            match guild_js.get_mut(&guild_id) {
-                Some(guild_default) => mem::take(guild_default),
+    pub async fn guild_default(ctx: &Context<'_>) -> Self {
+        if let Some(guild_id) = ctx.guild_id() {
+            let guild_default_guard = ctx.data().guild_default.read();
+            match guild_default_guard.0.get(&guild_id) {
+                Some(guild_default) => *guild_default,
                 None => Self::Asia,
             }
         } else {
@@ -126,6 +123,9 @@ impl Region {
 pub struct GuildDefaultRegion(pub HashMap<GuildId, Region>);
 
 impl GuildDefaultRegion {
+    pub fn new() -> Self {
+        Self::load_json_sync(GUILD_DEFAULT_PATH).unwrap()
+    }
     /// load guild json from default path
     ///
     /// # Panics

@@ -20,7 +20,7 @@ use utils::{IsacHelp, IsacInfo};
 use crate::{
     tasks::launch_renderer,
     utils::{
-        structs::{ExpectedJs, ShipsPara},
+        structs::{ExpectedJs, GuildDefaultRegion, ShipsPara},
         IsacError,
     },
 };
@@ -60,6 +60,7 @@ async fn main() {
             tools::uid(),
             tools::clanuid(),
             wws::wws(),
+            wws::wws_slash(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -126,7 +127,7 @@ pub struct Data {
     expected_js: Arc<RwLock<ExpectedJs>>,
     ship_js: Arc<RwLock<ShipsPara>>,
     wg_api_token: String,
-    // browser: Arc<fantoccini::Client>,
+    guild_default: Arc<RwLock<GuildDefaultRegion>>, // browser: Arc<fantoccini::Client>,
 }
 
 impl Data {
@@ -137,6 +138,7 @@ impl Data {
             expected_js: Arc::new(RwLock::new(ExpectedJs::new())),
             ship_js: Arc::new(RwLock::new(ShipsPara::new())),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
+            guild_default: Arc::new(RwLock::new(GuildDefaultRegion::new())),
             // browser: Arc::new(
             //     fantoccini::ClientBuilder::native()
             //         .connect("http://localhost:4444")
@@ -237,6 +239,15 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     format!("Clan: `{clan}` not found in `{region}`")
                 }
                 IsacInfo::ShipNotFound { ship_name } => format!("Warship: `{ship_name}` not found"),
+                IsacInfo::PlayerNoBattleShip {
+                    ign,
+                    ship_name,
+                    region,
+                } => {
+                    format!(
+                        "Player: `{ign}` hasn't played any battle in `{ship_name}` in `{region}`"
+                    )
+                }
             };
             let _r = ctx.reply(msg).await;
         }

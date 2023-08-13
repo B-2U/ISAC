@@ -151,11 +151,11 @@ impl From<HashMap<ShipClass, Statistic>> for OverallDataClass {
     // TODO, related to the sort_class return type problem
     fn from(mut value: HashMap<ShipClass, Statistic>) -> Self {
         Self {
-            ss: value.remove(&ShipClass::SS).unwrap(),
-            dd: value.remove(&ShipClass::DD).unwrap(),
-            ca: value.remove(&ShipClass::CA).unwrap(),
-            bb: value.remove(&ShipClass::BB).unwrap(),
-            cv: value.remove(&ShipClass::CV).unwrap(),
+            ss: value.remove(&ShipClass::SS).unwrap_or_default(),
+            dd: value.remove(&ShipClass::DD).unwrap_or_default(),
+            ca: value.remove(&ShipClass::CA).unwrap_or_default(),
+            bb: value.remove(&ShipClass::BB).unwrap_or_default(),
+            cv: value.remove(&ShipClass::CV).unwrap_or_default(),
         }
     }
 }

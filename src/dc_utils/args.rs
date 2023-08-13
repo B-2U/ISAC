@@ -8,7 +8,7 @@ use poise::serenity_prelude::{
 
 use crate::{
     utils::{
-        structs::{Clan, Linked, Mode, PartialPlayer, Region, Ship},
+        structs::{Linked, Mode, PartialPlayer, Region, Ship},
         wws_api::WowsApi,
         IsacError, IsacHelp, IsacInfo,
     },
@@ -58,7 +58,7 @@ impl Args {
                     self.remove(0)?;
                     region
                 }
-                None => Region::guild_default(ctx.guild_id()).await,
+                None => Region::guild_default(ctx).await,
             };
             let player_id = self.check(0)?;
 
@@ -91,57 +91,9 @@ impl Args {
         }
     }
 
-    /// get the player's Clan, return a default clan if he's not belong to any clan
-    pub async fn parse_clan(&mut self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
-        let linked_js: HashMap<_, _> = Linked::load().await.into();
-
-        let first_arg = self.check(0)?;
-        let api = WowsApi::new(ctx);
-        if let Ok(user) =
-            User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
-        {
-            match linked_js.get(&user.id) {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    api.player_clan(&linked_user.region, linked_user.uid).await
-                }
-                None => Err(IsacInfo::UserNotLinked {
-                    msg: format!("**{}** haven't linked to any wows account yet", user.name),
-                })?,
-            }
-        } else if first_arg == "me" {
-            match linked_js.get(&ctx.author().id) {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    api.player_clan(&linked_user.region, linked_user.uid).await
-                }
-                None => {
-                    return Err(IsacInfo::UserNotLinked {
-                        msg: "You haven't linked your account yet.\nEnter `/link`".to_string(),
-                    })?;
-                }
-            }
-        } else {
-            // parse region, player
-            let region = match Region::parse(first_arg) {
-                Some(region) => {
-                    self.remove(0)?;
-                    region
-                }
-                None => Region::guild_default(ctx.guild_id()).await,
-            };
-            let clan_name = self.check(0)?;
-            api.clans(&region, clan_name).await
-        }
-    }
     /// parsing battle modes, if there is only no ma
     pub fn parse_mode(&mut self) -> Option<Mode> {
-        if let Some(index) = self
-            .0
-            .iter()
-            .rev()
-            .position(|key| Mode::parse(key).is_some())
-        {
+        if let Some(index) = self.0.iter().position(|key| Mode::parse(key).is_some()) {
             Mode::parse(&self.remove(index).unwrap())
         } else {
             None
@@ -158,7 +110,7 @@ impl Args {
         let ship_input = self.0.iter().join(" ");
         self.0.clear();
 
-        let mut candidates = {
+        let candidates = {
             let ship_js = ctx.data().ship_js.read();
             ship_js.search_name(&ship_input, 4)?
         };
@@ -167,7 +119,7 @@ impl Args {
             true => 0,
             false => self._pick(ctx, &candidates).await?,
         };
-        Ok(candidates.swap_remove(index))
+        Ok(candidates[index].clone())
     }
     /// let user select the ship or player from candidates
     async fn _pick<T: std::fmt::Display>(
@@ -195,14 +147,14 @@ impl Args {
         self.0.is_empty()
     }
     /// remove the given index in args safely, raise [`IsacError::LackOfArguments`] if it is out of index
-    fn remove(&mut self, index: usize) -> Result<String, IsacError> {
+    pub fn remove(&mut self, index: usize) -> Result<String, IsacError> {
         match index < self.0.len() {
             true => Ok(self.0.remove(index)),
             false => Err(IsacError::Help(IsacHelp::LackOfArguments)),
         }
     }
     /// check if the index is in args safely, raise [`IsacError::LackOfArguments`] if it is out of index
-    fn check(&self, index: isize) -> Result<&str, IsacError> {
+    pub fn check(&self, index: isize) -> Result<&str, IsacError> {
         let index = if index.is_negative() {
             let index = -index as usize;
             if index <= self.0.len() {

@@ -16,7 +16,8 @@ use scraper::{Element, Html, Selector};
 use crate::{
     dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
     utils::{
-        structs::{PartialPlayer, Ship},
+        structs::{PartialPlayer, Region, Ship},
+        wws_api::WowsApi,
         IsacError,
     },
     Context, Data, Error,
@@ -481,7 +482,17 @@ pub async fn uid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Err
 #[poise::command(prefix_command, aliases("clanid"))]
 pub async fn clanuid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
     let mut args = args.unwrap_or_default();
-    let clan = args.parse_clan(&ctx).await?;
+    let first_arg = args.check(0)?;
+    // parse region
+    let region = match Region::parse(first_arg) {
+        Some(region) => {
+            args.remove(0)?;
+            region
+        }
+        None => Region::guild_default(&ctx).await,
+    };
+    let clan_name = args.check(0)?;
+    let clan = WowsApi::new(&ctx).clans(&region, clan_name).await?;
     let _r = ctx
         .reply(format!("`{}`'s UID: **{}**", clan.tag, clan.id))
         .await;

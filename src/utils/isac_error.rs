@@ -42,17 +42,46 @@ pub enum IsacHelp {
 }
 #[derive(Debug, strum::Display, thiserror::Error)]
 pub enum IsacInfo {
-    UserNotLinked { msg: String },
-    TooShortIgn { ign: String },
-    InvalidIgn { ign: String },
-    PlayerIgnNotFound { ign: String, region: Region },
-    PlayerHidden { ign: String },
-    PlayerNoBattle { ign: String },
+    UserNotLinked {
+        msg: String,
+    },
+    TooShortIgn {
+        ign: String,
+    },
+    InvalidIgn {
+        ign: String,
+    },
+    PlayerIgnNotFound {
+        ign: String,
+        region: Region,
+    },
+    PlayerHidden {
+        ign: String,
+    },
+    PlayerNoBattle {
+        ign: String,
+    },
+    PlayerNoBattleShip {
+        ign: String,
+        ship_name: String,
+        region: Region,
+    },
 
-    InvalidClan { clan: String },
-    ClanNotFound { clan: String, region: Region },
+    InvalidClan {
+        clan: String,
+    },
+    ClanNotFound {
+        clan: String,
+        region: Region,
+    },
 
-    ShipNotFound { ship_name: String },
-    APIError { msg: String },
-    GeneralError { msg: String },
+    ShipNotFound {
+        ship_name: String,
+    },
+    APIError {
+        msg: String,
+    },
+    GeneralError {
+        msg: String,
+    },
 }

@@ -36,3 +36,4 @@ thiserror = "1.0.44"
 tokio = { version = "1.29.1", features = ["full"] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter"] }
+unidecode = "0.3.0"

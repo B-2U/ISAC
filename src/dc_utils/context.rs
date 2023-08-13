@@ -22,35 +22,45 @@ impl ContextAddon for Context<'_> {
         self.send(|b| b.content(content).reply(true)).await
     }
     async fn typing(&self) -> MyTyping {
-        let typing = Typing::start(
-            Arc::clone(&self.serenity_context().http),
-            self.channel_id().0,
-        )
-        .ok();
-        MyTyping::new(typing)
+        match self {
+            Context::Prefix(prefix_ctx) => {
+                let typing = Typing::start(
+                    Arc::clone(&prefix_ctx.serenity_context.http),
+                    self.channel_id().0,
+                )
+                .ok();
+                MyTyping::Typing(typing)
+            }
+            Context::Application(app_ctx) => {
+                let _r = app_ctx.defer().await;
+                MyTyping::Thinking
+            }
+        }
     }
 }
 
 /// A wrapped serenity typing which impl dropping
-pub struct MyTyping {
-    pub typing: Option<Typing>,
+pub enum MyTyping {
+    Typing(Option<Typing>),
+    Thinking,
 }
 
 impl MyTyping {
-    fn new(typing: Option<Typing>) -> Self {
-        Self { typing }
-    }
-    pub fn stop(mut self) {
-        if let Some(typing) = self.typing.take() {
-            let _r = typing.stop();
+    pub fn stop(self) {
+        if let MyTyping::Typing(mut typing) = self {
+            if let Some(typing) = typing.take() {
+                let _r = typing.stop();
+            }
         }
     }
 }
 
-impl Drop for MyTyping {
-    fn drop(&mut self) {
-        if let Some(typing) = self.typing.take() {
-            let _r = typing.stop();
-        }
-    }
-}
+// impl Drop for MyTyping {
+//     fn drop(&mut self) {
+//         if let MyTyping::Typing(mut typing) = self {
+//             if let Some(typing) = typing.take() {
+//                 let _r = typing.stop();
+//             }
+//         }
+//     }
+// }

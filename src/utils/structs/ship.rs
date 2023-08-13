@@ -6,7 +6,8 @@ use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use serde_repr::{Deserialize_repr, Serialize_repr};
-use strum::{EnumIter, IntoEnumIterator};
+use strum::{Display, EnumIter, IntoEnumIterator};
+use unidecode::unidecode;
 
 use crate::{
     cmds::tools::SHIPS_PARA_PATH,
@@ -31,9 +32,8 @@ pub enum ShipClass {
     CV,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize_repr, Serialize_repr, EnumIter, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Deserialize_repr, Serialize, EnumIter, PartialEq, Eq, Hash)]
 #[repr(u8)]
-// TODO better way than rename one by one?
 pub enum ShipTier {
     I = 1,
     II = 2,
@@ -90,6 +90,9 @@ impl ShipsPara {
     ///
     /// use `normal_search()` at first, and do fuzzy search if no ship matched
     pub fn search_name(&self, input: &str, len_limit: usize) -> Result<Vec<Ship>, IsacError> {
+        if input.is_empty() {
+            return Ok(vec![]);
+        }
         if let Some(candidates) = self.normal_search_name(input, len_limit) {
             return Ok(candidates);
         };
@@ -103,10 +106,18 @@ impl ShipsPara {
 
     /// literal matching
     pub fn normal_search_name(&self, input: &str, len_limit: usize) -> Option<Vec<Ship>> {
+        let input = input.to_lowercase();
         let candidates: Vec<_> = self
             .0
             .values()
-            .filter(|ship| ship.is_available() && ship.name.contains(input))
+            .filter(|ship| ship.is_available())
+            .filter_map(|ship| {
+                unidecode(&ship.name.to_lowercase())
+                    .find(&input)
+                    .map(|prefix_len| (ship, prefix_len))
+            })
+            .sorted_by_key(|(_, prefix_len)| *prefix_len)
+            .map(|(ship, _)| ship)
             .take(len_limit)
             .cloned()
             .collect();
@@ -122,7 +133,11 @@ impl ShipsPara {
             .0
             .values()
             .filter(|ship| ship.is_available())
-            .filter_map(|f| matcher.fuzzy_match(&f.name, input).map(|score| (score, f)))
+            .filter_map(|ship| {
+                matcher
+                    .fuzzy_match(&unidecode(&ship.name), input)
+                    .map(|score| (score, ship))
+            })
             .sorted_by(|a, b| Ord::cmp(&b.0, &a.0))
             .map(|(_, ship)| ship.clone())
             .take(len_limit)
@@ -178,20 +193,19 @@ impl ShipStatsCollection {
         }
         self
     }
-    // TODO better return than a hashmap like building a struct for it? or is there a way to filter sperately without iter so many times
     /// consume Self and sort the given ships by their class
     pub fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
         let mut map: HashMap<ShipClass, ShipStatsCollection> = ShipClass::iter()
             .map(|class| (class, ShipStatsCollection::default()))
             .collect();
-        {
-            let ship_js = ctx.data().ship_js.read();
-            for (ship_id, ship_modes) in self.0 {
-                if let Some(ship_para) = ship_js.get(&ship_id) {
-                    if let Some(class_collection) = map.get_mut(&ship_para.class) {
-                        class_collection.0.insert(ship_id, ship_modes);
-                    }
-                }
+
+        let ship_js = ctx.data().ship_js.read();
+        for (ship_id, ship_modes) in self.0 {
+            if let Some(class_collection) = ship_js
+                .get(&ship_id)
+                .and_then(|ship_para| map.get_mut(&ship_para.class))
+            {
+                class_collection.0.insert(ship_id, ship_modes);
             }
         }
         map
@@ -216,10 +230,21 @@ impl ShipStatsCollection {
 
     /// calculate the average stats with given ships
     pub fn to_statistic(&self, expected_js: &Arc<RwLock<ExpectedJs>>, mode: Mode) -> Statistic {
-        let (battles, wins, ttl_dmg, ttl_frags, ttl_planes, ttl_exp, last_ship_id) = self
-            .0
-            .iter()
-            .fold((0, 0, 0, 0, 0, 0, 0), |acc, (ship_id, ship_modes)| {
+        let (
+            battles,
+            wins,
+            ttl_dmg,
+            ttl_frags,
+            ttl_planes,
+            ttl_exp,
+            ttl_potential,
+            ttl_scout,
+            shots,
+            hits,
+            last_ship_id,
+        ) = self.0.iter().fold(
+            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+            |acc, (ship_id, ship_modes)| {
                 if let Some(Some(ship)) = ship_modes.0.get(&mode) {
                     (
                         acc.0 + ship.battles_count,
@@ -228,12 +253,17 @@ impl ShipStatsCollection {
                         acc.3 + ship.frags,
                         acc.4 + ship.planes_killed,
                         acc.5 + ship.original_exp,
+                        acc.6 + ship.art_agro,
+                        acc.7 + ship.scouting_damage,
+                        acc.8 + ship.shots_by_main,
+                        acc.9 + ship.hits_by_main,
                         ship_id.0,
                     )
                 } else {
                     acc
                 }
-            });
+            },
+        );
         if battles == 0 {
             return Statistic::default();
         };
@@ -263,20 +293,29 @@ impl ShipStatsCollection {
         let pr = Pr {
             value: self.pr(expected_js, mode),
         };
-        // TODO how is the whole struct design?
-        Statistic::new(battles, winrate, dmg, frags, planes, pr, exp)
+        fn rounded_div(a: u64, b: u64) -> u64 {
+            (a as f64 / b as f64).round() as u64
+        }
+        let potential = rounded_div(ttl_potential, battles);
+        let scout = rounded_div(ttl_scout, battles);
+        let hitrate = (hits as f64 / shots as f64 * 10000.0).round() / 100.0; // two decimal places
+
+        Statistic::new(
+            battles, winrate, dmg, frags, planes, pr, exp, potential, scout, hitrate,
+        )
+        // TODO how is the whole struct design? Statistic and StatisticValueType
     }
 
     /// calculate the average pr with given ships
     fn pr(&self, expected_js: &Arc<RwLock<ExpectedJs>>, mode: Mode) -> f64 {
-        let (battles, wins, dmg, frags, exp_wins, exp_dmg, exp_frags) =
+        let (battles, wins, dmg, frags, exp_wins, exp_dmg, exp_frags) = {
+            let exp_js_guard = expected_js.read();
             self.0
                 .iter()
                 .fold((0, 0, 0, 0, 0.0, 0.0, 0.0), |acc, (ship_id, ship_modes)| {
-                    if let (Some(Some(ship)), Some(exp_value)) = (
-                        ship_modes.0.get(&mode),
-                        expected_js.read().data.get(&ship_id.0),
-                    ) {
+                    if let (Some(Some(ship)), Some(exp_value)) =
+                        (ship_modes.0.get(&mode), exp_js_guard.data.get(&ship_id.0))
+                    {
                         (
                             acc.0 + ship.battles_count,
                             acc.1 + ship.wins,
@@ -289,7 +328,8 @@ impl ShipStatsCollection {
                     } else {
                         acc
                     }
-                });
+                })
+        };
         if battles == 0 {
             0.0
         } else {
@@ -345,18 +385,18 @@ impl TryFrom<JsonValue> for ShipModeStatsPair {
     }
 }
 
-#[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub struct ShipStats {
     battles_count: u64,
     wins: u64,
-    planes_killed: u64,
     damage_dealt: u64,
-    original_exp: u64,
     frags: u64,
+    planes_killed: u64,
+    original_exp: u64,
+    art_agro: u64,
+    scouting_damage: u64,
     shots_by_main: u64,
     hits_by_main: u64,
-    scouting_damage: u64,
 }
 
 #[derive(Debug, Deserialize)]

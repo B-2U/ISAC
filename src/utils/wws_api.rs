@@ -102,12 +102,12 @@ impl<'a> WowsApi<'a> {
             })?,
         }
     }
-    /// get a player clan by his uid
+    /// get a player clan by his uid, will return a default clan if the player is not in any clan
     pub async fn player_clan(&self, region: &Region, player_uid: u64) -> Result<Clan, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"))?;
         // again, custom parsing? test url: https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
         let js_value = self._get(url).await?.json::<Value>().await.unwrap();
-        Ok(Clan::try_from(js_value)?)
+        Ok(Clan::try_from(js_value)?) // will return a default clan if the player is not in any clan
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still

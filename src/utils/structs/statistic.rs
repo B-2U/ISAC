@@ -15,6 +15,9 @@ pub struct Statistic {
     pub planes: StatisticValue,
     pub pr: StatisticValue,
     pub exp: StatisticValue,
+    pub potential: u64,
+    pub scout: u64,
+    pub hitrate: f64,
 }
 
 impl Statistic {
@@ -26,15 +29,21 @@ impl Statistic {
         planes: T,
         pr: T,
         exp: T,
+        potential: u64,
+        scout: u64,
+        hitrate: f64,
     ) -> Self {
         Self {
-            battles: battles.into(),
+            battles,
             winrate: winrate.into(),
             dmg: dmg.into(),
             frags: frags.into(),
             planes: planes.into(),
             pr: pr.into(),
             exp: exp.into(),
+            potential,
+            scout,
+            hitrate,
         }
     }
 }
