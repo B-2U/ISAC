@@ -8,20 +8,15 @@ use strum::EnumIter;
 )]
 pub enum Mode {
     #[serde(rename = "pvp")]
-    #[name = "Pvp"]
     #[default]
     Pvp,
     #[serde(rename = "pvp_solo")]
-    #[name = "Solo"]
     Solo,
     #[serde(rename = "pvp_div2")]
-    #[name = "Div2"]
     Div2,
     #[serde(rename = "pvp_div3")]
-    #[name = "Div3"]
     Div3,
     #[serde(rename = "rank_solo")]
-    #[name = "Rank"]
     Rank,
 }
 
@@ -59,5 +54,30 @@ impl Mode {
             "rank" | "ranked" => Self::Rank,
             _ => None?,
         })
+    }
+    /// for showing to user in images
+    ///
+    /// **Note** [`Mode::Pvp`] will return an empty String
+    ///
+    /// ## Example
+    /// [`Mode::Pvp`] ->
+    ///
+    /// [`Mode::Solo`] -> (solo)
+    ///
+    /// [`Mode::Div2`] -> (div2)
+    ///
+    /// [`Mode::Div3`] -> (div3)
+    ///
+    /// [`Mode::Rank`] -> (rank)
+    ///
+    pub fn display_name(&self) -> String {
+        match self {
+            Mode::Pvp => "",
+            Mode::Solo => "(solo)",
+            Mode::Div2 => "(div2)",
+            Mode::Div3 => "(div3)",
+            Mode::Rank => "(rank)",
+        }
+        .to_string()
     }
 }

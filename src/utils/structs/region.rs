@@ -32,7 +32,12 @@ impl Region {
         .to_string()
     }
     pub fn lower(&self) -> String {
-        self.upper().to_lowercase()
+        match self {
+            Region::Asia => "asia",
+            Region::Na => "na",
+            Region::Eu => "eu",
+        }
+        .to_string()
     }
 }
 impl Display for Region {

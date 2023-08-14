@@ -1,12 +1,10 @@
 use bytes::Bytes;
-
 use reqwest::Client;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
-
 use crate::utils::{
-    structs::{Clan, Player, ShipClass, ShipTier, Statistic},
+    structs::{template_data::Render, Clan, Player, ShipClass, ShipTier, Statistic},
     IsacError, IsacInfo,
 };
 
@@ -18,8 +16,12 @@ pub struct OverallData {
     pub clan: Clan,
     pub user: Player,
 }
+
+impl Render for OverallData {
+    const RENDER_URL: &'static str = "overall";
+}
+
 impl OverallData {
-    // TODO turn render() into a trait for all templates?
     // pub fn render(&self) -> String {
     //     let mut reg = Handlebars::new();
     //     reg.register_template_file("overall", TEMPLATE_OVERALL)
@@ -31,22 +33,7 @@ impl OverallData {
     //     };
     //     reg.render("overall", self).unwrap()
     // }
-    // TODO 每個render只有url不一樣 該怎麼抽象他們?
-    pub async fn render(&self, client: &Client) -> Result<Bytes, IsacError> {
-        Ok(client
-            .post("http://localhost:3000/overall")
-            .json(&self)
-            .send()
-            .await
-            .map_err(|_| IsacInfo::GeneralError {
-                msg: "screenshot failed".to_string(),
-            })?
-            .bytes()
-            .await
-            .map_err(|_| IsacInfo::GeneralError {
-                msg: "screenshot failed".to_string(),
-            })?)
-    }
+    // Question trait化了, 但是這個struct同時要兩個版本 該怎麼寫?
     pub async fn render_tiers(&self, client: &Client) -> Result<Bytes, IsacError> {
         Ok(client
             .post("http://localhost:3000/overall_tiers")
@@ -114,20 +101,19 @@ pub struct OverallDataTier {
 }
 
 impl From<HashMap<ShipTier, Statistic>> for OverallDataTier {
-    // TODO, related to the sort_tier return type problem
     fn from(mut value: HashMap<ShipTier, Statistic>) -> Self {
         Self {
-            one: value.remove(&ShipTier::I).unwrap(),
-            two: value.remove(&ShipTier::II).unwrap(),
-            three: value.remove(&ShipTier::III).unwrap(),
-            four: value.remove(&ShipTier::IV).unwrap(),
-            five: value.remove(&ShipTier::V).unwrap(),
-            six: value.remove(&ShipTier::VI).unwrap(),
-            seven: value.remove(&ShipTier::VII).unwrap(),
-            eight: value.remove(&ShipTier::VIII).unwrap(),
-            nine: value.remove(&ShipTier::IX).unwrap(),
-            ten: value.remove(&ShipTier::X).unwrap(),
-            eleven: value.remove(&ShipTier::XI).unwrap(),
+            one: value.remove(&ShipTier::I).unwrap_or_default(),
+            two: value.remove(&ShipTier::II).unwrap_or_default(),
+            three: value.remove(&ShipTier::III).unwrap_or_default(),
+            four: value.remove(&ShipTier::IV).unwrap_or_default(),
+            five: value.remove(&ShipTier::V).unwrap_or_default(),
+            six: value.remove(&ShipTier::VI).unwrap_or_default(),
+            seven: value.remove(&ShipTier::VII).unwrap_or_default(),
+            eight: value.remove(&ShipTier::VIII).unwrap_or_default(),
+            nine: value.remove(&ShipTier::IX).unwrap_or_default(),
+            ten: value.remove(&ShipTier::X).unwrap_or_default(),
+            eleven: value.remove(&ShipTier::XI).unwrap_or_default(),
         }
     }
 }
@@ -148,7 +134,6 @@ pub struct OverallDataClass {
 // }
 
 impl From<HashMap<ShipClass, Statistic>> for OverallDataClass {
-    // TODO, related to the sort_class return type problem
     fn from(mut value: HashMap<ShipClass, Statistic>) -> Self {
         Self {
             ss: value.remove(&ShipClass::SS).unwrap_or_default(),

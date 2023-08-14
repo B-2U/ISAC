@@ -7,10 +7,16 @@ use crate::{
     utils::{
         structs::{
             template_data::{
-                OverallData, OverallDataClass, OverallDataDiv, OverallDataTier, SingleShipData,
+                OverallData,
+                OverallDataClass,
+                OverallDataDiv,
+                OverallDataTier,
+                Render, // Render trait一定要在這裡也 use 嗎?
+                SingleShipData,
                 SingleShipDataSub,
             },
-            Linked, Mode, PartialPlayer, ShipClass, ShipTier, Statistic,
+            Linked, Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier,
+            Statistic,
         },
         IsacError, IsacInfo,
     },
@@ -62,10 +68,15 @@ pub async fn wws_slash(
 
     // wws ship
     if let Some(ship_id) = ship_id {
-        todo!()
+        let Some(ship) = ctx.data().ship_js.read().get(&ShipId(ship_id)).cloned() else {
+            let _r = ctx.send(|b|b.content("plz choose a ship in the searching results").ephemeral(true)).await;
+            return Ok(())
+        };
+        let battle_type = battle_type.unwrap_or_default();
+        func_ship(&ctx, partial_player, ship, battle_type).await?;
     } else {
         // wws
-        let _r = func_wws(&ctx, partial_player).await?;
+        func_wws(&ctx, partial_player).await?;
     }
     Ok(())
 }
@@ -78,41 +89,76 @@ pub async fn wws(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Err
     let partial_player = args.parse_user(&ctx).await?;
     typing.stop();
     if args.is_empty() {
-        let _r = func_wws(&ctx, partial_player).await?;
+        func_wws(&ctx, partial_player).await?;
     } else {
         // wws ship
-        let player = partial_player.get_player(&ctx).await?;
-        let clan = player.clan(&ctx).await?;
         let mode = args.parse_mode().unwrap_or_default();
         let ship = args.parse_ship(&ctx).await?;
-        let ships = player.single_ship(&ctx, &ship).await?;
-        let stats = ships.to_statistic(&ctx.data().expected_js, mode);
-        if stats.battles == 0 {
-            Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
-                ign: player.ign.clone(),
-                ship_name: ship.name.clone(),
-                region: player.region,
-            }))?
-        };
-        let sub_modes = if let Mode::Rank = mode {
-            None
-        } else {
-            Some(SingleShipDataSub::new(
-                ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
-                ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
-                ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
-            ))
-        };
-        let data = SingleShipData {
-            ship,
-            main_mode: stats,
-            sub_modes,
-            clan,
-            user: player,
-        };
-        dbg!(data);
+        func_ship(&ctx, partial_player, ship, mode).await?;
     }
 
+    Ok(())
+}
+
+async fn func_ship(
+    ctx: &Context<'_>,
+    partial_player: PartialPlayer,
+    ship: Ship,
+    mode: Mode,
+) -> Result<(), Error> {
+    let player = partial_player.get_player(&ctx).await?;
+    let clan = player.clan(&ctx).await?;
+    let ships = player.single_ship(&ctx, &ship).await?;
+    let stats = ships.to_statistic(&ctx.data().expected_js, mode);
+    if stats.battles == 0 {
+        Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
+            ign: player.ign.clone(),
+            ship_name: ship.name.clone(),
+            region: player.region,
+        }))?
+    };
+    let sub_modes = if let Mode::Rank = mode {
+        None
+    } else {
+        Some(SingleShipDataSub::new(
+            ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
+            ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
+            ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
+        ))
+    };
+    // getting player rank in the leaderboard
+    let rank = if let Ok(leaderboard) = ShipLeaderboard::load(player.region).await {
+        leaderboard
+            .0
+            .get(&ship.ship_id)
+            .and_then(|ship| ship.players.iter().find(|p| p.uid == player.uid))
+            .map(|p| p.rank)
+    } else {
+        None
+    };
+
+    let data = SingleShipData {
+        ship,
+        rank,
+        main_mode_name: mode.display_name(),
+        main_mode: stats,
+        sub_modes,
+        clan,
+        user: player,
+    };
+    // TODO: test if ranking work after the .top command finished
+    let img = data.render(&ctx.data().client).await?;
+    let _msg = ctx
+        .send(|b| {
+            b.attachment(poise::serenity_prelude::AttachmentType::Bytes {
+                data: Cow::Borrowed(&img),
+                filename: "image.png".to_string(),
+            })
+            .reply(true)
+        })
+        .await?
+        .into_message()
+        .await?;
     Ok(())
 }
 
@@ -160,7 +206,6 @@ async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<()
         user: player,
     };
     let img = overall_data.render(&ctx.data().client).await?;
-
     let mut view = WwsView::new(partial_player);
     let mut msg = ctx
         .send(|b| {

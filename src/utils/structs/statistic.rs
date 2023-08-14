@@ -48,6 +48,7 @@ impl Statistic {
     }
 }
 
+// Question value actually can be u64 or f64, better way than String?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
     value: String,
@@ -79,7 +80,7 @@ impl Default for StatisticValue {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum StatisticValueType<'a> {
     Winrate {
         value: f64,

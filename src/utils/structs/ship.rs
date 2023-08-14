@@ -303,7 +303,6 @@ impl ShipStatsCollection {
         Statistic::new(
             battles, winrate, dmg, frags, planes, pr, exp, potential, scout, hitrate,
         )
-        // TODO how is the whole struct design? Statistic and StatisticValueType
     }
 
     /// calculate the average pr with given ships

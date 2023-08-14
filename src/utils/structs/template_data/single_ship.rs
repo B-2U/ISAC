@@ -4,6 +4,7 @@ use reqwest::Client;
 
 use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 
+use super::Render;
 use crate::utils::{
     structs::{Clan, Player, Ship, Statistic},
     IsacError, IsacInfo,
@@ -12,12 +13,19 @@ use crate::utils::{
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SingleShipData {
     pub ship: Ship,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rank: Option<u64>,
+    pub main_mode_name: String,
     pub main_mode: Statistic,
     #[serde(serialize_with = "serialize_sub_modes")]
     pub sub_modes: Option<SingleShipDataSub>,
     pub clan: Clan,
     pub user: Player,
 }
+impl Render for SingleShipData {
+    const RENDER_URL: &'static str = "single_ship";
+}
+
 fn serialize_sub_modes<S>(
     sub_modes: &Option<SingleShipDataSub>, // Replace with your actual types
     serializer: S,

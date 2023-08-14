@@ -259,7 +259,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
     };
 }
 
-// TODO better error msg, python's tracback?
+// TODO: better error msg, python's tracback?
 /// loging to the terminal and discord channel
 async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
     let user = ctx.author();
@@ -296,7 +296,7 @@ async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
     }
 }
 
-// TODO might need to be moved to a file for consts
+// TODO: might need to be moved to a file for consts
 const OOPS: &str = r#"***Oops! Something went wrong!***
 click the `Document` button to check the doc
 If this error keep coming out, please join our support server to report it

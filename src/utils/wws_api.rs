@@ -111,7 +111,7 @@ impl<'a> WowsApi<'a> {
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still
-    // TODO make a builder pattern for wows api
+    // TODO: make a builder pattern for wows api
     /// player's all ships stats
     // pub async fn statistics_of_player_ships(
     //     &self,

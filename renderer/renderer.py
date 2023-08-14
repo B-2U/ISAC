@@ -1,6 +1,8 @@
 import io
+import json
 import os
 import time
+import math
 import pystache
 from quart import Quart, send_file, request
 from contextlib import asynccontextmanager
@@ -16,6 +18,39 @@ TEMPLATE_PATH = "./renderer/template"
 app = Quart(__name__)
 
 
+def format_big_num_with_commas(value: dict) -> dict:
+    if isinstance(value, dict):
+        return {k: format_big_num_with_commas(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [format_big_num_with_commas(item) for item in value]
+    # transfer str int to int first
+    elif isinstance(value, str):
+        if value.isdecimal():
+            value = int(value)
+        else:
+            return value
+    if isinstance(value, int):
+        if value > 0:
+            digits = int(math.log10(value)) + 1
+        elif value == 0:
+            digits = 1
+        else:
+            digits = int(math.log10(-value)) + 1
+        return "{:,}".format(value) if digits >= 5 else value
+
+    return value
+
+
+def render_html(template_path: str, data: dict) -> str:
+    data = format_big_num_with_commas(data)
+    if os.name != "posix":
+        # json for debug
+        with open(f"{template_path}.json", "w", encoding="UTF-8") as f:
+            json.dump(data, f, indent=2)
+
+    return html_renderer.render_path(template_path, data)
+
+
 @app.route("/")
 async def index():
     return "hello!!"
@@ -24,7 +59,7 @@ async def index():
 @app.route("/overall", methods=["POST"])
 async def overall():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/overall.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/overall.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="overall.png",
@@ -35,7 +70,7 @@ async def overall():
 @app.route("/overall_tiers", methods=["POST"])
 async def overall_tiers():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/overall_tiers.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/overall_tiers.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="overall_tiers.png",
@@ -46,7 +81,7 @@ async def overall_tiers():
 @app.route("/clan_season", methods=["POST"])
 async def clan_season():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/clan_season.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/clan_season.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="clan_season.png",
@@ -57,7 +92,7 @@ async def clan_season():
 @app.route("/clan", methods=["POST"])
 async def clan():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/clan.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/clan.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="clan.png",
@@ -68,7 +103,7 @@ async def clan():
 @app.route("/recent", methods=["POST"])
 async def recent():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/recent.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/recent.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="recent.png",
@@ -79,7 +114,7 @@ async def recent():
 @app.route("/leaderboard", methods=["POST"])
 async def leaderboard():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/leaderboard.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/leaderboard.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="leaderboard.png",
@@ -90,7 +125,7 @@ async def leaderboard():
 @app.route("/single_ship", methods=["POST"])
 async def single_ship():
     data = await request.get_json()
-    html = pystache.Renderer().render_path(f"{TEMPLATE_PATH}/single_ship.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/single_ship.html", data)
     return await send_file(
         await renderer.screenshot(html),
         attachment_filename="single_ship.png",
@@ -228,6 +263,7 @@ class Renderer:
 
 
 renderer = None
+html_renderer = pystache.Renderer()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000, debug=True)
