@@ -66,9 +66,9 @@ pub async fn wws_slash(
             }))?
     };
 
-    // wws ship
     if let Some(ship_id) = ship_id {
-        let Some(ship) = ctx.data().ship_js.read().get(&ShipId(ship_id)).cloned() else {
+        // wws ship
+        let Some(ship) = ShipId(ship_id).get_ship(&ctx) else {
             let _r = ctx.send(|b|b.content("plz choose a ship in the searching results").ephemeral(true)).await;
             return Ok(())
         };
@@ -89,6 +89,7 @@ pub async fn wws(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Err
     let partial_player = args.parse_user(&ctx).await?;
     typing.stop();
     if args.is_empty() {
+        // wws
         func_wws(&ctx, partial_player).await?;
     } else {
         // wws ship

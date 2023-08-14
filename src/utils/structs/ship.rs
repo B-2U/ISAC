@@ -5,8 +5,8 @@ use itertools::Itertools;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use serde_repr::{Deserialize_repr, Serialize_repr};
-use strum::{Display, EnumIter, IntoEnumIterator};
+use serde_repr::Deserialize_repr;
+use strum::{EnumIter, IntoEnumIterator};
 use unidecode::unidecode;
 
 use crate::{
@@ -342,6 +342,13 @@ impl ShipStatsCollection {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct ShipId(pub u64);
+impl ShipId {
+    /// get [`Ship`] from ShipId, None if not found
+    pub fn get_ship(&self, ctx: &Context<'_>) -> Option<Ship> {
+        ctx.data().ship_js.read().get(&ShipId(self.0)).cloned()
+    }
+}
+
 impl Display for ShipId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
