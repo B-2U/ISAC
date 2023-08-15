@@ -40,9 +40,8 @@ pub async fn wws_slash(
     discord_user: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(player) = player
-        .map(|player_str| serde_json::from_str::<PartialPlayer>(&player_str).ok())
-        .flatten()
+    let partial_player = if let Some(player) =
+        player.and_then(|player_str| serde_json::from_str::<PartialPlayer>(&player_str).ok())
     {
         player
     } else {
@@ -107,6 +106,7 @@ async fn func_ship(
     ship: Ship,
     mode: Mode,
 ) -> Result<(), Error> {
+    let _typing = ctx.typing().await;
     let player = partial_player.get_player(&ctx).await?;
     let clan = player.clan(&ctx).await?;
     let ships = player.single_ship(&ctx, &ship).await?;

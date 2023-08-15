@@ -18,6 +18,7 @@ TEMPLATE_PATH = "./renderer/template"
 app = Quart(__name__)
 
 
+# some numbers like clan_id get formatted too, but it's fine since we don't need them here
 def format_big_num_with_commas(value: dict) -> dict:
     if isinstance(value, dict):
         return {k: format_big_num_with_commas(v) for k, v in value.items()}
@@ -49,11 +50,6 @@ def render_html(template_path: str, data: dict) -> str:
             json.dump(data, f, indent=2)
 
     return html_renderer.render_path(template_path, data)
-
-
-@app.route("/")
-async def index():
-    return "hello!!"
 
 
 @app.route("/overall", methods=["POST"])
