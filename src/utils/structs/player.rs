@@ -2,7 +2,7 @@ use crate::{
     utils::{
         structs::{Clan, Dogtag, Region, Ship, ShipStatsCollection},
         wws_api::WowsApi,
-        IsacError, IsacInfo, LoadFromJson,
+        IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context, Data,
 };
@@ -65,12 +65,13 @@ pub struct Player {
     pub ign: String,
     pub region: Region,
     pub karma: u64,
-    pub dog_tag: String, // might be emblem or dogtag
-    pub patch: String,   // the patch on dotag, should be optional
+    pub dogtag: String,    // might be emblem or dogtag
+    pub dogtag_bg: String, // the dotag background, should be optional
     pub premium: bool,
     pub pfp: String,
 }
 
+// Question 到底怎麼讓 Player 繼承 PartialPlayer 的方法?
 impl Deref for Player {
     type Target = PartialPlayer;
 
@@ -120,25 +121,15 @@ impl Player {
                 .as_u64()
                 .unwrap_or_default()
         };
-        let dog_tag = sec_layer
-            .get("dog_tag")
-            .unwrap()
-            .get("doll_id")
-            .unwrap()
-            .as_u64();
-        let patch = sec_layer
-            .get("dog_tag")
-            .unwrap()
-            .get("slots")
-            .unwrap()
-            .get("1")
-            .and_then(|v| v.as_u64());
 
-        let dog_tag = Dogtag::get(dog_tag).unwrap_or_default();
-        let patch = Dogtag::get(patch).unwrap_or_default();
+        let player_dogtag: PlayerDogTag =
+            serde_json::from_value(sec_layer.get("dog_tag").unwrap().clone()).unwrap_or_default();
+
+        let dogtag = player_dogtag.get_symbol();
+        let dogtag_bg = player_dogtag.get_background();
         let premium = data.patron.read().iter().any(|p| p.uid == uid);
         let pfp = if premium {
-            let mut pfp_js: HashMap<_, _> = Pfp::load_json_sync(PFP_PATH).unwrap().into();
+            let mut pfp_js: HashMap<_, _> = Pfp::load_json_sync().into();
             pfp_js.remove(&uid).unwrap_or_default().url
         } else {
             "".to_string()
@@ -150,16 +141,40 @@ impl Player {
             ign,
             region,
             karma,
-            dog_tag,
-            patch,
+            dogtag,
+            dogtag_bg,
             premium,
             pfp,
         })
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PlayerDogTag {
+    texture_id: u64,
+    symbol_id: u64,
+    border_color_id: u64,
+    background_color_id: u64,
+    background_id: u64,
+}
+
+impl PlayerDogTag {
+    /// get the symbol icon url, return empty string if not found
+    fn get_symbol(&self) -> String {
+        Dogtag::get(self.symbol_id).unwrap_or_default()
+    }
+    /// get the background icon url, return empty string if not found
+    fn get_background(&self) -> String {
+        Dogtag::get(self.background_id).unwrap_or_default()
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pfp(pub HashMap<u64, PfpData>);
+
+impl LoadSaveFromJson for Pfp {
+    const PATH: &'static str = "./user_data/pfp.json";
+}
 
 impl From<Pfp> for HashMap<u64, PfpData> {
     fn from(value: Pfp) -> Self {

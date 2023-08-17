@@ -65,7 +65,7 @@
             gap: 0.2em;
             justify-content: center;
             align-items: center;
-            padding: 0.9em 0 0.7em;
+            height: 152;
             font-size: 1.3em;
             text-align: center;
             white-space: nowrap;
@@ -73,9 +73,12 @@
 
         .dogtag-container {
             position: relative;
+            height: 80;
+            width: 80;
         }
 
-        .dogtag-patch {
+        .dogtag-dogtag_bg {
+            z-index: -1;
             position: absolute;
             top: 0;
             left: 0;
@@ -339,12 +342,12 @@
 <body>
     <div class="main">
         <section class="global-section">
-            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <img src={{user.pfp}} class="background" onerror="this.style.display='none'" />
             <div class="z-index-container">
                 <div class="user">
                     <div class="dogtag-container">
-                        <img src="{{user.dog_tag}}" alt="dog_tag">
-                        <img class="dogtag-patch" src="{{user.patch}}">
+                        <img src="{{user.dogtag}}" onerror="this.style.display='none'">
+                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
                     </div>
                     <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
                     <span class="user-id">{{user.ign}}

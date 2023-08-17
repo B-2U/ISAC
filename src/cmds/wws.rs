@@ -18,7 +18,7 @@ use crate::{
             Linked, Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier,
             Statistic,
         },
-        IsacError, IsacInfo,
+        IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context, Error,
 };
@@ -27,7 +27,6 @@ use crate::{
 #[poise::command(slash_command)] // , rename = "wws"
 pub async fn wws_slash(
     ctx: Context<'_>,
-
     #[description = "specific warship, default: account's overall stats"]
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
@@ -57,7 +56,7 @@ pub async fn wws_slash(
         } else {
             ctx.author().clone()
         };
-        let mut linked_js: HashMap<_, _> = Linked::load().await.into();
+        let mut linked_js: HashMap<_, _> = Linked::load_json().await.into();
         linked_js
             .remove(&user.id)
             .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
@@ -81,8 +80,7 @@ pub async fn wws_slash(
 }
 
 #[poise::command(prefix_command)]
-pub async fn wws(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
-    let mut args = args.unwrap_or_default();
+pub async fn wws(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let typing = ctx.typing().await;
 
     let partial_player = args.parse_user(&ctx).await?;
@@ -128,30 +126,29 @@ async fn func_ship(
         ))
     };
     // getting player rank in the leaderboard
-    let rank = if let Ok(leaderboard) = ShipLeaderboard::load(player.region).await {
-        leaderboard
-            .0
-            .get(&ship.ship_id)
-            .and_then(|ship| ship.players.iter().find(|p| p.uid == player.uid))
-            .map(|p| p.rank)
-    } else {
-        None
-    };
+    let ranking = ShipLeaderboard::load_json()
+        .await
+        .get_ship(&player.region, &ship.ship_id, false)
+        .and_then(|players| {
+            players
+                .into_iter()
+                .find(|p| p.uid == player.uid)
+                .map(|p| p.rank)
+        });
 
     let data = SingleShipData {
         ship,
-        rank,
+        ranking,
         main_mode_name: mode.display_name(),
         main_mode: stats,
         sub_modes,
         clan,
         user: player,
     };
-    // TODO: test if ranking work after the .top command finished
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
         .send(|b| {
-            b.attachment(poise::serenity_prelude::AttachmentType::Bytes {
+            b.attachment(AttachmentType::Bytes {
                 data: Cow::Borrowed(&img),
                 filename: "image.png".to_string(),
             })
@@ -210,7 +207,7 @@ async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<()
     let mut view = WwsView::new(partial_player);
     let mut msg = ctx
         .send(|b| {
-            b.attachment(poise::serenity_prelude::AttachmentType::Bytes {
+            b.attachment(AttachmentType::Bytes {
                 data: Cow::Borrowed(&img),
                 filename: "image.png".to_string(),
             })
@@ -228,7 +225,7 @@ async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<()
         .author_id(ctx.author().id)
         .await
     {
-        let _tpying2 = ctx.typing().await;
+        let _typing = ctx.typing().await;
         let img_2 = overall_data.render_tiers(&ctx.data().client).await?;
         // disable button first
         let _ok = interaction

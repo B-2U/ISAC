@@ -5,22 +5,23 @@ use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
-use crate::utils::LoadFromJson;
+use crate::utils::LoadSaveFromJson;
 
 #[derive(Deserialize, Debug)]
 pub struct Dogtag(pub HashMap<u64, DogtagData>);
 
+impl LoadSaveFromJson for Dogtag {
+    const PATH: &'static str = "./web_src/dogtag.json";
+}
+
 impl Dogtag {
-    const DOGTAG: Lazy<HashMap<u64, DogtagData>> = Lazy::new(|| {
-        Dogtag::load_json_sync("./web_src/dogtag.json")
-            .unwrap()
-            .into()
-    });
-    pub fn get(input: Option<u64>) -> Option<String> {
-        let Some(input) = input else {
-            return None;
-        };
-        Self::DOGTAG.get(&input).map(|f| f.icons.small.to_string())
+    const DOGTAG: Lazy<HashMap<u64, DogtagData>> = Lazy::new(|| Dogtag::load_json_sync().into());
+    pub fn get(input: u64) -> Option<String> {
+        if input == 0 {
+            None
+        } else {
+            Self::DOGTAG.get(&input).map(|f| f.icons.small.to_string())
+        }
     }
 }
 

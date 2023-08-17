@@ -42,6 +42,10 @@
             font-size: 1.2em;
         }
 
+        .data {
+            font-weight: bold;
+        }
+
         .warship {
             padding-top: 0.5em;
             font-size: 1.3em;
@@ -104,7 +108,7 @@
     <div class="main">
         <section class="global-section">
             <div class="warship">{{ship.tier}} {{ship.name}}</div>
-            <img src='{{ship.img}}'>
+            <img src='{{ship.icon}}'>
         </section>
         <div class="divider"></div>
         <section class="division-stats-section">
@@ -122,17 +126,17 @@
                 </div>
                 {{#players}}
                 <div class="ship-table-row">
-                    <div class="player-rank" style="color: {{id_color}};">{{rank}}</div>
+                    <div class="player-rank data" style="color: {{color}};">{{rank}}</div>
                     <div class="per-ship-name">
-                        <span style="color: {{id_color}};">{{clan}}</span>
-                        <span class="break" style="color: {{id_color}};">{{id}}</span>
+                        <span style="color: {{color}};">{{clan}}</span>
+                        <span class="break" style="color: {{color}};">{{ign}}</span>
                     </div>
-                    <div class="per-ship-battles">{{battles}}</div>
-                    <div class="per-ship-pr" style="color: {{pr.color}};">{{pr.value}}</div>
-                    <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
-                    <div class="per-ship-dmg" style="color: {{dmg.color}};">{{dmg.value}}</div>
-                    <div class="per-ship-frags" style="color: {{frags.color}};">{{frags.value}}</div>
-                    <div class="per-ship-planes" style="color: {{planes.color}};">{{planes.value}}</div>
+                    <div class="per-ship-battles data">{{battles}}</div>
+                    <div class="per-ship-pr data" style="color: {{pr.color}};">{{pr.value}}</div>
+                    <div class="per-ship-winrate data" style="color: {{winrate.color}}">{{winrate.value}}%</div>
+                    <div class="per-ship-dmg data" style="color: {{dmg.color}};">{{dmg.value}}</div>
+                    <div class="per-ship-frags data" style="color: {{frags.color}};">{{frags.value}}</div>
+                    <div class="per-ship-planes data" style="color: {{planes.color}};">{{planes.value}}</div>
                 </div>
                 {{/players}}
             </div>

@@ -2,9 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::utils::LoadFromJson;
-
-pub const EXPECTED_JS_PATH: &str = "./web_src/ship/expected.json";
+use crate::utils::LoadSaveFromJson;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExpectedJs {
@@ -40,14 +38,12 @@ pub struct ShipExpected {
     pub winrate: f64,
 }
 
-impl ExpectedJs {
-    pub fn new() -> Self {
-        Self::load_json_sync(EXPECTED_JS_PATH).unwrap()
-    }
+impl LoadSaveFromJson for ExpectedJs {
+    const PATH: &'static str = "./web_src/ship/expected.json";
 }
 
-impl Default for ExpectedJs {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+// impl Default for ExpectedJs {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+// }

@@ -5,7 +5,10 @@ use parking_lot::RwLock;
 use poise::serenity_prelude::{Http, RoleId};
 use tracing::warn;
 
-use crate::{utils::structs::Linked, Error, Patron};
+use crate::{
+    utils::{structs::Linked, LoadSaveFromJson},
+    Error, Patron,
+};
 
 pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Vec<Patron>>>) {
     let mut interval = tokio::time::interval(Duration::from_secs(180));
@@ -16,7 +19,7 @@ pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Vec<Patron>
         Lazy::new(|| RoleId(env::var("SUPPORTER_ROLE_ID").unwrap().parse().unwrap()));
 
     async fn get_patrons(http: &Arc<Http>) -> Result<Vec<Patron>, Error> {
-        let linked_js: HashMap<_, _> = Linked::load().await.into();
+        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
         let guild = http.get_guild(*GUILD_ID).await.unwrap();
         Ok(guild
             .members(http, None, None)

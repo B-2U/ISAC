@@ -14,7 +14,7 @@ use crate::utils::{
 pub struct SingleShipData {
     pub ship: Ship,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub rank: Option<u64>,
+    pub ranking: Option<u64>,
     pub main_mode_name: String,
     pub main_mode: Statistic,
     #[serde(serialize_with = "serialize_sub_modes")]

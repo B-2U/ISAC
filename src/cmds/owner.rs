@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::utils::structs::Linked;
-use crate::utils::LoadFromJson;
+use crate::utils::LoadSaveFromJson;
 use crate::{dc_utils::ContextAddon, Context, Error};
 use poise::serenity_prelude::{ArgumentConvert, CacheHttp, Channel, ReactionType};
 use serde_json::json;
@@ -114,7 +114,7 @@ pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn users(ctx: Context<'_>) -> Result<(), Error> {
-    let players: HashMap<_, _> = Linked::load_json("./user_data/linked.json").await?.into();
+    let players: HashMap<_, _> = Linked::load_json().await.into();
     let _a = ctx.reply(players.len().to_string()).await?;
     Ok(())
 }

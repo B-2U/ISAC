@@ -1,5 +1,5 @@
 use crate::{
-    utils::{IsacError, LoadFromJson},
+    utils::{IsacError, LoadSaveFromJson},
     Context,
 };
 
@@ -7,19 +7,22 @@ use poise::serenity_prelude::GuildId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
-use std::{collections::HashMap, fmt::Display};
-
-const GUILD_DEFAULT_PATH: &str = "./user_data/guild_default_region.json";
+use std::collections::HashMap;
 
 /// wows server
-#[derive(Default, Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+#[derive(
+    Default, Serialize, Deserialize, Debug, Clone, Copy, PartialEq, poise::ChoiceParameter, Hash, Eq,
+)]
 pub enum Region {
     #[default]
-    #[serde(rename(serialize = "ASIA", deserialize = "asia"))]
+    #[serde(rename(serialize = "ASIA", deserialize = "asia"), alias = "ASIA")]
+    #[name = "ASIA"]
     Asia,
-    #[serde(rename(serialize = "NA", deserialize = "na"))]
+    #[serde(rename(serialize = "NA", deserialize = "na"), alias = "NA")]
+    #[name = "NA"]
     Na,
-    #[serde(rename(serialize = "EU", deserialize = "eu"))]
+    #[serde(rename(serialize = "EU", deserialize = "eu"), alias = "EU")]
+    #[name = "EU"]
     Eu,
 }
 impl Region {
@@ -40,11 +43,11 @@ impl Region {
         .to_string()
     }
 }
-impl Display for Region {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.upper())
-    }
-}
+// impl Display for Region {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         write!(f, "{}", self.upper())
+//     }
+// }
 impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
@@ -127,19 +130,8 @@ impl Region {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GuildDefaultRegion(pub HashMap<GuildId, Region>);
 
-impl GuildDefaultRegion {
-    pub fn new() -> Self {
-        Self::load_json_sync(GUILD_DEFAULT_PATH).unwrap()
-    }
-    /// load guild json from default path
-    ///
-    /// # Panics
-    /// panic if the path doesn't have available json file
-    pub async fn load() -> Self {
-        Self::load_json(GUILD_DEFAULT_PATH)
-            .await
-            .expect(format!("can't find guild_default.json in {GUILD_DEFAULT_PATH}").as_str())
-    }
+impl LoadSaveFromJson for GuildDefaultRegion {
+    const PATH: &'static str = "./user_data/guild_default_region.json";
 }
 
 impl From<GuildDefaultRegion> for HashMap<GuildId, Region> {

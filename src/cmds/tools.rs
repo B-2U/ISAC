@@ -23,8 +23,6 @@ use crate::{
     Context, Data, Error,
 };
 
-pub const SHIPS_PARA_PATH: &str = "./web_src/ship/ships_para.json";
-
 /// The link to wargaming wiki maps page
 #[poise::command(prefix_command, slash_command, discard_spare_arguments)]
 pub async fn map(ctx: Context<'_>) -> Result<(), Error> {
@@ -134,16 +132,16 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     let mut args = args.unwrap_or_default();
     let player = args.parse_user(&ctx).await?;
     let _typing = ctx.typing().await;
-    let res = ctx
+    let res_text = ctx
         .data()
         .client
         .get(player.wows_number_url()?)
         .send()
-        .await
-        .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
-    let text = res.text().await.unwrap();
+        .await?
+        .text()
+        .await?;
     let record_clans_uid =
-        _rename_parse_player(text).map_err(|err| IsacError::UnknownError(err))?;
+        _rename_parse_player(res_text).map_err(|err| IsacError::UnknownError(err))?;
 
     let mut name_history = vec![];
     for clan_uid in record_clans_uid {

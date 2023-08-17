@@ -10,10 +10,9 @@ use strum::{EnumIter, IntoEnumIterator};
 use unidecode::unidecode;
 
 use crate::{
-    cmds::tools::SHIPS_PARA_PATH,
     utils::{
         structs::{ExpectedJs, Mode, Statistic, StatisticValueType},
-        IsacError, IsacInfo, LoadFromJson,
+        IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context,
 };
@@ -48,6 +47,14 @@ pub enum ShipTier {
     XI = 11,
 }
 
+fn add_glossary_url_prefix<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    Ok(format!("https://glossary-wows-global.gcdn.co/icons/{}", s))
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Ship {
     pub ship_id: ShipId,
@@ -56,6 +63,7 @@ pub struct Ship {
     pub name: String,
     pub short_name: String,
     pub nation: String,
+    #[serde(deserialize_with = "add_glossary_url_prefix")]
     pub icon: String,
 }
 impl Ship {
@@ -77,10 +85,11 @@ impl Display for Ship {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ShipsPara(pub HashMap<ShipId, Ship>);
 
+impl LoadSaveFromJson for ShipsPara {
+    const PATH: &'static str = "./web_src/ship/ships_para.json";
+}
+
 impl ShipsPara {
-    pub fn new() -> Self {
-        Self::load_json_sync(SHIPS_PARA_PATH).unwrap()
-    }
     /// shortcut to self.0.get, looking for the ship with ship_id
     pub fn get(&self, ship_id: &ShipId) -> Option<&Ship> {
         self.0.get(ship_id)
@@ -116,7 +125,7 @@ impl ShipsPara {
                     .find(&input)
                     .map(|prefix_len| (ship, prefix_len))
             })
-            .sorted_by_key(|(_, prefix_len)| *prefix_len)
+            .sorted_by_key(|(ship, prefix_len)| (*prefix_len, ship.name.len()))
             .map(|(ship, _)| ship)
             .take(len_limit)
             .cloned()

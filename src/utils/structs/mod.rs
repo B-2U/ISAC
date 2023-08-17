@@ -32,4 +32,4 @@ mod expected_js;
 pub use expected_js::*;
 
 mod ship_leaderboard;
-pub use ship_leaderboard::ShipLeaderboard;
+pub use ship_leaderboard::*;

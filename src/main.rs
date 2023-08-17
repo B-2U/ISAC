@@ -4,7 +4,6 @@ use cmds::*;
 mod dc_utils;
 mod utils;
 
-use dc_utils::ContextAddon;
 use parking_lot::RwLock;
 use poise::serenity_prelude::{self as serenity, Activity, UserId};
 use std::{
@@ -21,7 +20,7 @@ use crate::{
     tasks::launch_renderer,
     utils::{
         structs::{ExpectedJs, GuildDefaultRegion, ShipsPara},
-        IsacError,
+        IsacError, LoadSaveFromJson,
     },
 };
 
@@ -61,6 +60,7 @@ async fn main() {
             tools::clanuid(),
             wws::wws(),
             wws::wws_slash(),
+            leaderboard::top(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -97,6 +97,7 @@ async fn main() {
         .await
         .unwrap();
     let shard_manager = Arc::clone(&bot.shard_manager());
+    // Question how to gracefully shut down?
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
@@ -135,10 +136,10 @@ impl Data {
         Data {
             client: reqwest::Client::new(),
             patron: Arc::new(RwLock::new(vec![])),
-            expected_js: Arc::new(RwLock::new(ExpectedJs::new())),
-            ship_js: Arc::new(RwLock::new(ShipsPara::new())),
+            expected_js: Arc::new(RwLock::new(ExpectedJs::load_json_sync())),
+            ship_js: Arc::new(RwLock::new(ShipsPara::load_json_sync())),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
-            guild_default: Arc::new(RwLock::new(GuildDefaultRegion::new())),
+            guild_default: Arc::new(RwLock::new(GuildDefaultRegion::load_json_sync())),
             // browser: Arc::new(
             //     fantoccini::ClientBuilder::native()
             //         .connect("http://localhost:4444")
@@ -248,8 +249,13 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                         "Player: `{ign}` hasn't played any battle in `{ship_name}` in `{region}`"
                     )
                 }
+                IsacInfo::AutoCompleteError => {
+                    "plz choose a ship in the searching results".to_string()
+                }
             };
-            let _r = ctx.reply(msg).await;
+            let _r = ctx
+                .send(|b| b.content(msg).reply(true).ephemeral(true))
+                .await;
         }
         IsacError::Cancelled => (),
         IsacError::UnknownError(err) => {

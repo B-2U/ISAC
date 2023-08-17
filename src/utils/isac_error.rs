@@ -84,4 +84,5 @@ pub enum IsacInfo {
     GeneralError {
         msg: String,
     },
+    AutoCompleteError,
 }

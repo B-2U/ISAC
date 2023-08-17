@@ -54,7 +54,7 @@ impl<'a> WowsApi<'a> {
         region: &Region,
         ign: &str,
         limit: u32,
-    ) -> Result<Vec<VortexPlayer>, IsacError> {
+    ) -> Result<Vec<VortexPlayerSearch>, IsacError> {
         if ign.len() < 3 {
             Err(IsacInfo::TooShortIgn {
                 ign: ign.to_string(),
@@ -66,7 +66,7 @@ impl<'a> WowsApi<'a> {
         let res = self
             ._get(url)
             .await?
-            .json::<VortexPlayerJson>()
+            .json::<VortexPlayerSearchResponse>()
             .await
             .unwrap();
 
@@ -189,21 +189,21 @@ impl<'a> WowsApi<'a> {
 }
 
 #[derive(Deserialize, Debug)]
-struct VortexPlayerJson {
+struct VortexPlayerSearchResponse {
     pub status: String,
     pub error: Option<String>,
-    pub data: Vec<VortexPlayer>,
+    pub data: Vec<VortexPlayerSearch>,
 }
 
 /// the player's data in searching result
 #[derive(Deserialize, Debug)]
-pub struct VortexPlayer {
+pub struct VortexPlayerSearch {
     #[serde(rename = "spa_id")]
     pub uid: u64,
     pub name: String,
     pub hidden: bool,
 }
-impl Display for VortexPlayer {
+impl Display for VortexPlayerSearch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.name.replace('_', r"\_"))
     }

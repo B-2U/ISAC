@@ -10,7 +10,7 @@ use crate::{
     utils::{
         structs::{Linked, Mode, PartialPlayer, Region, Ship},
         wws_api::WowsApi,
-        IsacError, IsacHelp, IsacInfo,
+        IsacError, IsacHelp, IsacInfo, LoadSaveFromJson,
     },
     Context, Error,
 };
@@ -23,7 +23,7 @@ pub struct Args(Vec<String>);
 impl Args {
     /// try to parse discord user at first, if none, parsing region and searching ign
     pub async fn parse_user(&mut self, ctx: &Context<'_>) -> Result<PartialPlayer, IsacError> {
-        let linked_js: HashMap<_, _> = Linked::load().await.into();
+        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
 
         let first_arg = self.check(0)?;
 
@@ -53,13 +53,7 @@ impl Args {
             }
         } else {
             // parse region, player
-            let region = match Region::parse(first_arg) {
-                Some(region) => {
-                    self.remove(0)?;
-                    region
-                }
-                None => Region::guild_default(ctx).await,
-            };
+            let region = self.parse_region(ctx).await?;
             let player_id = self.check(0)?;
 
             let api = WowsApi::new(ctx);
@@ -77,9 +71,7 @@ impl Args {
                     &candidates[0]
                 }
                 _ => {
-                    let Ok(index) = self._pick(ctx, &candidates).await else {
-                        Err(IsacError::Cancelled)?
-                    };
+                    let index = self._pick(ctx, &candidates).await?;
                     self.remove(0)?;
                     &candidates[index]
                 }
@@ -89,6 +81,18 @@ impl Args {
                 uid: player.uid,
             })
         }
+    }
+
+    /// parsing region, return guild default or Asia if not specific
+    pub async fn parse_region(&mut self, ctx: &Context<'_>) -> Result<Region, IsacError> {
+        let first_arg = self.check(0)?;
+        Ok(match Region::parse(first_arg) {
+            Some(region) => {
+                self.remove(0)?;
+                region
+            }
+            None => Region::guild_default(ctx).await,
+        })
     }
 
     /// parsing battle modes, if there is only no ma
@@ -126,7 +130,7 @@ impl Args {
         &self,
         ctx: &Context<'_>,
         players: &Vec<T>,
-    ) -> Result<usize, Error> {
+    ) -> Result<usize, IsacError> {
         let view = PickView::new(players, ctx.author());
         let embed = view.embed_build();
         let inter_msg = ctx
@@ -134,9 +138,11 @@ impl Args {
                 b.embeds = vec![embed];
                 b.components(|f| f.set_action_row(view.build()))
             })
-            .await?
+            .await
+            .map_err(|_| IsacError::Cancelled)?
             .into_message()
-            .await?;
+            .await
+            .map_err(|_| IsacError::Cancelled)?;
         match view.interactions(ctx, ctx.author().id, inter_msg).await {
             Some(index) => Ok(index as usize),
             None => Err(IsacError::Cancelled)?,

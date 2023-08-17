@@ -43,12 +43,11 @@ def format_big_num_with_commas(value: dict) -> dict:
 
 
 def render_html(template_path: str, data: dict) -> str:
-    data = format_big_num_with_commas(data)
     if os.name != "posix":
         # json for debug
         with open(f"{template_path}.json", "w", encoding="UTF-8") as f:
             json.dump(data, f, indent=2)
-
+    data = format_big_num_with_commas(data)
     return html_renderer.render_path(template_path, data)
 
 
