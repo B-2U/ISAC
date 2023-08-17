@@ -13,8 +13,6 @@ use serde_json::Value;
 
 use std::{collections::HashMap, ops::Deref};
 
-const PFP_PATH: &str = "./user_data/pfp.json";
-
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct PartialPlayer {
     pub region: Region,

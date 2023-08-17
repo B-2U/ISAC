@@ -6,8 +6,6 @@ use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
-const LINKED_PATH: &str = "./user_data/linked.json";
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Linked(pub HashMap<UserId, PartialPlayer>);
 

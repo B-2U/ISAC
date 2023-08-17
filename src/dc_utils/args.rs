@@ -12,7 +12,7 @@ use crate::{
         wws_api::WowsApi,
         IsacError, IsacHelp, IsacInfo, LoadSaveFromJson,
     },
-    Context, Error,
+    Context,
 };
 
 use super::{EasyEmbed, UserAddon};
