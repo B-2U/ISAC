@@ -46,7 +46,7 @@ impl<'a> WowsApi<'a> {
 
         let res = self._get(url).await?.json::<Value>().await.unwrap();
 
-        Player::parse(ctx.data(), region, res)
+        Player::parse(ctx.data(), region, res).await
     }
     /// searching player with ign
     pub async fn players(

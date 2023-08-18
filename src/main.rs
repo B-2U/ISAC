@@ -61,6 +61,8 @@ async fn main() {
             wws::wws(),
             wws::wws_slash(),
             leaderboard::top(),
+            setting::link(),
+            setting::wows_region(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -128,7 +130,7 @@ pub struct Data {
     expected_js: Arc<RwLock<ExpectedJs>>,
     ship_js: Arc<RwLock<ShipsPara>>,
     wg_api_token: String,
-    guild_default: Arc<RwLock<GuildDefaultRegion>>, // browser: Arc<fantoccini::Client>,
+    guild_default: Arc<RwLock<GuildDefaultRegion>>,
 }
 
 impl Data {
@@ -140,12 +142,6 @@ impl Data {
             ship_js: Arc::new(RwLock::new(ShipsPara::load_json_sync())),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: Arc::new(RwLock::new(GuildDefaultRegion::load_json_sync())),
-            // browser: Arc::new(
-            //     fantoccini::ClientBuilder::native()
-            //         .connect("http://localhost:4444")
-            //         .await
-            //         .expect("failed to connect to WebDriver"),
-            // ),
         }
     }
 }
@@ -250,7 +246,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     )
                 }
                 IsacInfo::AutoCompleteError => {
-                    "plz choose a ship in the searching results".to_string()
+                    "❌ please select an option in the results!".to_string()
                 }
             };
             let _r = ctx

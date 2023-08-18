@@ -80,7 +80,7 @@ impl Deref for Player {
 // TODO fix this shit code, use serde_with?
 impl Player {
     /// parsing player from returned json
-    pub fn parse(data: &Data, region: Region, input: Value) -> Result<Player, IsacError> {
+    pub async fn parse(data: &Data, region: Region, input: Value) -> Result<Player, IsacError> {
         let first_layer = input.as_object().unwrap();
         let "ok" = first_layer.get("status").and_then(|f|f.as_str()).unwrap() else {
             Err(IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).unwrap().to_string() })?
@@ -127,7 +127,7 @@ impl Player {
         let dogtag_bg = player_dogtag.get_background();
         let premium = data.patron.read().iter().any(|p| p.uid == uid);
         let pfp = if premium {
-            let mut pfp_js: HashMap<_, _> = Pfp::load_json_sync().into();
+            let mut pfp_js: HashMap<_, _> = Pfp::load_json().await.into();
             pfp_js.remove(&uid).unwrap_or_default().url
         } else {
             "".to_string()
