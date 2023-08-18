@@ -33,7 +33,7 @@ impl OverallData {
     //     };
     //     reg.render("overall", self).unwrap()
     // }
-    // Question trait化了, 但是這個struct同時要兩個版本 該怎麼寫?
+    // QA trait化了, 但是這個struct同時要兩個版本 該怎麼寫?
     pub async fn render_tiers(&self, client: &Client) -> Result<Bytes, IsacError> {
         Ok(client
             .post("http://localhost:3000/overall_tiers")

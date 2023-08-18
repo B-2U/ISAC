@@ -3,8 +3,7 @@ use std::collections::HashMap;
 use poise::{
     async_trait,
     serenity_prelude::{
-        ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, SerenityError, User,
-        UserParseError,
+        ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User, UserParseError,
     },
 };
 

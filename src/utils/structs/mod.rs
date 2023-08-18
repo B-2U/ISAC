@@ -33,3 +33,6 @@ pub use expected_js::*;
 
 mod ship_leaderboard;
 pub use ship_leaderboard::*;
+
+mod patron;
+pub use patron::*;

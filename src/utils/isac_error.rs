@@ -43,7 +43,7 @@ pub enum IsacHelp {
 #[derive(Debug, strum::Display, thiserror::Error)]
 pub enum IsacInfo {
     UserNotLinked {
-        msg: String,
+        user_name: Option<String>, // give None if its author himself
     },
     TooShortIgn {
         ign: String,

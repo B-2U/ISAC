@@ -48,7 +48,7 @@ impl Statistic {
     }
 }
 
-// Question value actually can be u64 or f64, better way than String?
+// QA value actually can be u64 or f64, better way than String?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
     pub value: String,

@@ -7,6 +7,7 @@ use crate::{
     Context, Data,
 };
 
+use poise::serenity_prelude::UserId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -69,7 +70,7 @@ pub struct Player {
     pub pfp: String,
 }
 
-// Question 到底怎麼讓 Player 繼承 PartialPlayer 的方法?
+// QA 到底怎麼讓 Player 繼承 PartialPlayer 的方法?
 impl Deref for Player {
     type Target = PartialPlayer;
 
@@ -125,7 +126,7 @@ impl Player {
 
         let dogtag = player_dogtag.get_symbol();
         let dogtag_bg = player_dogtag.get_background();
-        let premium = data.patron.read().iter().any(|p| p.uid == uid);
+        let premium = data.patron.read().check_player(uid);
         let pfp = if premium {
             let mut pfp_js: HashMap<_, _> = Pfp::load_json().await.into();
             pfp_js.remove(&uid).unwrap_or_default().url
@@ -182,11 +183,18 @@ impl From<Pfp> for HashMap<u64, PfpData> {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PfpData {
-    url: String,
+    pub url: String,
+    pub name: String, // user name, its just for checking
+    pub discord_id: UserId,
 }
 
 impl Default for PfpData {
     fn default() -> Self {
-        Self { url: "https://cdn.discordapp.com/attachments/483227767685775360/1117119650052972665/image.png".to_string() }
+        const DEFAULT_PFBG: &'static str = "https://cdn.discordapp.com/attachments/483227767685775360/1117119650052972665/image.png";
+        Self {
+            url: DEFAULT_PFBG.to_string(),
+            name: "".to_string(),
+            discord_id: UserId(0),
+        }
     }
 }

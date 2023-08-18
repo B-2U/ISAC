@@ -60,7 +60,7 @@ pub async fn wws_slash(
         linked_js
             .remove(&user.id)
             .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
-                msg: format!("**{}** haven't linked to any wows account yet", user.name),
+                user_name: Some(user.name.clone()),
             }))?
     };
 
@@ -159,7 +159,7 @@ async fn func_ship(
     Ok(())
 }
 
-async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<(), Error> {
+pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<(), Error> {
     let typing = ctx.typing().await;
     let player = partial_player.get_player(&ctx).await?;
     let clan = player.clan(&ctx).await?;

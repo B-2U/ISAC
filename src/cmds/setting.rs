@@ -6,7 +6,7 @@ use crate::{
     },
     Context, Error,
 };
-use poise::{self, serenity_prelude::CacheHttp};
+use poise;
 
 /// link your wows account
 #[poise::command(slash_command, prefix_command)]
@@ -49,7 +49,7 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
             {
                 let mut guard = ctx.data().guild_default.write();
                 guard.0.insert(guild_id, region);
-                // Question async not possible here right? since its in a RWlock
+                // QA async not possible here right? since its in a RWlock
                 guard.save_json_sync();
             }
             let _r = ctx

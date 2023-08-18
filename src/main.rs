@@ -19,7 +19,7 @@ use utils::{IsacHelp, IsacInfo};
 use crate::{
     tasks::launch_renderer,
     utils::{
-        structs::{ExpectedJs, GuildDefaultRegion, ShipsPara},
+        structs::{ExpectedJs, GuildDefaultRegion, Patrons, ShipsPara},
         IsacError, LoadSaveFromJson,
     },
 };
@@ -63,6 +63,7 @@ async fn main() {
             leaderboard::top(),
             setting::link(),
             setting::wows_region(),
+            patreon::background(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -99,7 +100,7 @@ async fn main() {
         .await
         .unwrap();
     let shard_manager = Arc::clone(&bot.shard_manager());
-    // Question how to gracefully shut down?
+    // QA how to gracefully shut down?
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
@@ -126,7 +127,7 @@ async fn main() {
 /// My custom Data
 pub struct Data {
     client: reqwest::Client,
-    patron: Arc<RwLock<Vec<Patron>>>,
+    patron: Arc<RwLock<Patrons>>,
     expected_js: Arc<RwLock<ExpectedJs>>,
     ship_js: Arc<RwLock<ShipsPara>>,
     wg_api_token: String,
@@ -137,19 +138,13 @@ impl Data {
     async fn new() -> Self {
         Data {
             client: reqwest::Client::new(),
-            patron: Arc::new(RwLock::new(vec![])),
+            patron: Arc::new(RwLock::new(Patrons::default())),
             expected_js: Arc::new(RwLock::new(ExpectedJs::load_json_sync())),
             ship_js: Arc::new(RwLock::new(ShipsPara::load_json_sync())),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: Arc::new(RwLock::new(GuildDefaultRegion::load_json_sync())),
         }
     }
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Patron {
-    discord_id: UserId,
-    uid: u64,
 }
 
 async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
@@ -215,7 +210,12 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
         }
         IsacError::Info(info) => {
             let msg = match info {
-                IsacInfo::UserNotLinked { msg } => msg.clone(),
+                IsacInfo::UserNotLinked { user_name } => match user_name.as_ref() {
+                    Some(user_name) => {
+                        format!("**{user_name}** haven't linked to any wows account yet")
+                    }
+                    None => "You haven't linked your account yet.\nEnter `/link`".to_string(),
+                },
                 IsacInfo::TooShortIgn { ign } => {
                     format!("❌ At least 3 charactars for ign searching: `{ign}`")
                 }

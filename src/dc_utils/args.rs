@@ -36,7 +36,7 @@ impl Args {
                     Ok(*linked_user)
                 }
                 None => Err(IsacInfo::UserNotLinked {
-                    msg: format!("**{}** haven't linked to any wows account yet", user.name),
+                    user_name: Some(user.name.clone()),
                 })?,
             }
         } else if first_arg == "me" {
@@ -46,9 +46,7 @@ impl Args {
                     Ok(*linked_user)
                 }
                 None => {
-                    return Err(IsacInfo::UserNotLinked {
-                        msg: "You haven't linked your account yet.\nEnter `/link`".to_string(),
-                    })?;
+                    return Err(IsacInfo::UserNotLinked { user_name: None })?;
                 }
             }
         } else {
