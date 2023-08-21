@@ -226,7 +226,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::TooShortIgn { ign } => {
                     format!("❌ At least 3 charactars for ign searching: `{ign}`")
                 }
-                IsacInfo::APIError { msg } => format!("❌ API error: **{msg}**"),
+                IsacInfo::APIError { msg } => format!("❌ API error: `{msg}`"),
                 IsacInfo::InvalidIgn { ign } => format!("❌ Invalid ign: `{ign}`"),
                 IsacInfo::PlayerIgnNotFound { ign, region } => {
                     format!("Player: `{ign}` not found in `{region}`")
