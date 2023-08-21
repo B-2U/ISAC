@@ -24,6 +24,7 @@ use crate::{
 pub fn top_hybrid() -> poise::Command<Data, Error> {
     let mut cmd = leaderboard::top_slash();
     cmd.prefix_action = leaderboard::top().prefix_action;
+    cmd.aliases = leaderboard::top().aliases;
     cmd
 }
 
