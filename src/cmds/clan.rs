@@ -12,6 +12,7 @@ use poise::serenity_prelude::{
 use tokio::join;
 
 use crate::{
+    cmds::clan,
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
         Args, ContextAddon, EasyEmbed, InteractionAddon,
@@ -27,11 +28,17 @@ use crate::{
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },
-    Context, Error,
+    Context, Data, Error,
 };
 
+pub fn clan_hybrid() -> poise::Command<Data, Error> {
+    let mut cmd = clan::clan_slash();
+    cmd.prefix_action = clan::clan().prefix_action;
+    cmd
+}
+
 /// clan's overall & CB stats
-#[poise::command(slash_command, rename = "clan-")]
+#[poise::command(slash_command, rename = "clan")]
 pub async fn clan_slash(
     ctx: Context<'_>,
     #[description = "clan's tag or name"]

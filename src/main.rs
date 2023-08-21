@@ -59,15 +59,12 @@ async fn main() {
             tools::code(),
             tools::uid(),
             tools::clanuid(),
-            wws::wws(),
-            wws::wws_slash(),
-            leaderboard::top(),
-            leaderboard::top_slash(),
+            wws::wws_hybrid(),
+            leaderboard::top_hybrid(),
             setting::link(),
             setting::wows_region(),
             patreon::background(),
-            clan::clan(),
-            clan::clan_slash(),
+            clan::clan_hybrid(),
             clan_top::clan_top(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
@@ -313,6 +310,6 @@ async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
 
 // TODO: might need to be moved to a file for consts
 const OOPS: &str = r#"***Oops! Something went wrong!***
-click the `Document` button to check the doc
+click the **Document** button to check the commands usage
 If this error keep coming out, please join our support server to report it
 "#;

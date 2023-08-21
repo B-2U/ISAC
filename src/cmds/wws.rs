@@ -3,6 +3,7 @@ use std::{borrow::Cow, collections::HashMap, time::Duration};
 use poise::serenity_prelude::{AttachmentType, ButtonStyle, CreateActionRow, CreateButton, User};
 
 use crate::{
+    cmds::wws,
     dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
@@ -20,11 +21,17 @@ use crate::{
         },
         IsacError, IsacInfo, LoadSaveFromJson,
     },
-    Context, Error,
+    Context, Data, Error,
 };
 
+pub fn wws_hybrid() -> poise::Command<Data, Error> {
+    let mut wws = wws::wws_slash();
+    wws.prefix_action = wws::wws().prefix_action;
+    wws
+}
+
 /// account / warship stats
-#[poise::command(slash_command, rename = "wws-")]
+#[poise::command(slash_command, rename = "wws")]
 pub async fn wws_slash(
     ctx: Context<'_>,
     #[description = "specific warship, default: account's overall stats"]

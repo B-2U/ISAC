@@ -10,11 +10,12 @@ pub async fn expected_updater(client: Client, expected_arc: Arc<RwLock<ExpectedJ
     let mut interval = tokio::time::interval(Duration::from_secs(86400));
     loop {
         interval.tick().await;
-        if let Ok(expected_js) = request(&client).await {
-            expected_js.save_json().await;
-            *expected_arc.write() = expected_js;
-        } else {
-            warn!("expected js updating fail!");
+        match request(&client).await {
+            Ok(expected_js) => {
+                expected_js.save_json().await;
+                *expected_arc.write() = expected_js;
+            }
+            Err(err) => warn!("expected js updating fail!, err: \n{err}"),
         }
     }
 }

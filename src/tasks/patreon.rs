@@ -43,7 +43,7 @@ pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) 
         interval.tick().await;
         match get_patrons(&http).await {
             Ok(patrons) => *patrons_arc.write() = patrons,
-            Err(err) => warn!("patrons task fail!, {err}"),
+            Err(err) => warn!("patrons task fail!, err: \n{err}"),
         }
     }
 }

@@ -8,6 +8,7 @@ use regex::Regex;
 use scraper::{node::Element, ElementRef, Html, Selector};
 
 use crate::{
+    cmds::leaderboard,
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     utils::{
         structs::{
@@ -17,8 +18,14 @@ use crate::{
         },
         IsacError, IsacInfo, LoadSaveFromJson,
     },
-    Context, Error,
+    Context, Data, Error,
 };
+
+pub fn top_hybrid() -> poise::Command<Data, Error> {
+    let mut cmd = leaderboard::top_slash();
+    cmd.prefix_action = leaderboard::top().prefix_action;
+    cmd
+}
 
 #[poise::command(prefix_command, aliases("dalao"))]
 pub async fn top(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
@@ -28,7 +35,7 @@ pub async fn top(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> 
 }
 
 ///
-#[poise::command(slash_command, rename = "top-")]
+#[poise::command(slash_command, rename = "top")]
 pub async fn top_slash(
     ctx: Context<'_>,
     #[description = "warship's name"]
