@@ -214,13 +214,20 @@ async fn func_clan_season(
         .into_iter()
         .filter(|m| m.season_number == season_num)
         .collect::<Vec<_>>();
+    // early return if there's no rating
+    if ratings.len() <= 2 {
+        Err(IsacError::Info(IsacInfo::ClanNoBattle {
+            clan: partial_clan.clone(),
+            season: season_num,
+        }))?
+    }
     let filtered_members = clan_members
         .items
         .into_iter()
         .filter(|m| m.battles != 0)
         .collect();
 
-    let data = ClanSeasonTemplate::new(partial_clan, ratings, filtered_members, season_num)?;
+    let data = ClanSeasonTemplate::new(partial_clan, ratings, filtered_members);
 
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
