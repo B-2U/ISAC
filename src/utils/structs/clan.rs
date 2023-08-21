@@ -200,13 +200,14 @@ impl From<ClanStatsRating> for ClanTemplateSeasonValue {
     }
 }
 
-#[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash, Default)]
 #[repr(u8)]
 pub enum ClanLeague {
     Hurricane = 0,
     Typhoon = 1,
     Storm = 2,
     Gale = 3,
+    #[default]
     Squall = 4,
 }
 impl ClanLeague {
@@ -222,11 +223,12 @@ impl ClanLeague {
     }
 }
 
-#[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash, Default)]
 #[repr(u8)]
 pub enum ClanDivision {
     I = 1,
     II = 2,
+    #[default]
     III = 3,
 }
 

@@ -1,6 +1,9 @@
 use std::fmt;
 
-use crate::{utils::structs::Region, Error};
+use crate::{
+    utils::structs::{PartialClan, Region},
+    Error,
+};
 
 #[derive(Debug)]
 pub enum IsacError {
@@ -73,6 +76,10 @@ pub enum IsacInfo {
     ClanNotFound {
         clan: String,
         region: Region,
+    },
+    ClanNoBattle {
+        clan: PartialClan,
+        season: u32,
     },
 
     ShipNotFound {

@@ -52,6 +52,7 @@ async fn main() {
             owner::test(),
             owner::send(),
             owner::users(),
+            owner::clan_season(),
             tools::roulette(),
             tools::rename(),
             tools::map(),
@@ -254,6 +255,12 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::AutoCompleteError => {
                     "❌ please select an option in the results!".to_string()
                 }
+                IsacInfo::ClanNoBattle { clan, season } => format!(
+                    "**[{}]** ({}) did not participate in season {}",
+                    clan.tag.replace("_", r"\_"),
+                    clan.region,
+                    season
+                ),
             };
             let _r = ctx
                 .send(|b| b.content(msg).reply(true).ephemeral(true))

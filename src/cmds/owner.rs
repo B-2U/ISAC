@@ -106,6 +106,17 @@ pub async fn test(_ctx: Context<'_>, #[rest] args: Option<String>) -> Result<(),
 }
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
+pub async fn clan_season(ctx: Context<'_>, season: u32) -> Result<(), Error> {
+    {
+        ctx.data().constant.write().clan_season = season;
+        ctx.data().constant.write().save_json_sync();
+    }
+    ctx.reply(format!("current clan season is {season} now!"))
+        .await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
     let _cache = ctx.cache().unwrap();
     ctx.reply(_cache.guilds().len().to_string()).await?;

@@ -19,8 +19,8 @@ use crate::{
     utils::{
         structs::{
             template_data::{
-                ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateStats,
-                ClanTemplateWrDis, Render,
+                ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
+                ClanTemplateSeasonValue, ClanTemplateStats, ClanTemplateWrDis, Render,
             },
             ClanMember, PartialClan, StatisticValueType,
         },
@@ -95,10 +95,6 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     let clan_members = clan_members?;
     let mut clan = clan?;
 
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
     let clan_rename = if clan_detail.old_tag.is_some() {
         let datetime = DateTime::<Utc>::from_utc(
             NaiveDateTime::from_timestamp_opt(clan_detail.renamed_at.unwrap() as i64, 0).unwrap(),
@@ -117,7 +113,14 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         active_members: clan_members
             .items
             .iter()
-            .filter(|m| timestamp - m.last_battle_time <= 864000)
+            .filter(|m| {
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs()
+                    - m.last_battle_time
+                    <= 864000
+            })
             .count() as u32,
         winrate: StatisticValueType::Winrate {
             value: clan_members.avg.winrate,
@@ -130,21 +133,42 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         exp: clan_members.avg.exp_per_battle.round() as u64,
         wr_dis: ClanTemplateWrDis::sort_wr(&clan_members.items),
     };
+    // QA 下面的邏輯有更好的改法嗎? 要補齊缺的賽季
+    let mut clan_seasons: Vec<ClanTemplateSeason> = clan
+        .stats
+        .ratings
+        .drain()
+        // filter only the latest 4 seasons' best rating
+        .filter(|f| {
+            ((current_season_num - 3)..=current_season_num).contains(&f.season_number)
+                && f.is_best_season_rating == true
+        })
+        .sorted_by_key(|f| -(f.season_number as i32))
+        .map(|f| f.into())
+        .collect();
+    // fill the missing seasons
+    let mut filled = false;
+    for season in (current_season_num - 3)..=current_season_num {
+        if !clan_seasons.iter().any(|s| s.season == season) {
+            clan_seasons.push(ClanTemplateSeason {
+                season,
+                battles: 0,
+                winrate: StatisticValueType::Winrate { value: 0.0 }.into(),
+                win_streak: 0,
+                now: ClanTemplateSeasonValue::default(),
+                max: ClanTemplateSeasonValue::default(),
+            });
+            filled = true;
+        }
+    }
+    // sort again if there did miss some
+    if filled {
+        clan_seasons.sort_by(|a, b| b.season.cmp(&a.season));
+    }
 
     let data = ClanTemplate {
         info: partial_clan.clone(),
-        seasons: clan
-            .stats
-            .ratings
-            .drain()
-            // filter only the latest 4 seasons' best rating
-            .filter(|f| {
-                ((current_season_num - 3)..=current_season_num).contains(&f.season_number)
-                    && f.is_best_season_rating == true
-            })
-            .sorted_by_key(|f| -(f.season_number as i32))
-            .map(|f| f.into())
-            .collect(),
+        seasons: clan_seasons,
         rename: clan_rename,
         stats: clan_stats,
     };
@@ -182,7 +206,11 @@ async fn func_clan_season(
         .avg
         .ratings
         .take()
-        .expect("ratings is None")
+        .ok_or(IsacError::Info(IsacInfo::ClanNoBattle {
+            // QA 這裡不clone會報moved value, rust analyzer 缺陷?
+            clan: partial_clan.clone(),
+            season: season_num,
+        }))?
         .into_iter()
         .filter(|m| m.season_number == season_num)
         .collect::<Vec<_>>();
@@ -192,7 +220,7 @@ async fn func_clan_season(
         .filter(|m| m.battles != 0)
         .collect();
 
-    let data = ClanSeasonTemplate::new(partial_clan, ratings, filtered_members);
+    let data = ClanSeasonTemplate::new(partial_clan, ratings, filtered_members, season_num)?;
 
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
@@ -278,9 +306,7 @@ impl ClanView {
                     })
                     .await;
                 let current_season_num = { ctx.data().constant.read().clan_season };
-                func_clan_season(ctx, self.clan.clone(), current_season_num)
-                    .await
-                    .unwrap()
+                func_clan_season(ctx, self.clan.clone(), current_season_num).await?
             }
         }
         // timeout;

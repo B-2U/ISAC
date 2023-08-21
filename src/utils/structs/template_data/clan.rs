@@ -35,7 +35,7 @@ pub struct ClanTemplateSeason {
     pub max: ClanTemplateSeasonValue,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Default)]
 pub struct ClanTemplateSeasonValue {
     pub color: String, // hex color, from the league
     pub league: ClanLeague,

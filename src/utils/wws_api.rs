@@ -100,8 +100,8 @@ impl<'a> WowsApi<'a> {
         });
 
         match clans {
-            Some(clans) => Ok(clans),
-            None => Err(IsacInfo::ClanNotFound {
+            Some(clans) if !clans.is_empty() => Ok(clans),
+            _ => Err(IsacInfo::ClanNotFound {
                 clan: clan_name.to_string(),
                 region: *region,
             })?,

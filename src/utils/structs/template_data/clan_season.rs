@@ -1,9 +1,12 @@
 use serde::Serialize;
 
 use super::Render;
-use crate::utils::structs::{
-    template_data::ClanTemplateSeason, ClanMember, ClanStatsSeason, PartialClan, StatisticValue,
-    StatisticValueType,
+use crate::utils::{
+    structs::{
+        template_data::ClanTemplateSeason, ClanMember, ClanStatsSeason, PartialClan,
+        StatisticValue, StatisticValueType,
+    },
+    IsacError, IsacInfo,
 };
 
 #[derive(Debug, Serialize)]
@@ -25,10 +28,12 @@ impl ClanSeasonTemplate {
         partial_clan: PartialClan,
         mut ratings: Vec<ClanStatsSeason>,
         mut members: Vec<ClanMember>,
-    ) -> Self {
+        season_num: u32,
+    ) -> Result<Self, IsacError> {
         // QA, optimizable here?
-        let sec_season = ratings.pop().unwrap();
-        let first_season = ratings.pop().unwrap();
+        let (Some(sec_season), Some(first_season)) = (ratings.pop(), ratings.pop()) else {
+            Err(IsacInfo::ClanNoBattle { clan: partial_clan.clone(), season: season_num})?
+        };
         let (alpha, bravo) = match first_season.is_best_season_rating {
             true => (first_season, sec_season),
             false => (sec_season, first_season),
@@ -36,14 +41,14 @@ impl ClanSeasonTemplate {
         members.sort_by_key(|m| -(m.battles as i64));
         members.truncate(20);
         let (left, right) = Self::_seperate_members(members);
-        Self {
+        Ok(Self {
             info: partial_clan,
             alpha: alpha.into(),
             bravo: bravo.into(),
             // QA 就算impl了From Iterator之類的trait 內部也一樣是map into實現的?
             members_left: left.into_iter().map(|m| m.into()).collect(),
             members_right: right.into_iter().map(|m| m.into()).collect(),
-        }
+        })
         // let alpha = ratings
     }
 
