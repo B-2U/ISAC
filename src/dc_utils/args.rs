@@ -8,7 +8,7 @@ use poise::serenity_prelude::{
 
 use crate::{
     utils::{
-        structs::{Linked, Mode, PartialPlayer, Region, Ship},
+        structs::{Linked, Mode, PartialClan, PartialPlayer, Region, Ship},
         wws_api::WowsApi,
         IsacError, IsacHelp, IsacInfo, LoadSaveFromJson,
     },
@@ -81,6 +81,44 @@ impl Args {
         }
     }
 
+    /// try to parse discord user at first, if none, parsing region and searching ign
+    pub async fn parse_clan(&mut self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
+        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
+
+        let first_arg = self.check(0)?;
+
+        if let Ok(user) =
+            User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
+        {
+            match linked_js.get(&user.id) {
+                Some(linked_user) => {
+                    self.remove(0)?;
+                    linked_user.clan(ctx).await
+                }
+                None => Err(IsacInfo::UserNotLinked {
+                    user_name: Some(user.name.clone()),
+                })?,
+            }
+        } else if first_arg == "me" {
+            match linked_js.get(&ctx.author().id) {
+                Some(linked_user) => {
+                    self.remove(0)?;
+                    linked_user.clan(ctx).await
+                }
+                None => {
+                    return Err(IsacInfo::UserNotLinked { user_name: None })?;
+                }
+            }
+        } else {
+            // parse region, clan
+            let region = self.parse_region(ctx).await?;
+            let clan_name = self.remove(0)?;
+
+            let mut clans = WowsApi::new(&ctx).clans(&region, &clan_name).await?;
+            Ok(clans.remove(0))
+        }
+    }
+
     /// parsing region, return guild default or Asia if not specific
     pub async fn parse_region(&mut self, ctx: &Context<'_>) -> Result<Region, IsacError> {
         let first_arg = self.check(0)?;
@@ -93,7 +131,7 @@ impl Args {
         })
     }
 
-    /// parsing battle modes, if there is only no ma
+    /// parsing battle modes, return None if there is only no matched
     pub fn parse_mode(&mut self) -> Option<Mode> {
         if let Some(index) = self.0.iter().position(|key| Mode::parse(key).is_some()) {
             Mode::parse(&self.remove(index).unwrap())

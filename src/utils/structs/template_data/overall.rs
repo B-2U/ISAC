@@ -4,24 +4,24 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::utils::{
-    structs::{template_data::Render, Clan, Player, ShipClass, ShipTier, Statistic},
+    structs::{template_data::Render, PartialClan, Player, ShipClass, ShipTier, Statistic},
     IsacError, IsacInfo,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct OverallData {
-    pub div: OverallDataDiv,
-    pub tier: OverallDataTier,
-    pub class: OverallDataClass,
-    pub clan: Clan,
+pub struct OverallTemplate {
+    pub div: OverallTemplateDiv,
+    pub tier: OverallTemplateTier,
+    pub class: OverallTemplateClass,
+    pub clan: PartialClan,
     pub user: Player,
 }
 
-impl Render for OverallData {
+impl Render for OverallTemplate {
     const RENDER_URL: &'static str = "overall";
 }
 
-impl OverallData {
+impl OverallTemplate {
     // pub fn render(&self) -> String {
     //     let mut reg = Handlebars::new();
     //     reg.register_template_file("overall", TEMPLATE_OVERALL)
@@ -52,13 +52,13 @@ impl OverallData {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct OverallDataDiv {
+pub struct OverallTemplateDiv {
     pub pvp: Statistic,
     pub pvp_solo: Statistic,
     pub pvp_div2: Statistic,
     pub pvp_div3: Statistic,
 }
-impl OverallDataDiv {
+impl OverallTemplateDiv {
     pub fn new(
         pvp: Statistic,
         pvp_solo: Statistic,
@@ -75,7 +75,7 @@ impl OverallDataDiv {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct OverallDataTier {
+pub struct OverallTemplateTier {
     #[serde(rename = "1")]
     pub one: Statistic,
     #[serde(rename = "2")]
@@ -100,7 +100,7 @@ pub struct OverallDataTier {
     pub eleven: Statistic,
 }
 
-impl From<HashMap<ShipTier, Statistic>> for OverallDataTier {
+impl From<HashMap<ShipTier, Statistic>> for OverallTemplateTier {
     fn from(mut value: HashMap<ShipTier, Statistic>) -> Self {
         Self {
             one: value.remove(&ShipTier::I).unwrap_or_default(),
@@ -119,7 +119,7 @@ impl From<HashMap<ShipTier, Statistic>> for OverallDataTier {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct OverallDataClass {
+pub struct OverallTemplateClass {
     pub ss: Statistic,
     pub dd: Statistic,
     pub ca: Statistic,
@@ -127,13 +127,13 @@ pub struct OverallDataClass {
     pub cv: Statistic,
 }
 
-// impl OverallDataClass {
+// impl OverallTemplateClass {
 //     fn new(dd: Statistic, ca: Statistic, bb: Statistic, cv: Statistic, ss: Statistic) -> Self {
 //         Self { dd, ca, bb, cv, ss }
 //     }
 // }
 
-impl From<HashMap<ShipClass, Statistic>> for OverallDataClass {
+impl From<HashMap<ShipClass, Statistic>> for OverallTemplateClass {
     fn from(mut value: HashMap<ShipClass, Statistic>) -> Self {
         Self {
             ss: value.remove(&ShipClass::SS).unwrap_or_default(),

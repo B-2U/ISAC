@@ -8,6 +8,11 @@ mod single_ship;
 pub use single_ship::*;
 mod leaderboard;
 pub use leaderboard::*;
+mod clan;
+pub use clan::*;
+
+mod clan_season;
+pub use clan_season::*;
 
 use crate::utils::{IsacError, IsacInfo};
 

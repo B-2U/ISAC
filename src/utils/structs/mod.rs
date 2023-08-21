@@ -36,3 +36,9 @@ pub use ship_leaderboard::*;
 
 mod patron;
 pub use patron::*;
+
+mod little_constant;
+pub use little_constant::*;
+
+mod clan_detail;
+pub use clan_detail::*;

@@ -1,4 +1,4 @@
-use std::{fmt::Display, mem};
+use std::fmt::Display;
 
 use futures::future::try_join_all;
 use reqwest::{Client, IntoUrl, Response, Url};
@@ -7,7 +7,10 @@ use serde_json::Value;
 use strum::IntoEnumIterator;
 
 use crate::{
-    utils::structs::{Clan, Mode, Player, Region, ShipId, ShipStatsCollection, VortexShipResponse},
+    utils::structs::{
+        Clan, ClanDetail, ClanDetailRes, ClanMemberRes, ClanRes, Mode, PartialClan, Player, Region,
+        ShipId, ShipStatsCollection, VortexShipResponse,
+    },
     Context,
 };
 
@@ -28,13 +31,16 @@ impl<'a> WowsApi<'a> {
 
     /// a shortcut for `client.get()`, wrapped reqwest error into [`IsacInfo::APIError`]
     async fn _get(&self, url: impl IntoUrl) -> Result<Response, IsacError> {
-        self.client.get(url).send().await.map_err(|err| {
-            IsacInfo::APIError {
-                msg: err.to_string(),
-            }
-            .into()
-        })
+        self.client.get(url).send().await.map_err(Self::_err_wrap)
     }
+    /// easily wrapped [`reqwest::Error`] with [`IsacInfo::APIError`]
+    fn _err_wrap(err: reqwest::Error) -> IsacError {
+        IsacInfo::APIError {
+            msg: err.to_string(),
+        }
+        .into()
+    }
+
     /// get player's details with region and uid
     pub async fn player_personal_data(
         &self,
@@ -66,7 +72,7 @@ impl<'a> WowsApi<'a> {
         let res = self
             ._get(url)
             .await?
-            .json::<VortexPlayerSearchResponse>()
+            .json::<VortexPlayerSearchRes>()
             .await
             .unwrap();
 
@@ -77,25 +83,24 @@ impl<'a> WowsApi<'a> {
         };
         Ok(res.data)
     }
-    /// searching clan by its name or tag
-    ///
-    /// detail: true if you need clan's rename history and members
-    pub async fn clans(&self, region: &Region, clan_name: &str) -> Result<Clan, IsacError> {
+    /// searching clan by its name or tag, It will never be a empty vec
+    pub async fn clans(
+        &self,
+        region: &Region,
+        clan_name: &str,
+    ) -> Result<Vec<PartialClan>, IsacError> {
         let Ok(url) = region.clan_url(format!("/api/search/autocomplete/?search={clan_name}&type=clans")) else {
             Err(IsacInfo::InvalidClan { clan: clan_name.to_string() })?
         };
-        let res = self
-            ._get(url)
-            .await?
-            .json::<ClanSearchJson>()
-            .await
-            .unwrap();
-        let clan = res
-            .search_autocomplete_result
-            .and_then(|mut clans| clans.get_mut(0).map(mem::take));
+        let mut res = self._get(url).await?.json::<ClanSearchRes>().await.unwrap();
+        let clans = res.search_autocomplete_result.take().map(|clan| {
+            clan.into_iter()
+                .map(|c| c.to_partial_clan(*region))
+                .collect::<Vec<_>>()
+        });
 
-        match clan {
-            Some(clan) => Ok(clan.into()),
+        match clans {
+            Some(clans) => Ok(clans),
             None => Err(IsacInfo::ClanNotFound {
                 clan: clan_name.to_string(),
                 region: *region,
@@ -103,11 +108,15 @@ impl<'a> WowsApi<'a> {
         }
     }
     /// get a player clan by his uid, will return a default clan if the player is not in any clan
-    pub async fn player_clan(&self, region: &Region, player_uid: u64) -> Result<Clan, IsacError> {
+    pub async fn player_clan(
+        &self,
+        region: &Region,
+        player_uid: u64,
+    ) -> Result<PartialClan, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"))?;
         // again, custom parsing? test url: https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
         let js_value = self._get(url).await?.json::<Value>().await.unwrap();
-        Ok(Clan::try_from(js_value)?) // will return a default clan if the player is not in any clan
+        Ok(PartialClan::parse(js_value, *region)?) // will return a default clan if the player is not in any clan
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still
@@ -122,7 +131,7 @@ impl<'a> WowsApi<'a> {
     //     let url = region.api_url("/wows/ships/stats/")?;
     //     let mut query = vec![
     //         ("application_id", self.token.to_string()),
-    //         ("lang", "en".to_string()),
+    //         ("language", "en".to_string()),
     //         ("account_id", uid.to_string()),
     //         ("extra", "pvp_div2, pvp_div3, pvp_solo".to_string()),
     //     ];
@@ -175,7 +184,7 @@ impl<'a> WowsApi<'a> {
 
         let ship_stats_merged = try_join_all(requests)
             .await
-            .map_err(|err| IsacError::UnknownError(Box::new(err)))?
+            .map_err(Self::_err_wrap)?
             .into_iter()
             .map(ShipStatsCollection::try_from)
             .collect::<Result<Vec<_>, _>>()?
@@ -185,11 +194,79 @@ impl<'a> WowsApi<'a> {
 
         Ok(ship_stats_merged)
     }
-    pub async fn clan_detail(&self, _clan: Clan) {}
+    /// clan details from vortex
+    pub async fn clan_stats(&self, region: Region, clan_id: u64) -> Result<Clan, IsacError> {
+        let url = region.clan_url(format!("/api/clanbase/{clan_id}/claninfo/"))?;
+        let mut clan: Clan = self
+            ._get(url)
+            .await?
+            .json::<ClanRes>()
+            .await
+            .unwrap()
+            .into();
+        // insert the region here
+        clan.info.region = region;
+        Ok(clan)
+    }
+
+    /// clan members from vortex
+    ///
+    /// ## mode: "cvc", "pvp"
+    pub async fn clan_members(
+        &self,
+        region: Region,
+        clan_id: u64,
+        mode: Option<&str>,
+        season: Option<u32>,
+    ) -> Result<ClanMemberRes, IsacError> {
+        let url = region.clan_url(format!("/api/members/{clan_id}/"))?;
+        let mut query = vec![("battle_type", mode.unwrap_or("pvp").to_string())];
+        if let Some(season) = season {
+            query.push(("season", season.to_string()))
+        }
+        let clan = self
+            .client
+            .get(url)
+            .query(&query)
+            .send()
+            .await
+            .map_err(Self::_err_wrap)?
+            .json::<ClanMemberRes>()
+            .await
+            .unwrap();
+        Ok(clan)
+    }
+
+    /// clan details from official api
+    pub async fn clan_details(
+        &self,
+        region: Region,
+        clan_id: u64,
+    ) -> Result<ClanDetail, IsacError> {
+        let url = region.api_url(format!("/wows/clans/info/{clan_id}"))?;
+        let query = vec![
+            ("application_id", self.token.to_string()),
+            ("language", "en".to_string()),
+            ("clan_id", clan_id.to_string()),
+            // ("extra", "members".to_string()),
+        ];
+        let clan_res: ClanDetailRes = self
+            .client
+            .get(url)
+            .query(&query)
+            .send()
+            .await
+            .map_err(Self::_err_wrap)?
+            .json::<ClanDetailRes>()
+            .await
+            .unwrap()
+            .into();
+        clan_res.data()
+    }
 }
 
 #[derive(Deserialize, Debug)]
-struct VortexPlayerSearchResponse {
+struct VortexPlayerSearchRes {
     pub status: String,
     pub error: Option<String>,
     pub data: Vec<VortexPlayerSearch>,
@@ -210,26 +287,27 @@ impl Display for VortexPlayerSearch {
 }
 
 #[derive(Debug, Deserialize)]
-struct ClanSearchJson {
-    search_autocomplete_result: Option<Vec<ClanSearchJsonClan>>,
+struct ClanSearchRes {
+    search_autocomplete_result: Option<Vec<ClanSearchResClan>>,
 }
 
-/// this is just a temp struct wait for converting to [`Clan`]
+/// this is just a temp struct wait for converting to [`PartialClan`]
 #[derive(Debug, Deserialize, Default)]
-struct ClanSearchJsonClan {
+struct ClanSearchResClan {
     id: u64,
     tag: String,
     hex_color: String,
     name: String,
 }
 
-impl From<ClanSearchJsonClan> for Clan {
-    fn from(value: ClanSearchJsonClan) -> Self {
-        Clan {
-            tag: value.tag,
-            color: value.hex_color,
-            id: value.id,
-            name: value.name,
+impl ClanSearchResClan {
+    fn to_partial_clan(self, region: Region) -> PartialClan {
+        PartialClan {
+            tag: self.tag,
+            color: self.hex_color,
+            id: self.id,
+            name: self.name,
+            region,
         }
     }
 }

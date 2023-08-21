@@ -11,53 +11,69 @@
         }
 
         .main {
-            font-family: "Roboto";
+            font-family: Roboto;
             position: relative;
             box-sizing: border-box;
             width: 1000px;
             padding: 1rem;
             display: grid;
             justify-items: stretch;
-            gap: 0.5rem 0;
+            gap: .5rem 0;
             grid-template-columns: 1fr;
             grid-auto-flow: row;
-            font-family: roboto, sans-serif;
             font-size: 1.8em;
-            color: white;
-            background-color: #343434;
+            color: #fff;
+            background-color: #343434
         }
 
         .divider {
             padding: 2px 0 0 0;
-            background-color: grey;
+            background-color: grey
         }
 
-        /* Global stats section */
-
         .global-section {
-            padding: 0.4rem 0;
             display: grid;
-
             justify-items: center;
             grid-template-columns: 1fr;
             grid-auto-flow: row;
             font-size: 1.2em;
         }
 
+        .z-index-container {
+            z-index: 2
+        }
+
         .user {
-            padding-top: 1.4em;
-            padding-bottom: 0.8em;
+            display: grid;
+            grid-template-columns: repeat(3, min-content);
+            gap: .2em;
+            justify-content: center;
+            align-items: center;
+            height: 152;
             font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, .15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: .5em;
+            align-content: center;
+            display: grid;
+            padding: .2em
         }
 
         .global-title {
-            font-size: 1em;
-            font-weight: bold;
+            padding: .4rem 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-align: center
         }
 
         .global-pr {
             justify-self: stretch;
-            margin: 0.4rem 0;
             padding: 0.8rem 0;
             display: flex;
             flex-direction: row;
@@ -65,119 +81,41 @@
             font-size: 1.1em;
         }
 
+        .global-stats-table-box {
+            padding: 15px 0;
+            gap: 10px;
+            justify-self: stretch;
+        }
+
         .global-stats-table {
             justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
             display: grid;
-            justify-items: center;
-            justify-content: space-around;
-            grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr;
-            grid-auto-flow: row;
         }
 
-
-        .global-stats-label {
-            padding: 0.5rem 0;
-        }
-
-        .global-stats-data {
-            font-weight: bold;
-            padding: 0.5rem 0;
-        }
-
-        /* Division stats section */
-
-        .division-stats-section {
-            padding: 0.4rem 0;
-            display: grid;
-            justify-content: stetch;
-            gap: 1rem 0;
-        }
-
-        .division-stats-title {
-            justify-self: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .former-name {
-            justify-self: center;
-            color: #999999;
-            font-size: 0.8em;
-        }
-
-        .ship-icon {
-            max-height: 1em;
-        }
-
-        .per-ship-table {
-            position: relative;
-            display: grid;
-            justify-items: stretch;
-            grid-template-columns: 1fr;
-            grid-auto-flow: row;
-            font-family: roboto, sans-serif;
-        }
-
-        .per-ship-name {
-            justify-self: left;
-            padding-left: 0.6em;
-            word-break: break-all;
-            font-size: 1em;
-        }
-
-        .ship-table-row {
+        .global-stats-table-row {
+            padding: 15px;
+            gap: 10px;
             justify-self: stretch;
             display: grid;
             justify-items: center;
             justify-content: space-between;
-            padding: 0.4em 0.1em 0.4em;
-            grid-template-columns: 280px 1fr 1.2fr;
-            font-size: 0.9em;
-            align-items: center;
-            gap: 0.1em;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(6, 1fr);
+            font-size: .9em
         }
 
-        .ship-table-row:nth-child(2n) {
-            background-color: #404040;
+        .global-stats-data {
+            font-weight: 700
         }
 
-        .section {
-            padding: 0.2rem;
-            display: grid;
-            align-items: top;
-            justify-items: center;
-            justify-content: stretch;
-            grid-template-columns: 1fr 1fr;
-            grid-template-areas:
-                "players-left players-right"
-        }
-
-        .players-left {
-            grid-area: players-left;
-        }
-
-        .players-right {
-            grid-area: players-right;
-        }
-
-        .rank-container {
+        .rating-container {
             letter-spacing: 0px;
             word-spacing: 0px;
         }
 
-        .rank-score {
-            vertical-align: middle;
-            height: 33px;
-        }
-
-        .division-flex {
-            display: inline-flex;
-            position: relative;
-            margin: 0 1px 0 0;
-            vertical-align: middle;
-        }
-
-        .division-color {
+        .rating-div-circle {
             display: inline-block;
             width: 30.81px;
             height: 30.81px;
@@ -191,100 +129,231 @@
             text-align: center;
             vertical-align: middle;
         }
+
+        .rating-score {
+            vertical-align: middle;
+            height: 33px;
+        }
+
+
+        .player-stats-title {
+            grid-area: title;
+            justify-self: center;
+            font-size: 1.2em;
+            font-weight: 700
+        }
+
+        .player-stats-section {
+            display: grid;
+            gap: 1rem 1rem;
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas:
+                "title title"
+                "table1 table2";
+        }
+
+        /* QA can 2 tables use same css?  */
+        .player-table-1 {
+            grid-area: table1;
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+            display: grid;
+        }
+
+        .player-table-2 {
+            grid-area: table2;
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+            display: grid;
+        }
+
+        .player-table-row-1 {
+            padding: 10px;
+            gap: 8px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            grid-template-columns: 4.5fr 1fr 1.3fr;
+            font-size: .9em
+        }
+
+        .player-table-row-2 {
+            padding: 10px;
+            gap: 8px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            grid-template-columns: 4.5fr 1fr 1.3fr;
+            font-size: .9em
+        }
+
+        .ign-break {
+            word-break: break-all;
+            justify-self: left;
+        }
     </style>
 </head>
 
 <body>
     <div class="main">
         <section class="global-section">
-            <div class="user">
-                <span style="font-size:0.5em; color: #343434;">{{region}}</span>
-                <span style="color: {{clan.color}}">[{{clan.tag}}]</span>
-                <span style="font-size:0.5em; color: #999999;">{{region}}</span>
+            <div class="z-index-container">
+                <div class="user">
+                    <span class="region-box" style="visibility:hidden">{{info.region}}</span>
+                    <span style="color: cc9966;">[{{info.tag}}]</span>
+                    <span class="region-box">{{info.region}}</span>
+                </div>
+                <div class="global-title">{{info.name}}</div>
             </div>
-            <div class="global-title">{{clan.name}}</div>
-            <div class="global-pr" style="background-color: {{season.color}};">
-                <span class="league">{{season.league_name}}</span>
-                <span class="division">&nbsp;{{season.division}}&nbsp;</span>
-                <span class="rating">{{season.division_rating}}</span>
+            <div class="global-pr" style="background-color: {{alpha.now.color}};"><span
+                    class="pr-data">{{alpha.now.league}} {{alpha.now.division}} {{alpha.now.division_rating}}</span>
             </div>
-            <div class="global-stats-table">
-                <div class="empty"></div>
-                <div class="global-stats-label battles-label">Battles</div>
-                <div class="global-stats-label winrate-label">Win rate</div>
-                <div class="global-stats-label battles-label">Record</div>
-                <div class="global-stats-label battles-label">Win streak</div>
+            <div class="global-stats-table-box">
+                <div class="global-stats-table">
+                    <div class="global-stats-table-row">
+                        <div class=" empty">Team</div>
+                        <div class=" battle-label">BTL</div>
+                        <div class=" winrate-label">Win rate</div>
+                        <div class=" rating-label">Rating</div>
+                        <div class=" record-label">Record</div>
+                        <div class=" win-streak-label">Win streak</div>
+                    </div>
+                    <div class="global-stats-table-row">
 
-                <div class="global-stats-label team-tag">Alpha</div>
-                <div class="global-stats-data battles-data">{{season.battles}}</div>
-                <div class="global-stats-data winrate-data" style="color: {{season.winrate.color}};">
-                    {{season.winrate.value}}%</div>
-                <div class="global-stats-data battles-data rank-container">
-                    <span class="division-flex">
-                        <div class="division-color" style="border-color:{{season.max.color}};">{{season.max.division}}
+                        <div class="global-stats-data battle-data">Alpha</div>
+                        <div class="global-stats-data exp-data ">
+                            {{alpha.battles}}</div>
+                        <div class="global-stats-data winrate-data " style="color: {{alpha.winrate.color}};">
+                            {{alpha.winrate.value}}%
                         </div>
-                    </span>
-                    <span class="rank-score">{{season.max.division_rating}}</span>
-                </div>
-                <div class="global-stats-data avg-dmg-data">{{season.win_streak}}</div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{alpha.now.color}}">
+                                    {{alpha.now.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{alpha.now.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{alpha.max.color}};">
+                                    {{alpha.max.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{alpha.max.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data win-streak-label">{{alpha.win_streak}}</div>
+                    </div>
+                    <div class="global-stats-table-row">
 
-                <div class="global-stats-label team-tag">Bravo</div>
-                <div class="global-stats-data battles-data">{{season.bravo.battles}}</div>
-                <div class="global-stats-data winrate-data" style="color: {{season.bravo.winrate.color}};">
-                    {{season.bravo.winrate.value}}%</div>
-                <div class="global-stats-data battles-data rank-container">
-                    <span class="division-flex">
-                        <div class="division-color" style="border-color:{{season.bravo.max.color}};">
-                            {{season.bravo.max.division}}</div>
-                    </span>
-                    <span class="rank-score">{{season.bravo.max.division_rating}}</span>
+                        <div class="global-stats-data battle-data">Bravo</div>
+                        <div class="global-stats-data exp-data ">
+                            {{bravo.battles}}</div>
+                        <div class="global-stats-data winrate-data " style="color: {{bravo.winrate.color}};">
+                            {{bravo.winrate.value}}%
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{bravo.now.color}}">
+                                    {{bravo.now.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{bravo.now.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{bravo.max.color}};">
+                                    {{bravo.max.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{bravo.max.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data win-streak-label">{{bravo.win_streak}}</div>
+                    </div>
                 </div>
-                <div class="global-stats-data avg-dmg-data">{{season.bravo.win_streak}}</div>
             </div>
         </section>
+
         <div class="divider"></div>
-        <section class="division-stats-section">
-            <div class="division-stats-title">Most valuable players(S{{season.season}})</div>
-            <div class="section">
-                <div class="players-left">
-                    <div class="per-ship-table">
-                        <div class="ship-table-row">
-                            <div class="per-ship-lbl per-ship-name">Player</div>
-                            <div class="per-ship-lbl battles-label">Battles</div>
-                            <div class="per-ship-lbl winrate-label">Win rate</div>
-                        </div>
-                        {{#season.players_left}}
-                        <div class="ship-table-row">
-                            <div class="per-ship-name">{{name}}</div>
-                            <div class="per-ship-battles">{{battles}}</div>
-                            <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
-                        </div>
-                        {{/season.players_left}}
-                    </div>
+        <section class="player-stats-section">
+            <div class="player-stats-title">Most valuable players(S{{alpha.season}})</div>
+            <div class="player-table-1">
+                <div class="player-table-row-1">
+                    <div>Player</div>
+                    <div>BTL</div>
+                    <div>WR</div>
                 </div>
-                <div class="players-right">
-                    <div class="per-ship-table">
-                        <div class="ship-table-row">
-                            <div class="per-ship-lbl per-ship-name">Player</div>
-                            <div class="per-ship-lbl battles-label">Battles</div>
-                            <div class="per-ship-lbl winrate-label">Win rate</div>
-                        </div>
-                        {{#season.players_right}}
-                        <div class="ship-table-row">
-                            <div class="per-ship-name">{{name}}</div>
-                            <div class="per-ship-battles">{{battles}}</div>
-                            <div class="per-ship-winrate" style="color: {{winrate.color}}">{{winrate.value}}%</div>
-                        </div>
-                        {{/season.players_right}}
-                    </div>
+                {{#members_left}}
+                <div class="player-table-row-1">
+                    <div class="ign-break">{{ign}}</div>
+                    <div>{{battles}}</div>
+                    <div style="color: {{winrate.color}};">{{winrate.value}}%</div>
                 </div>
+                {{/members_left}}
             </div>
-            <!-- <div class="divider"></div> 
-        <div class="signature">[PANTS]B2U</div>-->
+            <div class="player-table-2">
+                <div class="player-table-row-2">
+                    <div>Player</div>
+                    <div>BTL</div>
+                    <div>WR</div>
+                </div>
+                {{#members_right}}
+                <div class="player-table-row-2">
+                    <div class="ign-break">{{ign}}</div>
+                    <div>{{battles}}</div>
+                    <div style="color: {{winrate.color}};">{{winrate.value}}%</div>
+                </div>
+                {{/members_right}}
+            </div>
+
+        </section>
     </div>
 </body>
 
 </html>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('global-stats-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let _1 = document.getElementsByClassName('player-table-row-1');
+    for (let i = 0; i < _1.length; i++) {
+        if (i % 2 != 0 && i == (_1.length - 1)) {
+            _1[i].style.backgroundColor = "#383838";
+            _1[i].style.borderBottomLeftRadius = "10px";
+            _1[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            _1[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let _2 = document.getElementsByClassName('player-table-row-2');
+    for (let i = 0; i < _2.length; i++) {
+        if (i % 2 != 0 && i == (_2.length - 1)) {
+            _2[i].style.backgroundColor = "#383838";
+            _2[i].style.borderBottomLeftRadius = "10px";
+            _2[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            _2[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
 <script>
     // round main height
     window.addEventListener("load", () => {

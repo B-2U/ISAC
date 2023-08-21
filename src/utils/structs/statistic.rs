@@ -82,6 +82,7 @@ impl Default for StatisticValue {
 
 #[derive(Clone, Copy, Debug)]
 pub enum StatisticValueType<'a> {
+    /// remember * 100.0 first, e.g. 75.5% use 75.5
     Winrate {
         value: f64,
     },

@@ -7,13 +7,13 @@ use crate::{
     utils::{
         structs::{
             template_data::{
-                OverallData,
-                OverallDataClass,
-                OverallDataDiv,
-                OverallDataTier,
+                OverallTemplate,
+                OverallTemplateClass,
+                OverallTemplateDiv,
+                OverallTemplateTier,
                 Render, // Render trait一定要在這裡也 use 嗎?
-                SingleShipData,
-                SingleShipDataSub,
+                SingleShipTemplate,
+                SingleShipTemplateSub,
             },
             Linked, Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier,
             Statistic,
@@ -24,7 +24,7 @@ use crate::{
 };
 
 /// account / warship stats
-#[poise::command(slash_command)] // , rename = "wws"
+#[poise::command(slash_command, rename = "wws-")]
 pub async fn wws_slash(
     ctx: Context<'_>,
     #[description = "specific warship, default: account's overall stats"]
@@ -118,7 +118,7 @@ async fn func_ship(
     let sub_modes = if let Mode::Rank = mode {
         None
     } else {
-        Some(SingleShipDataSub::new(
+        Some(SingleShipTemplateSub::new(
             ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
             ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
             ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
@@ -135,7 +135,7 @@ async fn func_ship(
                 .map(|p| p.rank)
         });
 
-    let data = SingleShipData {
+    let data = SingleShipTemplate {
         ship,
         ranking,
         main_mode_name: mode.display_name(),
@@ -166,13 +166,13 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
 
     // wws
     let ships = player.all_ships(&ctx).await?;
-    let div = OverallDataDiv::new(
+    let div = OverallTemplateDiv::new(
         ships.to_statistic(&ctx.data().expected_js, Mode::Pvp),
         ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
         ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
         ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
     );
-    let class: OverallDataClass = ships
+    let class: OverallTemplateClass = ships
         .clone()
         .sort_class(&ctx)
         .into_iter()
@@ -184,7 +184,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         })
         .collect::<HashMap<ShipClass, Statistic>>()
         .into();
-    let tier: OverallDataTier = ships
+    let tier: OverallTemplateTier = ships
         .sort_tier(&ctx)
         .into_iter()
         .map(|(class, ships)| {
@@ -195,7 +195,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         })
         .collect::<HashMap<ShipTier, Statistic>>()
         .into();
-    let overall_data = OverallData {
+    let overall_data = OverallTemplate {
         div,
         tier,
         class,

@@ -58,7 +58,7 @@ impl Region {
             _ => None,
         }
     }
-    /// return the corresponding vortex url
+    /// vortex url ( https://vortex.worldofwarships.asia )
     pub fn vortex_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
         let base = match self {
             Region::Asia => "https://vortex.worldofwarships.asia",
@@ -67,7 +67,7 @@ impl Region {
         };
         Self::_construct_url(base, sub_url)
     }
-    /// official api url
+    /// official api url ( https://api.worldofwarships.asia )
     pub fn api_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
         let base = match self {
             Region::Asia => "https://api.worldofwarships.asia",
@@ -77,7 +77,7 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
 
-    /// player profile url
+    /// player profile url ( https://profile.worldofwarships.asia )
     pub fn profile_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
         let base = match self {
             Region::Asia => "https://profile.worldofwarships.asia",
@@ -87,7 +87,7 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
 
-    /// return the corresponding vortex url
+    /// number url ( https://asia.wows-numbers.com )
     pub fn number_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
         let base = match self {
             Region::Asia => "https://asia.wows-numbers.com",
@@ -97,7 +97,7 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
 
-    /// clan api url
+    /// clan api url ( https://clans.worldofwarships.asia )
     pub fn clan_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
         let base = match self {
             Region::Asia => "https://clans.worldofwarships.asia",
@@ -129,6 +129,17 @@ impl Region {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GuildDefaultRegion(pub HashMap<GuildId, Region>);
+
+impl GuildDefaultRegion {
+    /// get the server default region if exist, return [`Region::Asia`] otherwise
+    pub fn get_default(&self, guild_id: Option<GuildId>) -> Region {
+        if let Some(guild_id) = guild_id {
+            self.0.get(&guild_id).copied().unwrap_or_default()
+        } else {
+            Region::Asia
+        }
+    }
+}
 
 impl LoadSaveFromJson for GuildDefaultRegion {
     const PATH: &'static str = "./user_data/guild_default_region.json";

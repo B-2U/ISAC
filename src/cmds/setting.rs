@@ -49,7 +49,6 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
             {
                 let mut guard = ctx.data().guild_default.write();
                 guard.0.insert(guild_id, region);
-                // QA async not possible here right? since its in a RWlock
                 guard.save_json_sync();
             }
             let _r = ctx
@@ -65,10 +64,7 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
             let guard = ctx.data().guild_default.read();
             guard
                 .0
-                .get(
-                    &ctx.guild_id()
-                        .unwrap_or_else(|| unreachable!("it should be dealed aboved")),
-                )
+                .get(&ctx.guild_id().expect("it should be dealed aboved"))
                 .copied()
                 .unwrap_or_default()
         };

@@ -11,140 +11,143 @@
         }
 
         .main {
-            font-family: "Roboto";
+            font-family: Roboto;
             position: relative;
             box-sizing: border-box;
             width: 1000px;
             padding: 1rem;
             display: grid;
             justify-items: stretch;
-            gap: 0.5rem 0;
+            gap: .5rem 0;
             grid-template-columns: 1fr;
             grid-auto-flow: row;
-            font-family: roboto, sans-serif;
             font-size: 1.8em;
-            color: white;
-            background-color: #343434;
+            color: #fff;
+            background-color: #343434
         }
 
         .divider {
             padding: 2px 0 0 0;
-            background-color: grey;
+            background-color: grey
         }
 
-        /* Global stats section */
-
         .global-section {
-            padding: 0.4rem 0;
             display: grid;
-
             justify-items: center;
             grid-template-columns: 1fr;
             grid-auto-flow: row;
-            font-size: 1.2em;
+            font-size: 1.2em
+        }
+
+        .z-index-container {
+            z-index: 2
         }
 
         .user {
-            padding-top: 1.4em;
-            padding-bottom: 0.8em;
+            display: grid;
+            grid-template-columns: repeat(3, min-content);
+            gap: .2em;
+            justify-content: center;
+            align-items: center;
+            height: 152;
             font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, .15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: .5em;
+            align-content: center;
+            display: grid;
+            padding: .2em
         }
 
         .global-title {
-            font-size: 1em;
-            font-weight: bold;
-        }
-
-        .global-pr {
-            justify-self: stretch;
-            margin: 0.4rem 0;
-            padding: 0.8rem 0;
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            font-size: 1.1em;
+            padding: .4rem 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-align: center
         }
 
         .global-stats-table {
+            padding: 15px 0;
+            gap: 10px;
             justify-self: stretch;
             display: grid;
             justify-items: center;
             justify-content: space-around;
-            grid-template-columns: repeat(4, 1fr);
-            grid-auto-flow: row;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row
         }
 
+        .label-text {
+            color: #eee
+        }
 
-        .global-stats-label {
-            padding: 0.5rem 0;
+        .global-stats-box {
+            background-color: #393939;
+            border-radius: 10px;
+            padding: .3em;
+            gap: .3em;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center
         }
 
         .global-stats-data {
-            font-weight: bold;
-            padding: 0.5rem 0;
+            font-weight: 700
         }
-
-        /* Division stats section */
-
-        .division-stats-section {
-            padding: 0.4rem 0;
-            display: grid;
-            justify-content: stetch;
-            gap: 1rem 0;
-        }
-
-        .division-stats-title {
-            justify-self: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        /* Ship class stats section */
 
         .ship-class-stats-section {
-            padding: 0.4rem 0;
+            padding: .4rem 0;
             display: grid;
             align-items: center;
             justify-items: center;
             justify-content: stretch;
             gap: 1rem 1rem;
-            grid-template-columns: 300px 1fr;
-            grid-template-areas:
-                "title title"
-                "graph table";
+            grid-template-columns: min-content 1fr;
+            grid-template-areas: "title title" "graph table"
         }
 
         .ship-class-stats-title {
             grid-area: title;
             font-size: 1.2em;
-            font-weight: bold;
+            font-weight: 700
         }
 
         .ship-class-stats-graph {
             grid-area: graph;
-            max-width: 360px;
-            max-height: 240px;
+            max-width: 300px;
+            max-height: 240px
         }
 
         .ship-class-stats-table {
-            grid-area: table;
-            gap: 0.4em;
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px
+        }
+
+        .ship-class-stats-table-row {
             justify-self: stretch;
             display: grid;
             justify-items: center;
-            justify-content: space-around;
-            grid-template-columns: repeat(5, auto);
-            grid-auto-flow: row;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(5, 1fr);
+            font-size: .8em
+        }
+
+        .ship-class-stats-data {
+            font-weight: 700
         }
 
         .former-name {
             justify-self: center;
-            color: #999999;
-            font-size: 0.8em;
-        }
-
-        .ship-icon {
-            max-height: 1em;
+            color: #999;
+            font-size: .8em
         }
     </style>
     <script src="./renderer/script/chart.min.js">
@@ -154,48 +157,39 @@
         window.addEventListener("load", () => {
             let ctx = document.querySelector(".ship-class-stats-graph").getContext('2d');
             new Chart(ctx, {
-                type: "radar", // 圖表類型
+                type: "bar", // 圖表類型
                 data: {
-                    labels: ["Cruiser", "CV", "DD", "BB", "Total", "CW"], // 標題
+                    labels: ["<45%", "45%", "50%", "55%", "60%", "65%", ">70%"], // 標題
                     datasets: [{
-                        data: [{{ strength.ca }}, {{ strength.cv }}, {{ strength.dd }}, {{ strength.bb }}, {{ strength.total }}, {{ strength.cw }}], // 資料
-            borderColor: "#196ba7",
+                        data: [
+                            {{ stats.wr_dis.w0 }}, {{ stats.wr_dis.w45 }}, {{ stats.wr_dis.w50 }}, {{ stats.wr_dis.w55 }}, {{ stats.wr_dis.w60 }}, {{ stats.wr_dis.w65 }}, {{ stats.wr_dis.w70 }}], // 資料
+            // borderColor: "#196ba7",
             backgroundColor: "rgba(25, 107, 167, 0.5)"
                     }]
                 },
             options: {
             animation: { duration: 0 },
-            scale: {
-                min: 0,
-                max: 100
-            },
             plugins: {
                 legend: {
                     display: false
                 }
             },
             scales: {
-                r: {
-                    ticks: {
-                        display: false
-                    },
-                    pointLabels: {
-                        color: "white",
-                        font: {
-                            size: 15
-                        }
-                    },
+                x: {
                     grid: {
-                        color: "#505050"
+                        color: "rgba(100, 100, 100, 0.3)" // X-axis grid color
                     },
-                    angleLines: {
-                        color: "#505050"
+                    ticks: {
+                        color: "grey" // X-axis label color
                     }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
+                },
+                y: {
+                    grid: {
+                        color: "rgba(100, 100, 100, 0.3)" // X-axis grid color
+                    },
+                    ticks: {
+                        color: "grey" // Y-axis label color
+                    }
                 }
             }
         }
@@ -208,63 +202,100 @@
 <body>
     <div class="main">
         <section class="global-section">
-            <div class="user">
-                <span style="font-size:0.5em; color: #343434;">{{region}}</span>
-                <span style="color:{{clan.color}};">[{{clan.tag}}]</span>
-                <span style="font-size:0.5em; color: #999999;">{{region}}</span>
-            </div>
-            <div class="global-title">{{clan.name}}</div>
-            <div class="global-pr" style="background-color: {{pr.color}};"><span class="pr-data">PR {{pr.value}}</span>
-            </div>
-            <div class="global-stats-table">
-                <div class="global-stats-label battles-label">MBRs</div>
-                <div class="global-stats-label battles-label">Active MBRs</div>
-                <div class="global-stats-label winrate-label">Win rate</div>
-                <div class="global-stats-label avg-dmg-label">Avg. dmg</div>
+            <div class="z-index-container">
+                <div class="user">
+                    <span class="region-box" style="visibility:hidden">{{info.region}}</span>
+                    <span style="color: {{info.color}};">[{{info.tag}}]</span>
+                    <span class="region-box">{{info.region}}</span>
+                </div>
+                <div class="global-title">{{info.name}}</div>
 
-                <div class="global-stats-data battles-data">{{mbr_count}}</div>
-                <div class="global-stats-data battles-data">{{active_mbr_count}}</div>
-                <div class="global-stats-data winrate-data" style="color: {{winrate.color}};">{{winrate.value}}%</div>
-                <div class="global-stats-data avg-dmg-data" style="color: {{dmg.color}};">{{dmg.value}}</div>
+            </div>
+
+            <div class="global-stats-table">
+                <div class="global-stats-box">
+                    <div class="global-stats-label battles-label label-text">MBRs</div>
+                    <div class="global-stats-data battles-data">{{stats.members}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label winrate-label label-text">Actives</div>
+                    <div class="global-stats-data winrate-data">
+                        {{stats.active_members}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-dmg-label label-text">Win rate</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: {{stats.winrate.color}};">
+                        {{stats.winrate.value}}%
+                    </div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-frags-label label-text">Dmg</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{stats.dmg.color}};">
+                        {{stats.dmg.value}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-planes-label label-text">Exp</div>
+                    <div class="global-stats-data avg-planes-data">
+                        {{stats.exp}}</div>
+                </div>
             </div>
         </section>
+
         <div class="divider"></div>
         <section class="ship-class-stats-section">
-            <div class="ship-class-stats-title">Clan battle</div>
+            <div class="ship-class-stats-title">Clan Statistic</div>
             <canvas class="ship-class-stats-graph"></canvas>
-            <div class="ship-class-stats-table">
-                <div class="ship-class-stats-label empty"></div>
-                <div class="ship-class-stats-label pr-label">Battles</div>
-                <div class="ship-class-stats-label winrate-label">Win rate</div>
-                <div class="ship-class-stats-label avg-dmg-label">Rating</div>
-                <div class="ship-class-stats-label avg-frags-label">Record</div>
 
-                {{#clan.seasons}}
-                <div class="ship-class-stats-data" style="color: {{color}}">S{{season}}</div>
-                <div class="ship-class-stats-data pr-data ship-class-destroyer">{{battles}}</div>
-                <div class="ship-class-stats-data winrate-data ship-class-destroyer" style="color:{{winrate.color}}">
-                    {{winrate.value}}%</div>
-                <div class="ship-class-stats-data avg-dmg-data ship-class-destroyer">
-                    <span style="color:{{color}};font-weight:bold;">{{division}}</span>
-                    <span>{{division_rating}}</span>
+            <div class="ship-class-stats-table">
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label empty"></div>
+                    <div class="ship-class-stats-label battle-label">BTL</div>
+                    <div class="ship-class-stats-label exp-label">Win rate</div>
+                    <div class="ship-class-stats-label winrate-label">Rating</div>
+                    <div class="ship-class-stats-label avg-dmg-label">Record</div>
                 </div>
-                <div class="ship-class-stats-data avg-dmg-data ship-class-destroyer">
-                    <span style="color:{{max.color}};font-weight:bold;">{{max.division}}</span>
-                    <span>{{max.division_rating}}</span>
+                {{#seasons}}
+                <div class="ship-class-stats-table-row">
+
+                    <div class="ship-class-stats-data battle-data ship-class-cruiser">S{{season}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-cruiser">
+                        {{battles}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-cruiser"
+                        style="color: {{winrate.color}};">{{winrate.value}}%
+                    </div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-cruiser">
+                        <span style="color: {{now.color}};">{{now.division}}</span>
+                        <span>{{now.division_rating}}</span>
+                    </div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-cruiser">
+                        <span style="color: {{max.color}};">{{max.division}}</span>
+                        <span>{{max.division_rating}}</span>
+                    </div>
                 </div>
-                {{/clan.seasons}}
+                {{/seasons}}
             </div>
         </section>
-        {{#clan.renamed}}
+        {{#rename}}
         <div class="divider"></div>
-        <div class="former-name">Former: [{{name}}] {{fullname}} ({{date}})</div>
-        {{/clan.renamed}}
-        <!-- <div class="divider"></div> 
-        <div class="signature">[PANTS]B2U</div>-->
+        <div class="former-name">Former: [{{tag}}] {{name}} ({{time}})</div>
+        {{/rename}}
     </div>
 </body>
 
 </html>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('ship-class-stats-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
 <script>
     // round main height
     window.addEventListener("load", () => {

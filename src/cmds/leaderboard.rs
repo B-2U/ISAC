@@ -11,7 +11,7 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     utils::{
         structs::{
-            template_data::{LeaderboardData, Render},
+            template_data::{LeaderboardTemplate, Render},
             Region, Ship, ShipId, ShipLeaderboard, ShipLeaderboardPlayer, ShipLeaderboardShip,
             StatisticValue,
         },
@@ -28,7 +28,7 @@ pub async fn top(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> 
 }
 
 ///
-#[poise::command(slash_command)]
+#[poise::command(slash_command, rename = "top-")]
 pub async fn top_slash(
     ctx: Context<'_>,
     #[description = "warship's name"]
@@ -88,7 +88,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     };
     lb_players.truncate(truncate_len);
 
-    let data = LeaderboardData {
+    let data = LeaderboardTemplate {
         ship,
         region,
         players: lb_players,

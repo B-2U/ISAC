@@ -1,6 +1,6 @@
 use crate::{
     utils::{
-        structs::{Clan, Dogtag, Region, Ship, ShipStatsCollection},
+        structs::{Dogtag, PartialClan, Region, Ship, ShipStatsCollection},
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
     },
@@ -34,7 +34,7 @@ impl PartialPlayer {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
     /// player's clan data
-    pub async fn clan(&self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
+    pub async fn clan(&self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
         let api = WowsApi::new(ctx);
         api.player_clan(&self.region, self.uid).await
     }

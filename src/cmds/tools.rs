@@ -490,7 +490,10 @@ pub async fn clanuid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(),
         None => Region::guild_default(&ctx).await,
     };
     let clan_name = args.check(0)?;
-    let clan = WowsApi::new(&ctx).clans(&region, clan_name).await?;
+    let clan = WowsApi::new(&ctx)
+        .clans(&region, clan_name)
+        .await?
+        .swap_remove(0);
     let _r = ctx
         .reply(format!("`{}`'s UID: **{}**", clan.tag, clan.id))
         .await;
