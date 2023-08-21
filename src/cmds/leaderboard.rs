@@ -60,9 +60,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         println!("using cache");
         lb_players
     } else {
-        let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship)
-            .await
-            .map_err(|err| IsacError::UnknownError(err))?;
+        let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;
         lb_cache.insert(
             &region,
             ship.ship_id,
@@ -118,7 +116,7 @@ pub async fn fetch_ship_leaderboard(
     ctx: &Context<'_>,
     region: &Region,
     ship: &Ship,
-) -> Result<Vec<ShipLeaderboardPlayer>, Error> {
+) -> Result<Vec<ShipLeaderboardPlayer>, IsacError> {
     let res_text = ctx
         .data()
         .client
@@ -140,8 +138,8 @@ pub async fn fetch_ship_leaderboard(
     let td_selector = Selector::parse("td").unwrap();
     let span_selector = Selector::parse("span").unwrap();
 
-    let ign_uid_re = Regex::new(r"/player/(\d+),([^/]+)/")?;
-    let color_re = Regex::new(r"#[a-zA-Z\d]{6}")?;
+    let ign_uid_re = Regex::new(r"/player/(\d+),([^/]+)/").unwrap();
+    let color_re = Regex::new(r"#[a-zA-Z\d]{6}").unwrap();
 
     let mut leader_board = vec![];
 
@@ -206,7 +204,8 @@ pub async fn fetch_ship_leaderboard(
             .next()
             .unwrap()
             .replace(' ', "")
-            .parse::<u64>()?;
+            .parse::<u64>()
+            .unwrap();
 
         let player = ShipLeaderboardPlayer {
             color: "".to_string(),

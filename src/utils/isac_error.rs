@@ -93,3 +93,12 @@ pub enum IsacInfo {
     },
     AutoCompleteError,
 }
+
+impl From<reqwest::Error> for IsacError {
+    fn from(err: reqwest::Error) -> Self {
+        IsacInfo::APIError {
+            msg: err.to_string(),
+        }
+        .into()
+    }
+}
