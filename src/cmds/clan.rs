@@ -26,7 +26,7 @@ use crate::{
             ClanMember, PartialClan, StatisticValueType,
         },
         wws_api::WowsApi,
-        IsacError, IsacInfo,
+        IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context, Data, Error,
 };
@@ -101,6 +101,13 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     let clan_detail = clan_detail?;
     let clan_members = clan_members?;
     let mut clan = clan?;
+
+    // update season_number if needed
+    if clan.info.season_number == current_season_num + 1 {
+        let mut lock = ctx.data().constant.write();
+        lock.clan_season = clan.info.season_number;
+        lock.save_json_sync();
+    }
 
     let clan_rename = if clan_detail.old_tag.is_some() {
         let datetime = DateTime::<Utc>::from_utc(

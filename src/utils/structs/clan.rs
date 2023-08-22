@@ -140,6 +140,7 @@ pub struct ClanInfo {
     pub id: u64,
     pub description: String,
     pub color: String, // hex color string
+    pub season_number: u32,
     pub name: String,
     #[serde(default)]
     pub region: Region, // adding it manually in clan_deatail() after deserialized
