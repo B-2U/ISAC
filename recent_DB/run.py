@@ -14,7 +14,7 @@ sched = BlockingScheduler(timezone="GMT", job_defaults={"misfire_grace_time": 30
 
 api_key = "40651eccb00abf54ba1135af751ced1e"
 RECENT_LAST_REQUEST_LIMIT = 14
-MAX_DAY = 121
+MAX_DAY = 91
 
 
 def domain(region):

@@ -233,7 +233,7 @@ async fn func_clan_season(
         .filter(|m| m.season_number == season_num)
         .collect::<Vec<_>>();
     // early return if there's no rating
-    if ratings.len() <= 2 {
+    if ratings.len() < 2 {
         Err(IsacError::Info(IsacInfo::ClanNoBattle {
             clan: partial_clan.clone(),
             season: season_num,
