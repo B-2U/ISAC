@@ -197,6 +197,7 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         error => {
             if let Some(ctx) = error.ctx() {
                 help_buttons_msg(&ctx, OOPS).await;
+                wws_error_logging(&ctx, &error.to_string().into()).await;
             } else {
                 if let Err(e) = poise::builtins::on_error(error).await {
                     error!("Error while handling error: {}", e)
@@ -296,7 +297,7 @@ async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
     let _r = web_hook
         .execute(ctx, false, |b| {
             b.content(format!(
-                "```ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild}``` ```{error}```"
+                "``` ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} ``` ``` {error} ```"
             ))
         })
         .await;
