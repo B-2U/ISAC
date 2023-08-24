@@ -421,7 +421,7 @@ impl TryFrom<JsonValue> for ShipModeStatsPair {
 /// the battles_count should never be 0
 #[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq)]
 pub struct ShipStats {
-    #[serde(alias = "battles")]
+    #[serde(alias = "battles")] // for read old recent data
     battles_count: u64,
     wins: u64,
     damage_dealt: u64,
