@@ -113,7 +113,7 @@ async fn func_ship(
     let _typing = ctx.typing().await;
     let player = partial_player.get_player(&ctx).await?;
     let clan = player.clan(&ctx).await?;
-    let (ship_id, ship_stats) = player.single_ship(&ctx, &ship).await?;
+    let (ship_id, ship_stats) = player.single_ship(&ctx, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
     let Some(stats) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
         Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
             ign: player.ign.clone(),

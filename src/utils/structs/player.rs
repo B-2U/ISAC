@@ -51,11 +51,14 @@ impl PartialPlayer {
         &self,
         ctx: &Context<'_>,
         ship: &Ship,
-    ) -> Result<(ShipId, ShipModeStatsPair), IsacError> {
+    ) -> Result<Option<(ShipId, ShipModeStatsPair)>, IsacError> {
         let api = WowsApi::new(ctx);
-        api.statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
-            .await
-            .map(|mut c| (ship.ship_id, c.0.remove(&ship.ship_id).unwrap()))
+        let ship_pair = api
+            .statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
+            .await?
+            .0
+            .remove(&ship.ship_id);
+        Ok(ship_pair.map(|p| (ship.ship_id, p)))
     }
 }
 

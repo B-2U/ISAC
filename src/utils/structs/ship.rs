@@ -316,7 +316,7 @@ impl ShipStatsCollection {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, Copy, Hash, PartialEq, Eq, Default)]
 pub struct ShipId(pub u64);
 impl ShipId {
     /// get [`Ship`] from ShipId, None if not found
