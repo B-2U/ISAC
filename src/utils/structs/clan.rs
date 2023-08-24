@@ -265,7 +265,7 @@ pub struct ClanMember {
     #[serde(rename(deserialize = "damage_per_battle"))]
     pub dmg: f64,
     #[serde_as(deserialize_as = "DefaultOnError")]
-    pub season_id: u32, // TODO maybe can be used for updating season automatically?
+    pub season_id: u32,
     #[serde_as(deserialize_as = "DefaultOnError")]
     pub last_battle_time: u64, // unix timestamp
 }

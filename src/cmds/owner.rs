@@ -8,6 +8,7 @@ use poise::serenity_prelude::{ArgumentConvert, CacheHttp, Channel, ReactionType}
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn test(_ctx: Context<'_>, #[rest] _args: Args) -> Result<(), Error> {
+    panic!("its just a test");
     Ok(())
 }
 

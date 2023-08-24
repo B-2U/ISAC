@@ -5,7 +5,7 @@ mod dc_utils;
 mod utils;
 
 use parking_lot::RwLock;
-use poise::serenity_prelude::{self as serenity, Activity, UserId};
+use poise::serenity_prelude::{self as serenity, Activity, UserId, Webhook};
 use std::{
     collections::HashSet,
     env,
@@ -177,6 +177,7 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             if let Some(isac_err) = error.downcast_ref::<IsacError>() {
                 isac_error_handler(&ctx, isac_err).await;
             } else {
+                wws_error_logging(&ctx, &error).await;
                 error!("Error in command `{}`: {:?}", ctx.command().name, error,);
             }
         }
@@ -284,6 +285,21 @@ async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
     let channel_id = ctx.channel_id();
     let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
     let input = ctx.invocation_string();
+    let web_hook = Webhook::from_url(
+        ctx,
+        env::var("ERR_WEB_HOOK")
+            .expect("Missing web hook url")
+            .as_ref(),
+    )
+    .await
+    .unwrap();
+    let _r = web_hook
+        .execute(ctx, false, |b| {
+            b.content(format!(
+                "```ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild}``` ```{error}```"
+            ))
+        })
+        .await;
     println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
 }
 
