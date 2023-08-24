@@ -219,34 +219,34 @@
                     <span class="user-id">{{user.ign}}</span>
                     <span class="region-box">{{user.region}}</span>
                 </div>
-                <div class="global-title">Recent {{day}} days stats {{mode}}</div>
+                <div class="global-title">Recent {{day}} days stats {{main_mode_name}}</div>
             </div>
-            <div class="global-pr" style="background-color: {{avg_stats.main.pr.color}};"><span class="pr-data">PR
-                    {{avg_stats.main.pr.value}}</span></div>
+            <div class="global-pr" style="background-color: {{main.pr.color}};"><span class="pr-data">PR
+                    {{main.pr.value}}</span></div>
             <div class="global-stats-table">
                 <div class="global-stats-box">
                     <div class="global-stats-label battles-label label-text">Battles</div>
-                    <div class="global-stats-data battles-data">{{avg_stats.main.battles}}</div>
+                    <div class="global-stats-data battles-data">{{main.battles}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label winrate-label label-text">Win rate</div>
-                    <div class="global-stats-data winrate-data" style="color: {{avg_stats.main.winrate.color}};">
-                        {{avg_stats.main.winrate.value}}%</div>
+                    <div class="global-stats-data winrate-data" style="color: {{main.winrate.color}};">
+                        {{main.winrate.value}}%</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-dmg-label label-text">Dmg</div>
-                    <div class="global-stats-data avg-dmg-data" style="color: {{avg_stats.main.dmg.color}};">
-                        {{avg_stats.main.dmg.value}}</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: {{main.dmg.color}};">
+                        {{main.dmg.value}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-frags-label label-text">Frags</div>
-                    <div class="global-stats-data avg-frags-data" style="color: {{avg_stats.main.frags.color}};">
-                        {{avg_stats.main.frags.value}}</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{main.frags.color}};">
+                        {{main.frags.value}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-planes-label label-text">Planes</div>
-                    <div class="global-stats-data avg-planes-data" style="color: {{avg_stats.main.planes.color}};">
-                        {{avg_stats.main.planes.value}}</div>
+                    <div class="global-stats-data avg-planes-data" style="color: {{main.planes.color}};">
+                        {{main.planes.value}}</div>
                 </div>
             </div>
         </section>
@@ -264,78 +264,79 @@
                     <div class="division-stats-label avg-frags-label label-text">Frags</div>
                     <div class="division-stats-label avg-planes-label label-text">Planes</div>
                 </div>
-                {{#avg_stats.solo}}
+                {{#div.pvp_solo}}
                 <div class="division-stats-row">
-                    <div class="division-stats-label division-type-label division-type-solo">Solo</div>
-                    <div class="division-stats-data battles-data division-type-solo">{{avg_stats.solo.battles}}</div>
-                    <div class="division-stats-data exp-data division-type-solo"
-                        style="color: {{avg_stats.solo.exp.color}};">{{avg_stats.solo.exp.value}}</div>
-                    <div class="division-stats-data pr-data division-type-solo"
-                        style="color: {{avg_stats.solo.pr.color}};">{{avg_stats.solo.pr.value}}</div>
-                    <div class="division-stats-data winrate-data division-type-solo"
-                        style="color: {{avg_stats.solo.winrate.color}};">{{avg_stats.solo.winrate.value}}%</div>
-                    <div class="division-stats-data avg-dmg-data division-type-solo"
-                        style="color: {{avg_stats.solo.dmg.color}};">{{avg_stats.solo.dmg.value}}</div>
-                    <div class="division-stats-data avg-frags-data division-type-solo"
-                        style="color: {{avg_stats.solo.frags.color}};">{{avg_stats.solo.frags.value}}</div>
-                    <div class="division-stats-data avg-planes-data division-type-solo"
-                        style="color: {{avg_stats.solo.planes.color}};">{{avg_stats.solo.planes.value}}</div>
+                    <div class="division-stats-label division-type-label division-type-pvp_solo">Solo</div>
+                    <div class="division-stats-data battles-data division-type-pvp_solo">{{div.pvp_solo.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.exp.color}};">{{div.pvp_solo.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.pr.color}};">{{div.pvp_solo.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.winrate.color}};">{{div.pvp_solo.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.dmg.color}};">{{div.pvp_solo.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.frags.color}};">{{div.pvp_solo.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-pvp_solo"
+                        style="color: {{div.pvp_solo.planes.color}};">{{div.pvp_solo.planes.value}}</div>
                 </div>
-                {{/avg_stats.solo}}
-                {{#avg_stats.div2}}
+                {{/div.pvp_solo}}
+                {{#div.pvp_div2}}
                 <div class="division-stats-row">
-                    <div class="division-stats-label division-type-label division-type-div2">Div 2</div>
-                    <div class="division-stats-data battles-data division-type-div2">{{avg_stats.div2.battles}}</div>
-                    <div class="division-stats-data exp-data division-type-div2"
-                        style="color: {{avg_stats.div2.exp.color}};">{{avg_stats.div2.exp.value}}</div>
-                    <div class="division-stats-data pr-data division-type-div2"
-                        style="color: {{avg_stats.div2.pr.color}};">{{avg_stats.div2.pr.value}}</div>
-                    <div class="division-stats-data winrate-data division-type-div2"
-                        style="color: {{avg_stats.div2.winrate.color}};">{{avg_stats.div2.winrate.value}}%</div>
-                    <div class="division-stats-data avg-dmg-data division-type-div2"
-                        style="color: {{avg_stats.div2.dmg.color}};">{{avg_stats.div2.dmg.value}}</div>
-                    <div class="division-stats-data avg-frags-data division-type-div2"
-                        style="color: {{avg_stats.div2.frags.color}};">{{avg_stats.div2.frags.value}}</div>
-                    <div class="division-stats-data avg-planes-data division-type-div2"
-                        style="color: {{avg_stats.div2.planes.color}};">{{avg_stats.div2.planes.value}}</div>
+                    <div class="division-stats-label division-type-label division-type-pvp_div2">Div 2</div>
+                    <div class="division-stats-data battles-data division-type-pvp_div2">{{div.pvp_div2.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.exp.color}};">{{div.pvp_div2.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.pr.color}};">{{div.pvp_div2.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.winrate.color}};">{{div.pvp_div2.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.dmg.color}};">{{div.pvp_div2.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.frags.color}};">{{div.pvp_div2.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-pvp_div2"
+                        style="color: {{div.pvp_div2.planes.color}};">{{div.pvp_div2.planes.value}}</div>
                 </div>
-                {{/avg_stats.div2}}
-                {{#avg_stats.div3}}
+                {{/div.pvp_div2}}
+                {{#div.pvp_div3}}
                 <div class="division-stats-row">
-                    <div class="division-stats-label division-type-label division-type-div3">Div 3</div>
-                    <div class="division-stats-data battles-data division-type-div3">{{avg_stats.div3.battles}}</div>
-                    <div class="division-stats-data exp-data division-type-div3"
-                        style="color: {{avg_stats.div3.exp.color}};">{{avg_stats.div3.exp.value}}</div>
-                    <div class="division-stats-data pr-data division-type-div3"
-                        style="color: {{avg_stats.div3.pr.color}};">{{avg_stats.div3.pr.value}}</div>
-                    <div class="division-stats-data winrate-data division-type-div3"
-                        style="color: {{avg_stats.div3.winrate.color}};">{{avg_stats.div3.winrate.value}}%</div>
-                    <div class="division-stats-data avg-dmg-data division-type-div3"
-                        style="color: {{avg_stats.div3.dmg.color}};">{{avg_stats.div3.dmg.value}}</div>
-                    <div class="division-stats-data avg-frags-data division-type-div3"
-                        style="color: {{avg_stats.div3.frags.color}};">{{avg_stats.div3.frags.value}}</div>
-                    <div class="division-stats-data avg-planes-data division-type-div3"
-                        style="color: {{avg_stats.div3.planes.color}};">{{avg_stats.div3.planes.value}}</div>
+                    <div class="division-stats-label division-type-label division-type-pvp_div3">Div 3</div>
+                    <div class="division-stats-data battles-data division-type-pvp_div3">{{div.pvp_div3.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.exp.color}};">{{div.pvp_div3.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.pr.color}};">{{div.pvp_div3.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.winrate.color}};">{{div.pvp_div3.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.dmg.color}};">{{div.pvp_div3.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.frags.color}};">{{div.pvp_div3.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-pvp_div3"
+                        style="color: {{div.pvp_div3.planes.color}};">{{div.pvp_div3.planes.value}}</div>
                 </div>
-                {{/avg_stats.div3}}
-                {{#avg_stats.rank}}
+                {{/div.pvp_div3}}
+                {{#div.rank_solo}}
                 <div class="division-stats-row">
-                    <div class="division-stats-label division-type-label division-type-rank">Rank</div>
-                    <div class="division-stats-data battles-data division-type-rank">{{avg_stats.rank.battles}}</div>
-                    <div class="division-stats-data exp-data division-type-rank"
-                        style="color: {{avg_stats.rank.exp.color}};">{{avg_stats.rank.exp.value}}</div>
-                    <div class="division-stats-data pr-data division-type-rank"
-                        style="color: {{avg_stats.rank.pr.color}};">{{avg_stats.rank.pr.value}}</div>
-                    <div class="division-stats-data winrate-data division-type-rank"
-                        style="color: {{avg_stats.rank.winrate.color}};">{{avg_stats.rank.winrate.value}}%</div>
-                    <div class="division-stats-data avg-dmg-data division-type-rank"
-                        style="color: {{avg_stats.rank.dmg.color}};">{{avg_stats.rank.dmg.value}}</div>
-                    <div class="division-stats-data avg-frags-data division-type-rank"
-                        style="color: {{avg_stats.rank.frags.color}};">{{avg_stats.rank.frags.value}}</div>
-                    <div class="division-stats-data avg-planes-data division-type-rank"
-                        style="color: {{avg_stats.rank.planes.color}};">{{avg_stats.rank.planes.value}}</div>
+                    <div class="division-stats-label division-type-label division-type-rank_solo">Rank</div>
+                    <div class="division-stats-data battles-data division-type-rank_solo">{{div.rank_solo.battles}}
+                    </div>
+                    <div class="division-stats-data exp-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.exp.color}};">{{div.rank_solo.exp.value}}</div>
+                    <div class="division-stats-data pr-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.pr.color}};">{{div.rank_solo.pr.value}}</div>
+                    <div class="division-stats-data winrate-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.winrate.color}};">{{div.rank_solo.winrate.value}}%</div>
+                    <div class="division-stats-data avg-dmg-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.dmg.color}};">{{div.rank_solo.dmg.value}}</div>
+                    <div class="division-stats-data avg-frags-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.frags.color}};">{{div.rank_solo.frags.value}}</div>
+                    <div class="division-stats-data avg-planes-data division-type-rank_solo"
+                        style="color: {{div.rank_solo.planes.color}};">{{div.rank_solo.planes.value}}</div>
                 </div>
-                {{/avg_stats.rank}}
+                {{/div.rank_solo}}
             </div>
         </section>
         <div class="divider"></div>
@@ -353,19 +354,22 @@
                     <div class="per-ship-lbl avg-frags-label label-text">Frags</div>
                     <div class="per-ship-lbl avg-planes-label label-text">Planes</div>
                 </div>
-                {{#all_ships}}
+                {{#ships}}
                 <div class="ship-table-row">
-                    <div class="per-ship-tier ship-storo">{{tier}}</div>
-                    <div class="per-ship-name ship-storo">{{name}}</div>
-                    <div class="per-ship-battles ship-storo">{{battles}}</div>
-                    <div class="per-ship-exp ship-storo" style="color: {{exp.color}};">{{exp.value}}</div>
-                    <div class="per-ship-pr ship-storo" style="color: {{pr.color}};">{{pr.value}}</div>
-                    <div class="per-ship-winrate ship-storo" style="color: {{winrate.color}};">{{winrate.value}}%</div>
-                    <div class="per-ship-dmg ship-storo" style="color: {{dmg.color}};">{{dmg.value}}</div>
-                    <div class="per-ship-frags ship-storo" style="color: {{frags.color}};">{{frags.value}}</div>
-                    <div class="per-ship-planes ship-storo" style="color: {{planes.color}};">{{planes.value}}</div>
+                    <div class="per-ship-tier ship-storo">{{info.tier}}</div>
+                    <div class="per-ship-name ship-storo">{{info.short_name}}</div>
+                    <div class="per-ship-battles ship-storo">{{stats.battles}}</div>
+                    <div class="per-ship-exp ship-storo" style="color: {{stats.exp.color}};">{{stats.exp.value}}</div>
+                    <div class="per-ship-pr ship-storo" style="color: {{stats.pr.color}};">{{stats.pr.value}}</div>
+                    <div class="per-ship-winrate ship-storo" style="color: {{stats.winrate.color}};">
+                        {{stats.winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{stats.dmg.color}};">{{stats.dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{stats.frags.color}};">{{stats.frags.value}}
+                    </div>
+                    <div class="per-ship-planes ship-storo" style="color: {{stats.planes.color}};">
+                        {{stats.planes.value}}</div>
                 </div>
-                {{/all_ships}}
+                {{/ships}}
             </div>
 
             <!--  <div class="signature">[PANTS]B2U</div>  -->

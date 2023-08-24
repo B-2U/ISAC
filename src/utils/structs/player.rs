@@ -1,6 +1,8 @@
 use crate::{
     utils::{
-        structs::{Dogtag, PartialClan, Region, Ship, ShipStatsCollection},
+        structs::{
+            Dogtag, PartialClan, Region, Ship, ShipId, ShipModeStatsPair, ShipStatsCollection,
+        },
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
     },
@@ -33,7 +35,7 @@ impl PartialPlayer {
     pub fn profile_url(&self) -> Result<Url, IsacError> {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
-    /// player's clan data
+    /// player's clan data, only error when request or api issue
     pub async fn clan(&self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
         let api = WowsApi::new(ctx);
         api.player_clan(&self.region, self.uid).await
@@ -49,17 +51,18 @@ impl PartialPlayer {
         &self,
         ctx: &Context<'_>,
         ship: &Ship,
-    ) -> Result<ShipStatsCollection, IsacError> {
+    ) -> Result<(ShipId, ShipModeStatsPair), IsacError> {
         let api = WowsApi::new(ctx);
         api.statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
             .await
+            .map(|mut c| (ship.ship_id, c.0.remove(&ship.ship_id).unwrap()))
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Player {
     #[serde(skip_serializing)]
-    partial_player: PartialPlayer,
+    pub partial_player: PartialPlayer,
     pub uid: u64,
     pub ign: String,
     pub region: Region,
@@ -126,7 +129,7 @@ impl Player {
 
         let dogtag = player_dogtag.get_symbol();
         let dogtag_bg = player_dogtag.get_background();
-        let premium = data.patron.read().check_player(uid);
+        let premium = data.patron.read().check_player(&uid);
         let pfp = if premium {
             let mut pfp_js: HashMap<_, _> = Pfp::load_json().await.into();
             pfp_js.remove(&uid).unwrap_or_default().url

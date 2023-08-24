@@ -4,7 +4,7 @@ use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::structs::ExpectedJs;
+use crate::utils::structs::{ExpectedJs, ShipId};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Statistic {
@@ -93,7 +93,7 @@ pub enum StatisticValueType<'a> {
         value: f64,
     },
     Pr {
-        value: f64,
+        value: Option<f64>,
     },
     Exp {
         value: f64,
@@ -104,7 +104,7 @@ pub enum StatisticValueType<'a> {
     ShipDmg {
         expected_js: &'a Arc<RwLock<ExpectedJs>>,
         value: f64,
-        ship_id: u64,
+        ship_id: &'a ShipId,
     },
 }
 
@@ -180,12 +180,16 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                         (-1, "#fe0e00"),
                     ]
                 });
-                let color = MAP
-                    .iter()
-                    .find(|(v, _)| &(value as i64) >= v)
-                    .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (Self::_round_int(value).to_string(), color.to_string())
+                if let Some(value) = value {
+                    let color = MAP
+                        .iter()
+                        .find(|(v, _)| &(value as i64) >= v)
+                        .map(|(_, color)| *color)
+                        .unwrap_or("#fff");
+                    (Self::_round_int(value).to_string(), color.to_string())
+                } else {
+                    ("N/A".to_string(), "#999999".to_string())
+                }
             }
             StatisticValueType::OverallDmg { value } => {
                 const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
@@ -220,14 +224,14 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                         (-1.0, "#fe0e00"),
                     ]
                 });
-                let color = if let Some(expected) = expected_js.read().data.get(&ship_id) {
+                let color = if let Some(expected) = expected_js.read().data.get(&ship_id.0) {
                     let normal_value = f64::max(0.0, value as f64 / expected.dmg - 0.4) / 0.6;
                     MAP.iter()
                         .find(|(v, _)| &normal_value >= v)
                         .map(|(_, color)| *color)
                         .unwrap_or("#fff")
                 } else {
-                    "fff" // ship doesn't have expected value yet
+                    "999999" // ship doesn't have expected value yet
                 };
 
                 (Self::_round_int(value).to_string(), color.to_string())

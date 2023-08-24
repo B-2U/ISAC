@@ -73,7 +73,7 @@ pub async fn wws_slash(
 
     if let Some(ship_id) = ship_id {
         // wws ship
-        let Some(ship) = ShipId(ship_id).get_ship(&ctx) else {
+        let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
             Err(IsacError::Info(IsacInfo::AutoCompleteError))?
         };
         let battle_type = battle_type.unwrap_or_default();
@@ -113,22 +113,27 @@ async fn func_ship(
     let _typing = ctx.typing().await;
     let player = partial_player.get_player(&ctx).await?;
     let clan = player.clan(&ctx).await?;
-    let ships = player.single_ship(&ctx, &ship).await?;
-    let stats = ships.to_statistic(&ctx.data().expected_js, mode);
-    if stats.battles == 0 {
+    let (ship_id, ship_stats) = player.single_ship(&ctx, &ship).await?;
+    let Some(stats) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
         Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
             ign: player.ign.clone(),
             ship_name: ship.name.clone(),
-            region: player.region,
+            mode,
         }))?
     };
     let sub_modes = if let Mode::Rank = mode {
         None
     } else {
         Some(SingleShipTemplateSub::new(
-            ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
-            ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
-            ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
+            ship_stats
+                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Solo)
+                .unwrap_or_default(),
+            ship_stats
+                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div2)
+                .unwrap_or_default(),
+            ship_stats
+                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div3)
+                .unwrap_or_default(),
         ))
     };
     // getting player rank in the leaderboard
@@ -145,7 +150,7 @@ async fn func_ship(
     let data = SingleShipTemplate {
         ship,
         ranking,
-        main_mode_name: mode.display_name(),
+        main_mode_name: mode.render_name().to_string(),
         main_mode: stats,
         sub_modes,
         clan,
@@ -174,10 +179,18 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
     // wws
     let ships = player.all_ships(&ctx).await?;
     let div = OverallTemplateDiv::new(
-        ships.to_statistic(&ctx.data().expected_js, Mode::Pvp),
-        ships.to_statistic(&ctx.data().expected_js, Mode::Solo),
-        ships.to_statistic(&ctx.data().expected_js, Mode::Div2),
-        ships.to_statistic(&ctx.data().expected_js, Mode::Div3),
+        ships
+            .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+            .unwrap_or_default(),
+        ships
+            .to_statistic(&ctx.data().expected_js, Mode::Solo)
+            .unwrap_or_default(),
+        ships
+            .to_statistic(&ctx.data().expected_js, Mode::Div2)
+            .unwrap_or_default(),
+        ships
+            .to_statistic(&ctx.data().expected_js, Mode::Div3)
+            .unwrap_or_default(),
     );
     let class: OverallTemplateClass = ships
         .clone()
@@ -186,7 +199,9 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         .map(|(class, ships)| {
             (
                 class,
-                ships.to_statistic(&ctx.data().expected_js, Mode::Pvp),
+                ships
+                    .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+                    .unwrap_or_default(),
             )
         })
         .collect::<HashMap<ShipClass, Statistic>>()
@@ -197,7 +212,9 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         .map(|(class, ships)| {
             (
                 class,
-                ships.to_statistic(&ctx.data().expected_js, Mode::Pvp),
+                ships
+                    .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+                    .unwrap_or_default(),
             )
         })
         .collect::<HashMap<ShipTier, Statistic>>()

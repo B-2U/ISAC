@@ -10,9 +10,10 @@ mod leaderboard;
 pub use leaderboard::*;
 mod clan;
 pub use clan::*;
-
 mod clan_season;
 pub use clan_season::*;
+mod recent;
+pub use recent::*;
 
 use crate::utils::{IsacError, IsacInfo};
 

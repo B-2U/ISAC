@@ -25,6 +25,9 @@ pub use mode::*;
 mod ship;
 pub use ship::*;
 
+mod ships_para;
+pub use ships_para::*;
+
 mod statistic;
 pub use statistic::*;
 
@@ -42,3 +45,6 @@ pub use little_constant::*;
 
 mod clan_detail;
 pub use clan_detail::*;
+
+mod recent;
+pub use recent::*;

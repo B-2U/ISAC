@@ -28,7 +28,7 @@ where
     Ok(result)
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct ShipExpected {
     #[serde(rename = "average_damage_dealt")]
     pub dmg: f64,

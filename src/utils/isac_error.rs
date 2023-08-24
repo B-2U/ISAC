@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::{
-    utils::structs::{PartialClan, Region},
+    utils::structs::{Mode, PartialClan, Region},
     Error,
 };
 
@@ -67,7 +67,7 @@ pub enum IsacInfo {
     PlayerNoBattleShip {
         ign: String,
         ship_name: String,
-        region: Region,
+        mode: Mode,
     },
 
     InvalidClan {
@@ -89,6 +89,9 @@ pub enum IsacInfo {
         msg: String,
     },
     GeneralError {
+        msg: String,
+    },
+    NeedPremium {
         msg: String,
     },
     AutoCompleteError,

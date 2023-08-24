@@ -103,9 +103,13 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     let mut clan = clan?;
 
     // update season_number if needed
-    if clan.info.season_number == current_season_num + 1 {
+    if clan_members
+        .items
+        .get(0)
+        .is_some_and(|m| m.season_id == current_season_num + 1)
+    {
         let mut lock = ctx.data().constant.write();
-        lock.clan_season = clan.info.season_number;
+        lock.clan_season += 1;
         lock.save_json_sync();
     }
 

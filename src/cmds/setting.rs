@@ -1,18 +1,27 @@
 use crate::{
+    cmds::setting,
     dc_utils::{auto_complete, ContextAddon, UserAddon},
     utils::{
         structs::{Linked, PartialPlayer, Region},
         IsacError, IsacInfo, LoadSaveFromJson,
     },
-    Context, Error,
+    Context, Data, Error,
 };
 use poise;
 
+pub fn link_hybrid() -> poise::Command<Data, Error> {
+    let mut cmd = setting::link();
+    cmd.prefix_action = setting::link_prefix().prefix_action;
+    cmd
+}
+
 /// link your wows account
-#[poise::command(slash_command, prefix_command)]
+#[poise::command(slash_command)]
 pub async fn link(
     ctx: Context<'_>,
-    #[autocomplete = "auto_complete::player"] player: String, // the String is a Serialized PartialPlayer struct
+    #[autocomplete = "auto_complete::player"]
+    #[description = "your game server & ign"]
+    player: String, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
     let Ok(partial_player) = serde_json::from_str::<PartialPlayer>(&player) else {
         Err(IsacError::Info(IsacInfo::AutoCompleteError))?
@@ -27,6 +36,13 @@ pub async fn link(
             player.ign, player.region
         ))
         .await;
+    Ok(())
+}
+
+/// this is just a placeholder-like function telling user to use slash
+#[poise::command(prefix_command, discard_spare_arguments)]
+pub async fn link_prefix(ctx: Context<'_>) -> Result<(), Error> {
+    let _r = ctx.reply("please use `/link` instead").await;
     Ok(())
 }
 

@@ -7,7 +7,7 @@ use crate::{dc_utils::ContextAddon, Context, Error};
 use poise::serenity_prelude::{ArgumentConvert, CacheHttp, Channel, ReactionType};
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
-pub async fn test(_ctx: Context<'_>, #[rest] args: Args) -> Result<(), Error> {
+pub async fn test(_ctx: Context<'_>, #[rest] _args: Args) -> Result<(), Error> {
     Ok(())
 }
 

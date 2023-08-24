@@ -45,7 +45,7 @@ pub async fn top_slash(
     ship_id: u64,
     region: Option<Region>,
 ) -> Result<(), Error> {
-    let Some(ship) = ShipId(ship_id).get_ship(&ctx) else {
+    let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
         Err(IsacInfo::AutoCompleteError)?
     };
     let region = region.unwrap_or_default();

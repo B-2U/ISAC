@@ -10,7 +10,7 @@ use std::{
     collections::HashSet,
     env,
     sync::Arc,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tracing::error;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
@@ -61,11 +61,12 @@ async fn main() {
             tools::clanuid(),
             wws::wws_hybrid(),
             leaderboard::top_hybrid(),
-            setting::link(),
+            setting::link_hybrid(),
             setting::wows_region(),
             patreon::background(),
             clan::clan_hybrid(),
             clan_top::clan_top(),
+            recent::recent(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -108,6 +109,8 @@ async fn main() {
             .await
             .expect("Could not register ctrl+c handler");
         shard_manager.lock().await.shutdown_all().await;
+        // QA gracfully?
+        tokio::time::sleep(Duration::from_secs(3)).await;
     });
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
@@ -207,7 +210,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
         IsacError::Help(help) => {
             let msg = match help {
                 utils::IsacHelp::LackOfArguments => {
-                    "Click the button to check commands' usage and examples".to_string()
+                    "Click the button to check commands' usage and Examples".to_string()
                 }
             };
             help_buttons_msg(&ctx, msg).await;
@@ -243,10 +246,11 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                 IsacInfo::PlayerNoBattleShip {
                     ign,
                     ship_name,
-                    region,
+                    mode,
                 } => {
                     format!(
-                        "Player: `{ign}` hasn't played any battle in `{ship_name}` in `{region}`"
+                        "Player: `{ign}` hasn't played any battle in `{ship_name}` in `{}`",
+                        mode.upper()
                     )
                 }
                 IsacInfo::AutoCompleteError => {
@@ -258,6 +262,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     clan.region,
                     season
                 ),
+                IsacInfo::NeedPremium { msg } => format!("{msg}\n{PREMIUM}"),
             };
             let _r = ctx
                 .send(|b| b.content(msg).reply(true).ephemeral(true))
@@ -309,7 +314,11 @@ async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
 }
 
 // TODO: might need to be moved to a file for consts
-const OOPS: &str = r#"***Oops! Something went wrong!***
+const OOPS: &str = "***Oops! Something went wrong!***
 click the **Document** button to check the commands usage
 If this error keep coming out, please join our support server to report it
-"#;
+";
+
+const PREMIUM: &str =
+    "Seems you haven't join our Patreon, or link your discord account on Patreon yet :(
+If you do like ISAC, [take a look?]( https://www.patreon.com/ISAC_bot )";

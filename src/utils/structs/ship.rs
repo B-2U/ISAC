@@ -1,18 +1,15 @@
 use std::{collections::HashMap, fmt::Display, sync::Arc};
 
-use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
-use itertools::Itertools;
-use parking_lot::RwLock;
+use parking_lot::{RwLock, RwLockReadGuard};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use serde_repr::Deserialize_repr;
 use strum::{EnumIter, IntoEnumIterator};
-use unidecode::unidecode;
 
 use crate::{
     utils::{
-        structs::{ExpectedJs, Mode, Statistic, StatisticValueType},
-        IsacError, IsacInfo, LoadSaveFromJson,
+        structs::{ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType},
+        IsacError, IsacInfo,
     },
     Context,
 };
@@ -66,6 +63,21 @@ pub struct Ship {
     #[serde(deserialize_with = "add_glossary_url_prefix")]
     pub icon: String,
 }
+
+impl Default for Ship {
+    fn default() -> Self {
+        Self {
+            ship_id: ShipId(0),
+            tier: ShipTier::X,
+            class: ShipClass::DD,
+            name: "Unknown Ship".to_string(),
+            short_name: "Unknown Ship".to_string(),
+            nation: Default::default(),
+            icon: Default::default(),
+        }
+    }
+}
+
 impl Ship {
     /// false for those CB or old ships
     ///
@@ -81,89 +93,7 @@ impl Display for Ship {
     }
 }
 
-/// the struct for laoding ships_para.json
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ShipsPara(pub HashMap<ShipId, Ship>);
-
-impl LoadSaveFromJson for ShipsPara {
-    const PATH: &'static str = "./web_src/ship/ships_para.json";
-}
-
-impl ShipsPara {
-    /// shortcut to self.0.get, looking for the ship with ship_id
-    pub fn get(&self, ship_id: &ShipId) -> Option<&Ship> {
-        self.0.get(ship_id)
-    }
-
-    /// the combination of `normal_search()` and `fuzzy_search()`,
-    ///
-    /// use `normal_search()` at first, and do fuzzy search if no ship matched
-    pub fn search_name(&self, input: &str, len_limit: usize) -> Result<Vec<Ship>, IsacError> {
-        if input.is_empty() {
-            return Ok(vec![]);
-        }
-        if let Some(candidates) = self.normal_search_name(input, len_limit) {
-            return Ok(candidates);
-        };
-        if let Some(candidates) = self.fuzzy_search_name(input, len_limit) {
-            return Ok(candidates);
-        };
-        Err(IsacInfo::ShipNotFound {
-            ship_name: input.to_string(),
-        })?
-    }
-
-    /// literal matching
-    pub fn normal_search_name(&self, input: &str, len_limit: usize) -> Option<Vec<Ship>> {
-        let input = input.to_lowercase();
-        let candidates: Vec<_> = self
-            .0
-            .values()
-            .filter(|ship| ship.is_available())
-            .filter_map(|ship| {
-                unidecode(&ship.name.to_lowercase())
-                    .find(&input)
-                    .map(|prefix_len| (ship, prefix_len))
-            })
-            .sorted_by_key(|(ship, prefix_len)| (*prefix_len, ship.name.len()))
-            .map(|(ship, _)| ship)
-            .take(len_limit)
-            .cloned()
-            .collect();
-        match candidates.is_empty() {
-            true => None,
-            false => Some(candidates),
-        }
-    }
-    /// fuzzy searching with Skim algorithm
-    pub fn fuzzy_search_name(&self, input: &str, len_limit: usize) -> Option<Vec<Ship>> {
-        let matcher = SkimMatcherV2::default();
-        let candidates: Vec<_> = self
-            .0
-            .values()
-            .filter(|ship| ship.is_available())
-            .filter_map(|ship| {
-                matcher
-                    .fuzzy_match(&unidecode(&ship.name), input)
-                    .map(|score| (score, ship))
-            })
-            .sorted_by(|a, b| Ord::cmp(&b.0, &a.0))
-            .map(|(_, ship)| ship.clone())
-            .take(len_limit)
-            .collect();
-        match candidates.is_empty() {
-            true => None,
-            false => Some(candidates),
-        }
-    }
-}
-
-impl From<ShipsPara> for HashMap<ShipId, Ship> {
-    fn from(value: ShipsPara) -> Self {
-        value.0
-    }
-}
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ShipStatsCollection(pub HashMap<ShipId, ShipModeStatsPair>);
 
 impl Default for ShipStatsCollection {
@@ -192,6 +122,7 @@ impl TryFrom<VortexShipResponse> for ShipStatsCollection {
         }
     }
 }
+
 impl ShipStatsCollection {
     /// merging the responses from vortex
     pub fn merge(mut self, mut other: Self) -> Self {
@@ -202,6 +133,61 @@ impl ShipStatsCollection {
         }
         self
     }
+
+    /// get the difference between 2 collections, return None if its empty
+    ///
+    /// **Note**: `self` need to be later, `other` be older
+    pub fn compare(&self, mut other: Self) -> Option<Self> {
+        // QA faster way
+        let mut output_collection = ShipStatsCollection::default();
+        for (ship_id, main_pair) in self.0.iter() {
+            let mut output_pair = ShipModeStatsPair::default();
+            let mut old_pair = other.0.remove(ship_id).unwrap_or_default();
+
+            if main_pair == &old_pair {
+                continue;
+            }
+            for mode in Mode::iter() {
+                let Some(current) = main_pair.get(&mode) else {
+                    continue; // no self
+                };
+                let old = old_pair.0.remove(&mode).unwrap_or_default();
+
+                if current.battles_count <= old.battles_count {
+                    continue; // no different or account got rollback
+                };
+                let diff_s = ShipStats {
+                    battles_count: current.battles_count - old.battles_count,
+                    wins: current.wins - old.wins,
+                    damage_dealt: current.damage_dealt - old.damage_dealt,
+                    frags: current.frags - old.frags,
+                    planes_killed: current.planes_killed - old.planes_killed,
+                    original_exp: current.original_exp - old.original_exp,
+                    art_agro: current.art_agro - old.art_agro,
+                    scouting_damage: current.scouting_damage - old.scouting_damage,
+                    shots_by_main: current.shots_by_main - old.shots_by_main,
+                    hits_by_main: current.hits_by_main - old.hits_by_main,
+                };
+                output_pair.0.insert(mode, diff_s);
+            }
+            if output_pair.0.is_empty() {
+                continue;
+            }
+            output_collection.0.insert(*ship_id, output_pair);
+        }
+        if output_collection.0.is_empty() {
+            None
+        } else {
+            Some(output_collection)
+        }
+    }
+
+    /// remove those ships doesn't has self in all 4 modes
+    pub fn clean(&mut self) -> &Self {
+        self.0.retain(|_ship_id, s| !s.0.is_empty());
+        self
+    }
+
     /// consume Self and sort the given ships by their class
     pub fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
         let mut map: HashMap<ShipClass, ShipStatsCollection> = ShipClass::iter()
@@ -238,10 +224,14 @@ impl ShipStatsCollection {
     }
 
     /// calculate the average stats with given ships
-    pub fn to_statistic(&self, expected_js: &Arc<RwLock<ExpectedJs>>, mode: Mode) -> Statistic {
+    pub fn to_statistic(
+        &self,
+        expected_js: &Arc<RwLock<ExpectedJs>>,
+        mode: Mode,
+    ) -> Option<Statistic> {
         let (
             battles,
-            wins,
+            ttl_wins,
             ttl_dmg,
             ttl_frags,
             ttl_planes,
@@ -250,45 +240,51 @@ impl ShipStatsCollection {
             ttl_scout,
             shots,
             hits,
-            last_ship_id,
-        ) = self.0.iter().fold(
-            (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-            |acc, (ship_id, ship_modes)| {
-                if let Some(Some(ship)) = ship_modes.0.get(&mode) {
-                    (
-                        acc.0 + ship.battles_count,
-                        acc.1 + ship.wins,
-                        acc.2 + ship.damage_dealt,
-                        acc.3 + ship.frags,
-                        acc.4 + ship.planes_killed,
-                        acc.5 + ship.original_exp,
-                        acc.6 + ship.art_agro,
-                        acc.7 + ship.scouting_damage,
-                        acc.8 + ship.shots_by_main,
-                        acc.9 + ship.hits_by_main,
-                        ship_id.0,
-                    )
-                } else {
-                    acc
-                }
-            },
-        );
+            exp_ttl_wins,
+            exp_ttl_dmg,
+            exp_ttl_frags,
+        ) = {
+            let guard = expected_js.read();
+            let empty_ship_expected = ShipExpected {
+                dmg: 0.0,
+                frags: 0.0,
+                winrate: 0.0,
+            };
+            self.0
+                .iter()
+                .filter_map(|(ship_id, ship_modes)| ship_modes.get(&mode).map(|s| (ship_id, s)))
+                .fold(
+                    (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0, 0.0, 0.0),
+                    |acc, (ship_id, ship)| {
+                        let ship_expected =
+                            guard.data.get(&ship_id.0).unwrap_or(&empty_ship_expected); // QA its a reference, so i cant unwrap_or_default()
+                        (
+                            acc.0 + ship.battles_count,
+                            acc.1 + ship.wins,
+                            acc.2 + ship.damage_dealt,
+                            acc.3 + ship.frags,
+                            acc.4 + ship.planes_killed,
+                            acc.5 + ship.original_exp,
+                            acc.6 + ship.art_agro,
+                            acc.7 + ship.scouting_damage,
+                            acc.8 + ship.shots_by_main,
+                            acc.9 + ship.hits_by_main,
+                            acc.10 + ship_expected.winrate / 100.0 * ship.battles_count as f64,
+                            acc.11 + ship_expected.dmg * ship.battles_count as f64,
+                            acc.12 + ship_expected.frags * ship.battles_count as f64,
+                        )
+                    },
+                )
+        };
         if battles == 0 {
-            return Statistic::default();
+            return None;
         };
         use StatisticValueType::*;
         let winrate = Winrate {
-            value: wins as f64 / battles as f64 * 100.0,
+            value: ttl_wins as f64 / battles as f64 * 100.0,
         };
-        let dmg = match self.0.len() == 1 {
-            true => ShipDmg {
-                expected_js,
-                value: ttl_dmg as f64 / battles as f64,
-                ship_id: last_ship_id,
-            },
-            false => OverallDmg {
-                value: ttl_dmg as f64 / battles as f64,
-            },
+        let dmg = OverallDmg {
+            value: ttl_dmg as f64 / battles as f64,
         };
         let frags = Frags {
             value: ttl_frags as f64 / battles as f64,
@@ -300,7 +296,12 @@ impl ShipStatsCollection {
             value: ttl_exp as f64 / battles as f64,
         };
         let pr = Pr {
-            value: self.pr(expected_js, mode),
+            value: {
+                let n_wr = f64::max(0.0, ttl_wins as f64 / exp_ttl_wins - 0.7) / 0.3;
+                let n_dmg = f64::max(0.0, ttl_dmg as f64 / exp_ttl_dmg - 0.4) / 0.6;
+                let n_frags = f64::max(0.0, ttl_frags as f64 / exp_ttl_frags - 0.1) / 0.9;
+                Some(150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags)
+            },
         };
         fn rounded_div(a: u64, b: u64) -> u64 {
             (a as f64 / b as f64).round() as u64
@@ -309,43 +310,9 @@ impl ShipStatsCollection {
         let scout = rounded_div(ttl_scout, battles);
         let hitrate = (hits as f64 / shots as f64 * 10000.0).round() / 100.0; // two decimal places
 
-        Statistic::new(
+        Some(Statistic::new(
             battles, winrate, dmg, frags, planes, pr, exp, potential, scout, hitrate,
-        )
-    }
-
-    /// calculate the average pr with given ships
-    fn pr(&self, expected_js: &Arc<RwLock<ExpectedJs>>, mode: Mode) -> f64 {
-        let (battles, wins, dmg, frags, exp_wins, exp_dmg, exp_frags) = {
-            let exp_js_guard = expected_js.read();
-            self.0
-                .iter()
-                .fold((0, 0, 0, 0, 0.0, 0.0, 0.0), |acc, (ship_id, ship_modes)| {
-                    if let (Some(Some(ship)), Some(exp_value)) =
-                        (ship_modes.0.get(&mode), exp_js_guard.data.get(&ship_id.0))
-                    {
-                        (
-                            acc.0 + ship.battles_count,
-                            acc.1 + ship.wins,
-                            acc.2 + ship.damage_dealt,
-                            acc.3 + ship.frags,
-                            acc.4 + exp_value.winrate / 100.0 * ship.battles_count as f64,
-                            acc.5 + exp_value.dmg * ship.battles_count as f64,
-                            acc.6 + exp_value.frags * ship.battles_count as f64,
-                        )
-                    } else {
-                        acc
-                    }
-                })
-        };
-        if battles == 0 {
-            0.0
-        } else {
-            let n_wr = f64::max(0.0, wins as f64 / exp_wins - 0.7) / 0.3;
-            let n_dmg = f64::max(0.0, dmg as f64 / exp_dmg - 0.4) / 0.6;
-            let n_frags = f64::max(0.0, frags as f64 / exp_frags - 0.1) / 0.9;
-            150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags
-        }
+        ))
     }
 }
 
@@ -353,8 +320,9 @@ impl ShipStatsCollection {
 pub struct ShipId(pub u64);
 impl ShipId {
     /// get [`Ship`] from ShipId, None if not found
-    pub fn get_ship(&self, ctx: &Context<'_>) -> Option<Ship> {
-        ctx.data().ship_js.read().get(&ShipId(self.0)).cloned()
+    // QA is borrowing lock idiomatic?
+    pub fn get_ship(&self, ship_js: &RwLock<ShipsPara>) -> Option<Ship> {
+        ship_js.read().get(&ShipId(self.0)).cloned()
     }
 }
 
@@ -364,9 +332,58 @@ impl Display for ShipId {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(try_from = "JsonValue")]
-pub struct ShipModeStatsPair(pub HashMap<Mode, Option<ShipStats>>);
+pub struct ShipModeStatsPair(pub HashMap<Mode, ShipStats>);
+
+impl Default for ShipModeStatsPair {
+    fn default() -> Self {
+        Self(Default::default())
+    }
+}
+
+impl ShipModeStatsPair {
+    /// a shorcut of `self.0.get
+    fn get(&self, mode: &Mode) -> Option<&ShipStats> {
+        self.0.get(mode)
+    }
+    /// calculate the statistic of the ship, None if battles = 0
+    pub fn to_statistic(
+        &self,
+        ship_id: &ShipId,
+        expected_js: &Arc<RwLock<ExpectedJs>>,
+        mode: Mode,
+    ) -> Option<Statistic> {
+        let Some(s) = self.get(&mode) else {
+            return None;
+        };
+        let avg = s.calc(ship_id, &expected_js.read());
+        use StatisticValueType::*;
+        let pr = avg.expected.map(|expected| {
+            let n_wr = f64::max(0.0, avg.winrate / expected.winrate - 0.7) / 0.3;
+            let n_dmg = f64::max(0.0, avg.dmg / expected.dmg - 0.4) / 0.6;
+            let n_frags = f64::max(0.0, avg.frags / expected.frags - 0.1) / 0.9;
+            150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags
+        });
+        Some(Statistic::new(
+            avg.battles,
+            Winrate { value: avg.winrate },
+            ShipDmg {
+                expected_js,
+                value: avg.dmg,
+                ship_id,
+            },
+            Frags { value: avg.frags },
+            Planes { value: avg.planes },
+            Pr { value: pr },
+            Exp { value: avg.exp },
+            avg.potential.round() as u64,
+            avg.scout.round() as u64,
+            avg.hitrate,
+        ))
+    }
+}
+
 impl TryFrom<JsonValue> for ShipModeStatsPair {
     type Error = String;
 
@@ -377,11 +394,11 @@ impl TryFrom<JsonValue> for ShipModeStatsPair {
 
         let mut pairs = HashMap::new();
         for (key, value) in map.into_iter() {
-            let mode =
+            let mode: Mode =
                 serde_json::from_value(key.as_str().into()).map_err(|err| err.to_string())?;
 
             // if no stats found for ship, value is an empty object
-            let maybe_stats = {
+            let maybe_stats: Option<ShipStats> = {
                 let stats_map = value
                     .as_object()
                     .ok_or("Expected an object (map), but found something else.")?;
@@ -392,26 +409,83 @@ impl TryFrom<JsonValue> for ShipModeStatsPair {
                     Some(serde_json::from_value(value.clone()).map_err(|err| err.to_string())?)
                 }
             };
-
-            pairs.insert(mode, maybe_stats);
+            if let Some(stats) = maybe_stats {
+                pairs.insert(mode, stats);
+            }
         }
 
         Ok(Self(pairs))
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+/// the battles_count should never be 0
+#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq)]
 pub struct ShipStats {
+    #[serde(alias = "battles")]
     battles_count: u64,
     wins: u64,
     damage_dealt: u64,
     frags: u64,
     planes_killed: u64,
     original_exp: u64,
+    #[serde(default)]
     art_agro: u64,
     scouting_damage: u64,
     shots_by_main: u64,
     hits_by_main: u64,
+}
+
+impl ShipStats {
+    /// get the datas needed for constructing [`Statistic`]
+    pub fn calc(
+        &self,
+        ship_id: &ShipId,
+        expected_js: &RwLockReadGuard<ExpectedJs>,
+    ) -> ShipStatsAvg {
+        let battles = self.battles_count;
+
+        let winrate = self.wins as f64 / battles as f64 * 100.0;
+        let dmg = self.damage_dealt as f64 / battles as f64;
+        let frags = self.frags as f64 / battles as f64;
+        let planes = self.planes_killed as f64 / battles as f64;
+        let exp = self.original_exp as f64 / battles as f64;
+        let potential = self.art_agro as f64 / battles as f64;
+        let scout = self.scouting_damage as f64 / battles as f64;
+        let hitrate = if self.shots_by_main != 0 {
+            (self.hits_by_main as f64 / self.shots_by_main as f64 * 10000.0).round() / 100.0
+        } else {
+            0.0
+        };
+        ShipStatsAvg {
+            battles,
+            winrate,
+            dmg,
+            frags,
+            planes,
+            exp,
+            potential,
+            scout,
+            hitrate,
+            expected: expected_js.data.get(&ship_id.0).copied(),
+        }
+        // two decimal places
+    }
+}
+
+// QA its actually really useless, used by only once method, and that method used only once too
+/// a struct for holding calculated [`ShipStats`]
+#[derive(Debug)]
+pub struct ShipStatsAvg {
+    battles: u64,
+    winrate: f64, // already * 100
+    dmg: f64,
+    frags: f64,
+    planes: f64,
+    exp: f64,
+    potential: f64,
+    scout: f64,
+    hitrate: f64,
+    expected: Option<ShipExpected>,
 }
 
 #[derive(Debug, Deserialize)]

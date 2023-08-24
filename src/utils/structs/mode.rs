@@ -1,10 +1,20 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use std::hash::Hash;
 use strum::EnumIter;
 
 #[derive(
-    Debug, poise::ChoiceParameter, Clone, Copy, EnumIter, Deserialize, PartialEq, Eq, Hash, Default,
+    Debug,
+    poise::ChoiceParameter,
+    Clone,
+    Copy,
+    EnumIter,
+    Deserialize,
+    Serialize,
+    PartialEq,
+    Eq,
+    Hash,
+    Default,
 )]
 pub enum Mode {
     #[serde(rename = "pvp")]
@@ -21,6 +31,16 @@ pub enum Mode {
 }
 
 impl Mode {
+    /// just uppercased
+    pub fn upper(&self) -> &'static str {
+        match self {
+            Mode::Pvp => "PVP",
+            Mode::Solo => "SOLO",
+            Mode::Div2 => "DIV2",
+            Mode::Div3 => "DIV3",
+            Mode::Rank => "RANK",
+        }
+    }
     /// return its name in api
     ///
     /// ## Example
@@ -34,7 +54,7 @@ impl Mode {
     ///
     /// [`Mode::Rank`] -> rank_solo
     ///
-    pub fn api_name(&self) -> String {
+    pub fn api_name(&self) -> &'static str {
         match self {
             Mode::Pvp => "pvp",
             Mode::Solo => "pvp_solo",
@@ -42,7 +62,6 @@ impl Mode {
             Mode::Div3 => "pvp_div3",
             Mode::Rank => "rank_solo",
         }
-        .to_string()
     }
 
     pub fn parse(value: &str) -> Option<Self> {
@@ -70,7 +89,7 @@ impl Mode {
     ///
     /// [`Mode::Rank`] -> (rank)
     ///
-    pub fn display_name(&self) -> String {
+    pub fn render_name(&self) -> &'static str {
         match self {
             Mode::Pvp => "",
             Mode::Solo => "(solo)",
@@ -78,6 +97,5 @@ impl Mode {
             Mode::Div3 => "(div3)",
             Mode::Rank => "(rank)",
         }
-        .to_string()
     }
 }

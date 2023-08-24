@@ -20,18 +20,17 @@ pub async fn background(
     ctx: Context<'_>,
     #[description = "please crop the image to about 4.5 : 1"] file: Attachment, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
-    if !ctx.data().patron.read().check_user(ctx.author().id) {
-        Err(IsacError::Info(IsacInfo::GeneralError {
-            msg: "Seems you haven't join our Patreon, or link your discord account on Patreon yet :( \nIf you do like ISAC, maybe? https://www.patreon.com/ISAC_bot".to_string(),
+    if !ctx.data().patron.read().check_user(&ctx.author().id) {
+        Err(IsacError::Info(IsacInfo::NeedPremium {
+            msg: "".to_string(),
         }))?
     }
     // QA shorter way to deal with this? as_ref()
     if !file
         .content_type
         .as_ref()
-        .map(|s| s.as_str())
+        .map(|s| s.contains("image"))
         .unwrap_or_default()
-        .contains("image")
     {
         Err(IsacError::Info(IsacInfo::GeneralError {
             msg: "It's not a image!".to_string(),

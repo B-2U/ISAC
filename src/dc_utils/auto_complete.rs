@@ -32,24 +32,38 @@ pub async fn player(
     if input.is_empty() {
         vec![
             (
-                "example: B2U",
+                "Usage: <region(optional)> <ign>",
                 PartialPlayer {
                     region: Region::Asia,
                     uid: 2025455227,
                 },
             ),
             (
-                "example: asia B2U",
+                "Example: B2U",
                 PartialPlayer {
                     region: Region::Asia,
                     uid: 2025455227,
                 },
             ),
             (
-                "example: eu CVptsd",
+                "Example: asia B2U",
+                PartialPlayer {
+                    region: Region::Asia,
+                    uid: 2025455227,
+                },
+            ),
+            (
+                "Example: eu CVptsd",
                 PartialPlayer {
                     region: Region::Eu,
                     uid: 566491687,
+                },
+            ),
+            (
+                "Example: NA JustDodge",
+                PartialPlayer {
+                    region: Region::Na,
+                    uid: 1035252322,
                 },
             ),
         ]
@@ -96,21 +110,21 @@ pub async fn clan(
     if input.is_empty() {
         vec![
             (
-                "example: VOR",
+                "Example: VOR",
                 AutoCompleteClan {
                     tag: "VOR".to_string(),
                     region: Region::Asia,
                 },
             ),
             (
-                "example: EU RAIN",
+                "Example: EU RAIN",
                 AutoCompleteClan {
                     tag: "RAIN".to_string(),
                     region: Region::Eu,
                 },
             ),
             (
-                "example: NA RESIN",
+                "Example: NA RESIN",
                 AutoCompleteClan {
                     tag: "RESIN".to_string(),
                     region: Region::Na,

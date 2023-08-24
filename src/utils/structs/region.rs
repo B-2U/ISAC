@@ -26,21 +26,19 @@ pub enum Region {
     Eu,
 }
 impl Region {
-    pub fn upper(&self) -> String {
+    pub fn upper(&self) -> &'static str {
         match self {
             Region::Asia => "ASIA",
             Region::Na => "NA",
             Region::Eu => "EU",
         }
-        .to_string()
     }
-    pub fn lower(&self) -> String {
+    pub fn lower(&self) -> &'static str {
         match self {
             Region::Asia => "asia",
             Region::Na => "na",
             Region::Eu => "eu",
         }
-        .to_string()
     }
 }
 // impl Display for Region {
@@ -52,7 +50,7 @@ impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
         match value.to_lowercase().as_str() {
-            "asia" | "sea" => Some(Self::Asia),
+            "asia" | "sea" | "aisa" => Some(Self::Asia),
             "na" => Some(Self::Na),
             "eu" => Some(Self::Eu),
             _ => None,

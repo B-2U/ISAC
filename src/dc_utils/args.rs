@@ -1,10 +1,12 @@
 use std::{collections::HashMap, str::FromStr, time::Duration};
 
 use itertools::Itertools;
+use once_cell::sync::Lazy;
 use poise::serenity_prelude::{
     ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
     ReactionType, User, UserId,
 };
+use regex::Regex;
 
 use crate::{
     utils::{
@@ -133,8 +135,17 @@ impl Args {
 
     /// parsing battle modes, return None if there is only no matched
     pub fn parse_mode(&mut self) -> Option<Mode> {
-        if let Some(index) = self.0.iter().position(|key| Mode::parse(key).is_some()) {
+        if let Some(index) = self.0.iter().rposition(|key| Mode::parse(key).is_some()) {
             Mode::parse(&self.remove(index).unwrap())
+        } else {
+            None
+        }
+    }
+
+    /// looking for number between 1 - 100, for `recent` days
+    pub fn parse_day(&mut self) -> Option<u64> {
+        if let Some(index) = self.0.iter().rposition(|key| key.parse::<u32>().is_ok()) {
+            self.remove(index).unwrap().parse::<u64>().ok()
         } else {
             None
         }
@@ -216,8 +227,13 @@ impl Args {
 
 impl FromStr for Args {
     type Err = IsacError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Args(s.split_whitespace().map(|f| f.to_string()).collect()))
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        const RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""[^"]+"|\S+"#).unwrap());
+        Ok(Args(
+            RE.find_iter(&input)
+                .map(|s| s.as_str().trim_matches('"').to_string())
+                .collect(),
+        ))
     }
 }
 impl From<Args> for Vec<String> {

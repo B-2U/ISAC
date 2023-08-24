@@ -182,7 +182,7 @@ impl<'a> WowsApi<'a> {
             })
             .collect();
 
-        let ship_stats_merged = try_join_all(requests)
+        let mut ship_stats_merged = try_join_all(requests)
             .await
             .map_err(Self::_err_wrap)?
             .into_iter()
@@ -192,6 +192,7 @@ impl<'a> WowsApi<'a> {
             .reduce(|base, other| base.merge(other))
             .expect("Received 0 responses unexpectedly");
 
+        ship_stats_merged.clean();
         Ok(ship_stats_merged)
     }
     /// clan details from vortex

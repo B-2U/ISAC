@@ -140,7 +140,6 @@ pub struct ClanInfo {
     pub id: u64,
     pub description: String,
     pub color: String, // hex color string
-    pub season_number: u32,
     pub name: String,
     #[serde(default)]
     pub region: Region, // adding it manually in clan_deatail() after deserialized
@@ -234,12 +233,14 @@ pub enum ClanDivision {
 }
 
 // https://clans.worldofwarships.asia/api/members/2000007634/?battle_type=pvp
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClanMemberRes {
     pub status: String,
     pub error: Option<String>,
     #[serde(default)]
     pub items: Vec<ClanMember>,
+    #[serde_as(deserialize_as = "DefaultOnError")]
     #[serde(default, rename(deserialize = "clan_statistics"))]
     pub avg: ClanMemberAvgStats,
 }
