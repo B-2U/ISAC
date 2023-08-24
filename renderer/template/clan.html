@@ -1,0 +1,306 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: Roboto;
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: .5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: #fff;
+            background-color: #343434
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey
+        }
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em
+        }
+
+        .z-index-container {
+            z-index: 2
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(3, min-content);
+            gap: .2em;
+            justify-content: center;
+            align-items: center;
+            height: 152;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, .15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: .5em;
+            align-content: center;
+            display: grid;
+            padding: .2em
+        }
+
+        .global-title {
+            padding: .4rem 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-align: center
+        }
+
+        .global-stats-table {
+            padding: 15px 0;
+            gap: 10px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row
+        }
+
+        .label-text {
+            color: #eee
+        }
+
+        .global-stats-box {
+            background-color: #393939;
+            border-radius: 10px;
+            padding: .3em;
+            gap: .3em;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center
+        }
+
+        .global-stats-data {
+            font-weight: 700
+        }
+
+        .ship-class-stats-section {
+            padding: .4rem 0;
+            display: grid;
+            align-items: center;
+            justify-items: center;
+            justify-content: stretch;
+            gap: 1rem 1rem;
+            grid-template-columns: min-content 1fr;
+            grid-template-areas: "title title" "graph table"
+        }
+
+        .ship-class-stats-title {
+            grid-area: title;
+            font-size: 1.2em;
+            font-weight: 700
+        }
+
+        .ship-class-stats-graph {
+            grid-area: graph;
+            max-width: 300px;
+            max-height: 240px
+        }
+
+        .ship-class-stats-table {
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px
+        }
+
+        .ship-class-stats-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(5, 1fr);
+            font-size: .8em
+        }
+
+        .ship-class-stats-data {
+            font-weight: 700
+        }
+
+        .former-name {
+            justify-self: center;
+            color: #999;
+            font-size: .8em
+        }
+    </style>
+    <script src="./renderer/script/chart.min.js">
+    </script>
+    <script>
+        // pie chart
+        window.addEventListener("load", () => {
+            let ctx = document.querySelector(".ship-class-stats-graph").getContext('2d');
+            new Chart(ctx, {
+                type: "bar", // 圖表類型
+                data: {
+                    labels: ["<45%", "45%", "50%", "55%", "60%", "65%", ">70%"], // 標題
+                    datasets: [{
+                        data: [
+                            {{ stats.wr_dis.w0 }}, {{ stats.wr_dis.w45 }}, {{ stats.wr_dis.w50 }}, {{ stats.wr_dis.w55 }}, {{ stats.wr_dis.w60 }}, {{ stats.wr_dis.w65 }}, {{ stats.wr_dis.w70 }}], // 資料
+            // borderColor: "#196ba7",
+            backgroundColor: "rgba(25, 107, 167, 0.5)"
+                    }]
+                },
+            options: {
+            animation: { duration: 0 },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: "rgba(100, 100, 100, 0.3)" // X-axis grid color
+                    },
+                    ticks: {
+                        color: "grey" // X-axis label color
+                    }
+                },
+                y: {
+                    grid: {
+                        color: "rgba(100, 100, 100, 0.3)" // X-axis grid color
+                    },
+                    ticks: {
+                        color: "grey" // Y-axis label color
+                    }
+                }
+            }
+        }
+            });
+        });
+
+    </script>
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <div class="z-index-container">
+                <div class="user">
+                    <span class="region-box" style="visibility:hidden">{{info.region}}</span>
+                    <span style="color: {{info.color}};">[{{info.tag}}]</span>
+                    <span class="region-box">{{info.region}}</span>
+                </div>
+                <div class="global-title">{{info.name}}</div>
+
+            </div>
+
+            <div class="global-stats-table">
+                <div class="global-stats-box">
+                    <div class="global-stats-label battles-label label-text">MBRs</div>
+                    <div class="global-stats-data battles-data">{{stats.members}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label winrate-label label-text">Actives</div>
+                    <div class="global-stats-data winrate-data">
+                        {{stats.active_members}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-dmg-label label-text">Win rate</div>
+                    <div class="global-stats-data avg-dmg-data" style="color: {{stats.winrate.color}};">
+                        {{stats.winrate.value}}%
+                    </div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-frags-label label-text">Dmg</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{stats.dmg.color}};">
+                        {{stats.dmg.value}}</div>
+                </div>
+                <div class="global-stats-box">
+                    <div class="global-stats-label avg-planes-label label-text">Exp</div>
+                    <div class="global-stats-data avg-planes-data">
+                        {{stats.exp}}</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+        <section class="ship-class-stats-section">
+            <div class="ship-class-stats-title">Clan Statistic</div>
+            <canvas class="ship-class-stats-graph"></canvas>
+
+            <div class="ship-class-stats-table">
+                <div class="ship-class-stats-table-row">
+                    <div class="ship-class-stats-label empty"></div>
+                    <div class="ship-class-stats-label battle-label">BTL</div>
+                    <div class="ship-class-stats-label exp-label">Win rate</div>
+                    <div class="ship-class-stats-label winrate-label">Rating</div>
+                    <div class="ship-class-stats-label avg-dmg-label">Record</div>
+                </div>
+                {{#seasons}}
+                <div class="ship-class-stats-table-row">
+
+                    <div class="ship-class-stats-data battle-data ship-class-cruiser">S{{season}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-cruiser">
+                        {{battles}}</div>
+                    <div class="ship-class-stats-data winrate-data ship-class-cruiser"
+                        style="color: {{winrate.color}};">{{winrate.value}}%
+                    </div>
+                    <div class="ship-class-stats-data avg-dmg-data ship-class-cruiser">
+                        <span style="color: {{now.color}};">{{now.division}}</span>
+                        <span>{{now.division_rating}}</span>
+                    </div>
+                    <div class="ship-class-stats-data avg-frags-data ship-class-cruiser">
+                        <span style="color: {{max.color}};">{{max.division}}</span>
+                        <span>{{max.division_rating}}</span>
+                    </div>
+                </div>
+                {{/seasons}}
+            </div>
+        </section>
+        {{#rename}}
+        <div class="divider"></div>
+        <div class="former-name">Former: [{{tag}}] {{name}} ({{time}})</div>
+        {{/rename}}
+    </div>
+</body>
+
+</html>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('ship-class-stats-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

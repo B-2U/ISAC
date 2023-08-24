@@ -1,12 +1,13 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, collections::HashSet, sync::Arc};
 
 use chrono::NaiveDate;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
         AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor,
-        Message, Typing, User, UserId,
+        Message, ReactionType, User, UserId,
     },
+    FrameworkError,
 };
 use rand::seq::SliceRandom;
 use regex::Regex;
@@ -14,30 +15,136 @@ use scraper::{Element, Html, Selector};
 
 use crate::{
     dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
-    utils::{user::PartialPlayer, IsacError, LoadFromJson, Ship, ShipsPara, WowsNumber},
-    Context, Error,
+    utils::{
+        structs::{PartialPlayer, Region, Ship},
+        wws_api::WowsApi,
+        IsacError,
+    },
+    Context, Data, Error,
 };
+
+/// The link to wargaming wiki maps page
+#[poise::command(prefix_command, slash_command, discard_spare_arguments)]
+pub async fn map(ctx: Context<'_>) -> Result<(), Error> {
+    let _r = ctx.reply("https://wiki.wargaming.net/en/Ship:Maps").await;
+    Ok(())
+}
+
+async fn code_err_handler(err: FrameworkError<'_, Data, Error>) {
+    if let Some(ctx) = err.ctx() {
+        let _r = ctx
+            .reply("`.code <codes>`\ne.g. `.code TIANSUOHAO2 MONSTERSENPAI`")
+            .await;
+    }
+}
+/// Generate the link for redeeming wows bonus codes
+#[poise::command(
+    prefix_command,
+    slash_command,
+    aliases("bonus"),
+    on_error = "code_err_handler"
+)]
+pub async fn code(
+    ctx: Context<'_>,
+    #[rest]
+    #[description = "one or more codes, split with space or new line"]
+    codes: String,
+) -> Result<(), Error> {
+    if codes.is_empty() {
+        let _r = ctx
+            .reply("`.code <codes>`\ne.g. `.code TIANSUOHAO2 MONSTERSENPAI`")
+            .await;
+        return Ok(());
+    };
+    let codes_vec = codes.split_whitespace().collect::<Vec<_>>();
+    // if there's more than one code, adding a code block for user to copy
+    let addition = match codes_vec.len() {
+        1 => String::new(),
+        _ => format!("```.code {codes}```\n"),
+    };
+    for (index, code) in codes_vec.iter().enumerate() {
+        let view = BonusView::new(code);
+        let last_msg = match index {
+            0 => {
+                ctx.send(|b| {
+                    b.content(format!("{addition}wows code: **{code}**"))
+                        .components(|c| c.set_action_row(view.build()))
+                        .reply(true)
+                })
+                .await?
+                .into_message()
+                .await?
+            }
+            _ => {
+                ctx.channel_id()
+                    .send_message(&ctx, |b| {
+                        b.content(format!("wows code: **{code}**"))
+                            .components(|c| c.set_action_row(view.build()))
+                    })
+                    .await?
+            }
+        };
+        if index == codes_vec.len() - 1 {
+            let _r = last_msg
+                .react(ctx, ReactionType::Unicode("❤️".to_string()))
+                .await;
+        }
+    }
+    Ok(())
+}
+
+struct BonusView<'a> {
+    code: &'a str,
+}
+
+impl<'a> BonusView<'a> {
+    fn new(code: &'a str) -> Self {
+        Self { code }
+    }
+    fn build(&self) -> CreateActionRow {
+        // sepereated them to 2 array becuz with a Array<Tuple> it formatted ugly
+        const LABEL: [&str; 4] = ["Asia", "Na", "Eu", "Ru"];
+        let buttons = [
+            format!(
+                "https://asia.wargaming.net/shop/bonus/?bonus_mode={}",
+                self.code
+            ),
+            format!(
+                "https://na.wargaming.net/shop/bonus/?bonus_mode={}",
+                self.code
+            ),
+            format!(
+                "https://eu.wargaming.net/shop/bonus/?bonus_mode={}",
+                self.code
+            ),
+            format!("https://lesta.ru/shop/bonus/?bonus_mode={}", self.code),
+        ];
+        let mut row = CreateActionRow::default();
+        LABEL.iter().zip(buttons.iter()).for_each(|(label, btn)| {
+            row.create_button(|b| b.label(label).url(btn).style(ButtonStyle::Link));
+        });
+        row
+    }
+}
 
 #[poise::command(prefix_command)]
 pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
     let mut args = args.unwrap_or_default();
     let player = args.parse_user(&ctx).await?;
-    // todo: wrapping typing into a auto dropped function?
-    let typing = Typing::start(Arc::clone(&ctx.serenity_context().http), ctx.channel_id().0)?;
-    let res = ctx
+    let _typing = ctx.typing().await;
+    let res_text = ctx
         .data()
         .client
-        .get(player.wows_number()?)
+        .get(player.wows_number_url()?)
         .send()
-        .await
-        .map_err(|err| IsacError::UnkownError(Box::new(err)))?;
-    let text = res.text().await.unwrap();
-    let record_clans_uid = _rename_parse_player(text).map_err(|err| IsacError::UnkownError(err))?;
+        .await?
+        .text()
+        .await?;
+    let record_clans_uid =
+        _rename_parse_player(res_text).map_err(|err| IsacError::UnknownError(err))?;
 
-    // todo: since theres async function inside, guess i can't use map() or flat_map() to replace for loop?
     let mut name_history = vec![];
     for clan_uid in record_clans_uid {
-        // todo: is boxing error a good practice?
         let res = ctx
             .data()
             .client
@@ -48,10 +155,10 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
             )
             .send()
             .await
-            .map_err(|err| IsacError::UnkownError(Box::new(err)))?;
+            .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
         let text = res.text().await.unwrap();
         name_history
-            .extend(_rename_parse_clan(text, &player).map_err(|err| IsacError::UnkownError(err))?);
+            .extend(_rename_parse_clan(text, &player).map_err(|err| IsacError::UnknownError(err))?);
     }
     name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
     let filtered_history: Vec<_> = name_history
@@ -86,11 +193,10 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
             })
             .await;
     }
-    typing.stop();
     Ok(())
 }
 
-fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, Error> {
+fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<HashSet<u64>, Error> {
     let html = Html::parse_document(html_text.as_ref());
 
     let table_selector = Selector::parse(".table-styled").unwrap();
@@ -114,7 +220,7 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, Error> {
             let _clan_href = cell
                 .select(&a_selector)
                 .nth(0)
-                .and_then(|f| f.value().attr("href"))?; //todo: why i can "?" a Option here?
+                .and_then(|f| f.value().attr("href"))?;
             clan_regex
                 .captures(_clan_href)?
                 .get(1)
@@ -161,7 +267,6 @@ fn _rename_parse_clan(
             .first_element_child()
             .ok_or("player_ign first_element")?
             .inner_html();
-        // todo: better way to parsing time?
         let date: NaiveDate = NaiveDate::parse_from_str(&date_str, "%d.%m.%Y")?;
         // let naivedate_epoch = NaiveDate::from_ymd_opt(1970, 1, 1).unwrap();
         // let time_stamp = date.signed_duration_since(naivedate_epoch);
@@ -180,13 +285,15 @@ pub async fn roulette(
 ) -> Result<(), Error> {
     let players = players.unwrap_or(RoulettePlayer::Three);
     let tier = tier.unwrap_or(RouletteTier::X);
-    let ship_js = ShipsPara::load_json("./web_src/ship/ships_para.json").await?;
-    let cadidates = ship_js
-        .0
-        .into_iter()
-        .filter(|(_ship_id, ship)| ship.tier == tier as u32 && ship.is_available())
-        .map(|(_ship_id, ship)| ship)
-        .collect::<Vec<_>>();
+    let cadidates = {
+        let ship_js = ctx.data().ship_js.read();
+        ship_js
+            .0
+            .iter()
+            .filter(|(_ship_id, ship)| ship.tier as u8 == tier as u8 && ship.is_available())
+            .map(|(_ship_id, ship)| ship.clone())
+            .collect::<Vec<_>>()
+    };
     // let mut ships: Vec<Ship> = cadidates
     //     .choose_multiple(&mut rand::thread_rng(), players.to_int())
     //     .map(|&m| m.clone())
@@ -358,4 +465,37 @@ pub enum RouletteTier {
     IX = 9,
     X = 10,
     XI = 11,
+}
+
+#[poise::command(prefix_command)]
+pub async fn uid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
+    let mut args = args.unwrap_or_default();
+    let player = args.parse_user(&ctx).await?.get_player(&ctx).await?;
+    let _r = ctx
+        .reply(format!("`{}`'s UID: **{}**", player.ign, player.uid))
+        .await;
+    Ok(())
+}
+
+#[poise::command(prefix_command, aliases("clanid"))]
+pub async fn clanuid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
+    let mut args = args.unwrap_or_default();
+    let first_arg = args.check(0)?;
+    // parse region
+    let region = match Region::parse(first_arg) {
+        Some(region) => {
+            args.remove(0)?;
+            region
+        }
+        None => Region::guild_default(&ctx).await,
+    };
+    let clan_name = args.check(0)?;
+    let clan = WowsApi::new(&ctx)
+        .clans(&region, clan_name)
+        .await?
+        .swap_remove(0);
+    let _r = ctx
+        .reply(format!("`{}`'s UID: **{}**", clan.tag, clan.id))
+        .await;
+    Ok(())
 }

@@ -1,0 +1,364 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: Roboto;
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: .5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: #fff;
+            background-color: #343434
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey
+        }
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+        .z-index-container {
+            z-index: 2
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(3, min-content);
+            gap: .2em;
+            justify-content: center;
+            align-items: center;
+            height: 152;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, .15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: .5em;
+            align-content: center;
+            display: grid;
+            padding: .2em
+        }
+
+        .global-title {
+            padding: .4rem 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            text-align: center
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table-box {
+            padding: 15px 0;
+            gap: 10px;
+            justify-self: stretch;
+        }
+
+        .global-stats-table {
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+            display: grid;
+        }
+
+        .global-stats-table-row {
+            padding: 15px;
+            gap: 10px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 11.5px 0 11.5px;
+            grid-template-columns: repeat(6, 1fr);
+            font-size: .9em
+        }
+
+        .global-stats-data {
+            font-weight: 700
+        }
+
+        .rating-container {
+            letter-spacing: 0px;
+            word-spacing: 0px;
+        }
+
+        .rating-div-circle {
+            display: inline-block;
+            width: 30.81px;
+            height: 30.81px;
+            border-width: 4px;
+            border-style: solid;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 31px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .rating-score {
+            vertical-align: middle;
+            height: 33px;
+        }
+
+
+        .player-stats-title {
+            grid-area: title;
+            justify-self: center;
+            font-size: 1.2em;
+            font-weight: 700
+        }
+
+        .player-stats-section {
+            display: grid;
+            gap: 1rem 1rem;
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas:
+                "title title"
+                "table1 table2";
+        }
+
+        /* QA can 2 tables use same css?  */
+        .player-table-1 {
+            grid-area: table1;
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+            display: grid;
+        }
+
+        .player-table-2 {
+            grid-area: table2;
+            justify-self: stretch;
+            background-color: #404040;
+            border-radius: 10px;
+            display: grid;
+        }
+
+        .player-table-row-1 {
+            padding: 10px;
+            gap: 8px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            grid-template-columns: 4.5fr 1fr 1.3fr;
+            font-size: .9em
+        }
+
+        .player-table-row-2 {
+            padding: 10px;
+            gap: 8px;
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            grid-template-columns: 4.5fr 1fr 1.3fr;
+            font-size: .9em
+        }
+
+        .ign-break {
+            word-break: break-all;
+            justify-self: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <div class="z-index-container">
+                <div class="user">
+                    <span class="region-box" style="visibility:hidden">{{info.region}}</span>
+                    <span style="color: cc9966;">[{{info.tag}}]</span>
+                    <span class="region-box">{{info.region}}</span>
+                </div>
+                <div class="global-title">{{info.name}}</div>
+            </div>
+            <div class="global-pr" style="background-color: {{alpha.now.color}};"><span
+                    class="pr-data">{{alpha.now.league}} {{alpha.now.division}} {{alpha.now.division_rating}}</span>
+            </div>
+            <div class="global-stats-table-box">
+                <div class="global-stats-table">
+                    <div class="global-stats-table-row">
+                        <div class=" empty">Team</div>
+                        <div class=" battle-label">BTL</div>
+                        <div class=" winrate-label">Win rate</div>
+                        <div class=" rating-label">Rating</div>
+                        <div class=" record-label">Record</div>
+                        <div class=" win-streak-label">Win streak</div>
+                    </div>
+                    <div class="global-stats-table-row">
+
+                        <div class="global-stats-data battle-data">Alpha</div>
+                        <div class="global-stats-data exp-data ">
+                            {{alpha.battles}}</div>
+                        <div class="global-stats-data winrate-data " style="color: {{alpha.winrate.color}};">
+                            {{alpha.winrate.value}}%
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{alpha.now.color}}">
+                                    {{alpha.now.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{alpha.now.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{alpha.max.color}};">
+                                    {{alpha.max.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{alpha.max.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data win-streak-label">{{alpha.win_streak}}</div>
+                    </div>
+                    <div class="global-stats-table-row">
+
+                        <div class="global-stats-data battle-data">Bravo</div>
+                        <div class="global-stats-data exp-data ">
+                            {{bravo.battles}}</div>
+                        <div class="global-stats-data winrate-data " style="color: {{bravo.winrate.color}};">
+                            {{bravo.winrate.value}}%
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{bravo.now.color}}">
+                                    {{bravo.now.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{bravo.now.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data battles-data rating-container">
+                            <span class="division-flex">
+                                <div class="rating-div-circle" style="border-color:{{bravo.max.color}};">
+                                    {{bravo.max.division}}
+                                </div>
+                            </span>
+                            <span class="rating-score">{{bravo.max.division_rating}}</span>
+                        </div>
+                        <div class="global-stats-data win-streak-label">{{bravo.win_streak}}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+        <section class="player-stats-section">
+            <div class="player-stats-title">Most valuable players(S{{alpha.season}})</div>
+            <div class="player-table-1">
+                <div class="player-table-row-1">
+                    <div>Player</div>
+                    <div>BTL</div>
+                    <div>WR</div>
+                </div>
+                {{#members_left}}
+                <div class="player-table-row-1">
+                    <div class="ign-break">{{ign}}</div>
+                    <div>{{battles}}</div>
+                    <div style="color: {{winrate.color}};">{{winrate.value}}%</div>
+                </div>
+                {{/members_left}}
+            </div>
+            <div class="player-table-2">
+                <div class="player-table-row-2">
+                    <div>Player</div>
+                    <div>BTL</div>
+                    <div>WR</div>
+                </div>
+                {{#members_right}}
+                <div class="player-table-row-2">
+                    <div class="ign-break">{{ign}}</div>
+                    <div>{{battles}}</div>
+                    <div style="color: {{winrate.color}};">{{winrate.value}}%</div>
+                </div>
+                {{/members_right}}
+            </div>
+
+        </section>
+    </div>
+</body>
+
+</html>
+<script>
+    // round corner stuff
+    let per_ship_data = document.getElementsByClassName('global-stats-table-row');
+    for (let i = 0; i < per_ship_data.length; i++) {
+        if (i % 2 != 0 && i == (per_ship_data.length - 1)) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+            per_ship_data[i].style.borderBottomLeftRadius = "10px";
+            per_ship_data[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            per_ship_data[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let _1 = document.getElementsByClassName('player-table-row-1');
+    for (let i = 0; i < _1.length; i++) {
+        if (i % 2 != 0 && i == (_1.length - 1)) {
+            _1[i].style.backgroundColor = "#383838";
+            _1[i].style.borderBottomLeftRadius = "10px";
+            _1[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            _1[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round corner stuff
+    let _2 = document.getElementsByClassName('player-table-row-2');
+    for (let i = 0; i < _2.length; i++) {
+        if (i % 2 != 0 && i == (_2.length - 1)) {
+            _2[i].style.backgroundColor = "#383838";
+            _2[i].style.borderBottomLeftRadius = "10px";
+            _2[i].style.borderBottomRightRadius = "10px";
+        } else if (i % 2 != 0) {
+            _2[i].style.backgroundColor = "#383838";
+        }
+    }
+</script>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

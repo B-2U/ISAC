@@ -1,60 +1,94 @@
-mod ship;
-pub use ship::*;
-
-pub mod user;
+pub mod structs;
 pub mod wws_api;
 
 mod isac_error;
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
-mod wows_number;
-pub use wows_number::WowsNumber;
-
-use std::path::Path;
-
 use poise::async_trait;
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
+use tokio::io::AsyncWriteExt;
 
+/// load and save the struct with given json path
+///
+/// ## Panic
+/// panic when failing to load from the path
 #[async_trait]
-pub trait LoadFromJson {
-    async fn load_json<P>(path: P) -> Result<Self, Box<dyn std::error::Error + Send + Sync>>
+pub trait LoadSaveFromJson {
+    const PATH: &'static str;
+    async fn load_json() -> Self
     where
-        Self: DeserializeOwned + Sized,
-        P: AsRef<Path> + std::marker::Send;
-
-    fn load_json_sync<P>(path: P) -> Result<Self, Box<dyn std::error::Error + Send + Sync>>
-    where
-        Self: DeserializeOwned + Sized,
-        P: AsRef<Path> + std::marker::Send;
-}
-#[async_trait]
-impl<O> LoadFromJson for O
-where
-    O: DeserializeOwned + Sized + Send + 'static,
-{
-    async fn load_json<P>(path: P) -> Result<Self, Box<dyn std::error::Error + Send + Sync>>
-    where
-        Self: DeserializeOwned + Sized,
-        P: AsRef<Path> + std::marker::Send,
+        Self: DeserializeOwned + Sized + Send + 'static,
     {
-        let path = path.as_ref().to_owned();
-        let result = tokio::task::spawn_blocking(move || {
-            let reader =
-                std::io::BufReader::new(std::fs::File::open(path).expect("Failed to open file"));
-            serde_json::from_reader(reader).expect("Failed to deserialize")
+        tokio::task::spawn_blocking(move || {
+            let reader = std::io::BufReader::new(
+                std::fs::File::open(&Self::PATH)
+                    .unwrap_or_else(|_| panic!("Failed to open file: {}", Self::PATH)),
+            );
+            serde_json::from_reader(reader).unwrap_or_else(|err| {
+                panic!(
+                    "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
+                    Self::PATH,
+                    std::any::type_name::<Self>()
+                )
+            })
         })
-        .await?;
-        Ok(result)
+        .await
+        .unwrap()
     }
 
-    fn load_json_sync<P>(path: P) -> Result<Self, Box<dyn std::error::Error + Send + Sync>>
+    fn load_json_sync() -> Self
     where
-        Self: DeserializeOwned + Sized,
-        P: AsRef<Path> + std::marker::Send,
+        Self: DeserializeOwned,
     {
-        let path = path.as_ref().to_owned();
         let reader =
-            std::io::BufReader::new(std::fs::File::open(path).expect("Failed to open file"));
-        Ok(serde_json::from_reader(reader).expect("Failed to deserialize"))
+            std::io::BufReader::new(std::fs::File::open(&Self::PATH).expect("Failed to open file"));
+        serde_json::from_reader(reader).unwrap_or_else(|err| {
+            panic!(
+                "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
+                Self::PATH,
+                std::any::type_name::<Self>()
+            )
+        })
+    }
+
+    async fn save_json(&self)
+    where
+        Self: Serialize + Sized,
+    {
+        let mut file = tokio::fs::File::create(&Self::PATH)
+            .await
+            .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", Self::PATH));
+        let json_bytes = serde_json::to_vec(&self).unwrap_or_else(|err| {
+            panic!(
+                "Failed to serialize struct: {:?} to JSON. Err: {err}",
+                std::any::type_name::<Self>(),
+            )
+        });
+
+        if let Err(err) = file.write_all(&json_bytes).await {
+            panic!("Failed to write JSON to file: {:?}. Err: {err}", Self::PATH,);
+        }
+        // serde_json::to_writer(file, &self).unwrap_or_else(|err| {
+        //     panic!(
+        //         "Failed to serialze struct: {:?} to file: {}\n Err: {err}",
+        //         std::any::type_name::<Self>(),
+        //         Self::PATH,
+        //     )
+        // })
+    }
+
+    fn save_json_sync(&self)
+    where
+        Self: Serialize,
+    {
+        let file = std::fs::File::create(&Self::PATH)
+            .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", Self::PATH));
+        serde_json::to_writer(file, &self).unwrap_or_else(|err| {
+            panic!(
+                "Failed to serialze struct: {:?} to file: {}\n Err: {err}",
+                std::any::type_name::<Self>(),
+                Self::PATH,
+            )
+        })
     }
 }

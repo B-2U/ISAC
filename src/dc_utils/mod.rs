@@ -12,3 +12,5 @@ pub use args::Args;
 
 mod user;
 pub use user::UserAddon;
+
+pub mod auto_complete;

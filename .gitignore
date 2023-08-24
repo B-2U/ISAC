@@ -6,6 +6,8 @@ user_data/*
 web_src/*
 **/*.html.json
 temp/
+webdriver/*
+test_res/
 
 # Added by cargo
 

@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
 
         .main {
@@ -64,7 +64,7 @@
             gap: 0.2em;
             justify-content: center;
             align-items: center;
-            padding: 0.9em 0 0.7em;
+            height: 152;
             font-size: 1.3em;
             text-align: center;
             white-space: nowrap;
@@ -72,9 +72,12 @@
 
         .dogtag-container {
             position: relative;
+            height: 80;
+            width: 80;
         }
 
-        .dogtag-patch {
+        .dogtag-dogtag_bg {
+            z-index: -1;
             position: absolute;
             top: 0;
             left: 0;
@@ -198,72 +201,73 @@
 <body>
     <div class="main">
         <section class="global-section">
-            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <img src={{user.pfp}} class="background" onerror="this.style.display='none'" />
             <div class="z-index-container">
                 <div class="user">
                     <div class="dogtag-container">
-                        <img src="{{user.dog_tag}}" alt="dog_tag">
-                        <img class="dogtag-patch" src="{{user.patch}}">
+                        <img src="{{user.dogtag}}" onerror="this.style.display='none'">
+                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
                     </div>
-                    <span style="color: {{clan.color}};">{{clan.name}}</span>
-                    <span class="user-id">{{user.nickname}}</span>
-                    <span class="region-box">{{user.region_upper}}</span>
+                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    <span class="user-id">{{user.ign}}</span>
+                    <span class="region-box">{{user.region}}</span>
                 </div>
                 <div class="global-title">
-                    <span class="ship-name">{{ship.tier}} {{ship.name}}{{mode}}</span>
+                    <span class="ship-name">{{ship.tier}} {{ship.name}} {{main_mode_name}}</span>
                     {{#ranking}}
                     <span class="ranking-box">#{{ranking}}</span>
                     {{/ranking}}
                 </div>
             </div>
-            <div class="global-pr" style="background-color: {{ship.pr.color}};">
-                <span class="pr-data">PR {{ship.pr.value}}</span>
+            <div class="global-pr" style="background-color: {{main_mode.pr.color}};">
+                <span class="pr-data">PR {{main_mode.pr.value}}</span>
             </div>
             <div class="global-stats-table">
                 <div class="global-stats-box">
                     <div class="global-stats-label battles-label label-text">Battles</div>
-                    <div class="global-stats-data battles-data">{{ship.battles}}</div>
+                    <div class="global-stats-data battles-data">{{main_mode.battles}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label winrate-label label-text">Win rate</div>
-                    <div class="global-stats-data winrate-data" style="color: {{ship.winrate.color}};">
-                        {{ship.winrate.value}}%</div>
+                    <div class="global-stats-data winrate-data" style="color: {{main_mode.winrate.color}};">
+                        {{main_mode.winrate.value}}%</div>
 
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-dmg-label label-text">Avg. dmg</div>
-                    <div class="global-stats-data avg-dmg-data" style="color: {{ship.dmg.color}};">{{ship.dmg.value}}
+                    <div class="global-stats-data avg-dmg-data" style="color: {{main_mode.dmg.color}};">
+                        {{main_mode.dmg.value}}
                     </div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-frags-label label-text">Avg. frags</div>
-                    <div class="global-stats-data avg-frags-data" style="color: {{ship.frags.color}};">
-                        {{ship.frags.value}}</div>
+                    <div class="global-stats-data avg-frags-data" style="color: {{main_mode.frags.color}};">
+                        {{main_mode.frags.value}}</div>
 
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-planes-label label-text">Avg. planes</div>
-                    <div class="global-stats-data avg-planes-data" style="color: {{ship.planes.color}};">
-                        {{ship.planes.value}}</div>
+                    <div class="global-stats-data avg-planes-data" style="color: {{main_mode.planes.color}};">
+                        {{main_mode.planes.value}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-potential-label label-text">
                         Potential</div>
-                    <div class="global-stats-data avg-potential-data">{{ship.potential}}</div>
+                    <div class="global-stats-data avg-potential-data">{{main_mode.potential}}</div>
                 </div>
                 <div class="global-stats-box">
                     <div class="global-stats-label avg-potential-label label-text">Scout dmg</div>
-                    <div class="global-stats-data avg-potential-data"">{{ship.scout}}</div>
+                    <div class="global-stats-data avg-potential-data"">{{main_mode.scout}}</div>
                 </div>
                 <div class=" global-stats-box">
                         <div class="global-stats-label avg-potential-label label-text">Hit rate</div>
-                        <div class="global-stats-data avg-potential-data">{{ship.hitrate}}%</div>
+                        <div class="global-stats-data avg-potential-data">{{main_mode.hitrate}}%</div>
                     </div>
 
 
                 </div>
         </section>
-        {{#ship.division}}
+        {{#sub_modes}}
         <div class="divider"></div>
         <section class="division-stats-section">
             <div class="division-stats-title">By division type</div>
@@ -321,7 +325,7 @@
                 </div>
             </div>
         </section>
-        {{/ship.division}}
+        {{/sub_modes}}
         <!--  <div class="signature">[PANTS]B2U</div>  -->
     </div>
 </body>

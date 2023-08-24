@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: "Roboto";
-            src: url("../font/Roboto.ttf") format('truetype');
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
         }
 
         .main {
@@ -65,7 +65,7 @@
             gap: 0.2em;
             justify-content: center;
             align-items: center;
-            padding: 0.9em 0 0.7em;
+            height: 152;
             font-size: 1.3em;
             text-align: center;
             white-space: nowrap;
@@ -73,9 +73,12 @@
 
         .dogtag-container {
             position: relative;
+            height: 80;
+            width: 80;
         }
 
-        .dogtag-patch {
+        .dogtag-dogtag_bg {
+            z-index: -1;
             position: absolute;
             top: 0;
             left: 0;
@@ -251,7 +254,7 @@
             filter: invert(46%) sepia(3%) saturate(8%) hue-rotate(325deg) brightness(99%) contrast(84%);
         }
     </style>
-    <script src="./renderer_template/chart.min.js">
+    <script src="./renderer/script/chart.min.js">
     </script>
     <script>
         // pie chart
@@ -262,7 +265,7 @@
                 data: {
                     labels: ["DD", "CA", "BB", "CV", "SS"], // 標題
                     datasets: [{
-                        data: [{{ type.dd.battles }}, {{ type.ca.battles }}, {{ type.bb.battles }}, {{ type.cv.battles }}, {{ type.ss.battles }}], // 資料
+                        data: [{{ class.dd.battles }}, {{ class.ca.battles }}, {{ class.bb.battles }}, {{ class.cv.battles }}, {{ class.ss.battles }}], // 資料
             backgroundColor: [ // 背景色
             "#059bff",
             "#22cfa4",
@@ -339,18 +342,18 @@
 <body>
     <div class="main">
         <section class="global-section">
-            <img src={{user.pfp}} class="background" alt="" onerror="this.style.display='none'" />
+            <img src={{user.pfp}} class="background" onerror="this.style.display='none'" />
             <div class="z-index-container">
                 <div class="user">
                     <div class="dogtag-container">
-                        <img src="{{user.dog_tag}}" alt="dog_tag">
-                        <img class="dogtag-patch" src="{{user.patch}}">
+                        <img src="{{user.dogtag}}" onerror="this.style.display='none'">
+                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
                     </div>
-                    <span style="color: {{clan.color}};">{{clan.name}}</span>
-                    <span class="user-id">{{user.nickname}}
+                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    <span class="user-id">{{user.ign}}
                         <sup style="color:#AAAAAA;font-size:25px;">{{user.karma}}</sup>
                     </span>
-                    <span class="region-box">{{user.region_upper}}</span>
+                    <span class="region-box">{{user.region}}</span>
                 </div>
                 <div class="global-title">Overall</div>
             </div>
@@ -473,80 +476,80 @@
                         <img class="ship-icon ship-class-destroyer filter-dd"
                             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTgzIDIyTDAgMFY0NEw4MyAyMloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
                     </div>
-                    <div class="ship-class-stats-data battle-data ship-class-destroyer">{{type.dd.battles}}</div>
+                    <div class="ship-class-stats-data battle-data ship-class-destroyer">{{class.dd.battles}}</div>
                     <div class="ship-class-stats-data exp-data ship-class-destroyer"
-                        style="color: {{type.dd.exp.color}};">
-                        {{type.dd.exp.value}}</div>
+                        style="color: {{class.dd.exp.color}};">
+                        {{class.dd.exp.value}}</div>
                     <div class="ship-class-stats-data winrate-data ship-class-destroyer"
-                        style="color: {{type.dd.winrate.color}};">{{type.dd.winrate.value}}%</div>
+                        style="color: {{class.dd.winrate.color}};">{{class.dd.winrate.value}}%</div>
                     <div class="ship-class-stats-data avg-dmg-data ship-class-destroyer"
-                        style="color: {{type.dd.dmg.color}};">{{type.dd.dmg.value}}</div>
+                        style="color: {{class.dd.dmg.color}};">{{class.dd.dmg.value}}</div>
                     <div class="ship-class-stats-data avg-frags-data ship-class-destroyer"
-                        style="color: {{type.dd.frags.color}};">{{type.dd.frags.value}}</div>
+                        style="color: {{class.dd.frags.color}};">{{class.dd.frags.value}}</div>
                 </div>
                 <div class="ship-class-stats-table-row">
                     <div class="ship-class-stats-label ship-class-type-label ship-class-cruiser">
                         <img class="ship-icon ship-class-cruiser filter-ca"
                             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgNDRIMTkuMzY2N0w0MS41IDBIMFY0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yNy42NjY3IDQ0TDQ5LjggMEg1OC4xTDgzIDIyTDU4LjEgNDRIMjcuNjY2N1oiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
                     </div>
-                    <div class="ship-class-stats-data battle-data ship-class-cruiser">{{type.ca.battles}}</div>
+                    <div class="ship-class-stats-data battle-data ship-class-cruiser">{{class.ca.battles}}</div>
                     <div class="ship-class-stats-data exp-data ship-class-cruiser"
-                        style="color: {{type.ca.exp.color}};">
-                        {{type.ca.exp.value}}</div>
+                        style="color: {{class.ca.exp.color}};">
+                        {{class.ca.exp.value}}</div>
                     <div class="ship-class-stats-data winrate-data ship-class-cruiser"
-                        style="color: {{type.ca.winrate.color}};">{{type.ca.winrate.value}}%</div>
+                        style="color: {{class.ca.winrate.color}};">{{class.ca.winrate.value}}%</div>
                     <div class="ship-class-stats-data avg-dmg-data ship-class-cruiser"
-                        style="color: {{type.ca.dmg.color}};">{{type.ca.dmg.value}}</div>
+                        style="color: {{class.ca.dmg.color}};">{{class.ca.dmg.value}}</div>
                     <div class="ship-class-stats-data avg-frags-data ship-class-cruiser"
-                        style="color: {{type.ca.frags.color}};">{{type.ca.frags.value}}</div>
+                        style="color: {{class.ca.frags.color}};">{{class.ca.frags.value}}</div>
                 </div>
                 <div class="ship-class-stats-table-row">
                     <div class="ship-class-stats-label ship-class-type-label ship-class-battleship">
                         <img class="ship-icon ship-class-battleship filter-bb"
                             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgNDRIMTEuMDY2N0wzMy4yIDBIMFY0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0zNS45NjY3IDQ0TDU4LjEgMEw4MyAyMkw1OC4xIDQ0SDM1Ljk2NjdaIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNDkuOCAwSDQxLjVMMTkuMzY2NyA0NEgyNy42NjY3TDQ5LjggMFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=" />
                     </div>
-                    <div class="ship-class-stats-data battle-data ship-class-battleship">{{type.bb.battles}}</div>
+                    <div class="ship-class-stats-data battle-data ship-class-battleship">{{class.bb.battles}}</div>
                     <div class="ship-class-stats-data exp-data ship-class-battleship"
-                        style="color: {{type.bb.exp.color}};">
-                        {{type.bb.exp.value}}</div>
+                        style="color: {{class.bb.exp.color}};">
+                        {{class.bb.exp.value}}</div>
                     <div class="ship-class-stats-data winrate-data ship-class-battleship"
-                        style="color: {{type.bb.winrate.color}};">{{type.bb.winrate.value}}%</div>
+                        style="color: {{class.bb.winrate.color}};">{{class.bb.winrate.value}}%</div>
                     <div class="ship-class-stats-data avg-dmg-data ship-class-battleship"
-                        style="color: {{type.bb.dmg.color}};">{{type.bb.dmg.value}}</div>
+                        style="color: {{class.bb.dmg.color}};">{{class.bb.dmg.value}}</div>
                     <div class="ship-class-stats-data avg-frags-data ship-class-battleship"
-                        style="color: {{type.bb.frags.color}};">{{type.bb.frags.value}}</div>
+                        style="color: {{class.bb.frags.color}};">{{class.bb.frags.value}}</div>
                 </div>
                 <div class="ship-class-stats-table-row">
                     <div class="ship-class-stats-label ship-class-type-label ship-class-carrier">
                         <img class="ship-icon ship-class-carrier filter-cv"
                             src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODMiIGhlaWdodD0iNDQiIHZpZXdCb3g9IjAgMCA4MyA0NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTAgMTguNTYyNUg0MS41VjBIMFYxOC41NjI1WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTU4LjEgNDRINDguNDE2N1YwSDU4LjFMODMgMjJMNTguMSA0NFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik00MS41IDI1LjQzNzVIMFY0NEg0MS41VjI1LjQzNzVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" />
                     </div>
-                    <div class="ship-class-stats-data battle-data ship-class-carrier">{{type.cv.battles}}</div>
+                    <div class="ship-class-stats-data battle-data ship-class-carrier">{{class.cv.battles}}</div>
                     <div class="ship-class-stats-data exp-data ship-class-carrier"
-                        style="color: {{type.cv.exp.color}};">
-                        {{type.cv.exp.value}}</div>
+                        style="color: {{class.cv.exp.color}};">
+                        {{class.cv.exp.value}}</div>
                     <div class="ship-class-stats-data winrate-data ship-class-carrier"
-                        style="color: {{type.cv.winrate.color}};">{{type.cv.winrate.value}}%</div>
+                        style="color: {{class.cv.winrate.color}};">{{class.cv.winrate.value}}%</div>
                     <div class="ship-class-stats-data avg-dmg-data ship-class-carrier"
-                        style="color: {{type.cv.dmg.color}};">{{type.cv.dmg.value}}</div>
+                        style="color: {{class.cv.dmg.color}};">{{class.cv.dmg.value}}</div>
                     <div class="ship-class-stats-data avg-frags-data ship-class-carrier"
-                        style="color: {{type.cv.frags.color}};">{{type.cv.frags.value}}</div>
+                        style="color: {{class.cv.frags.color}};">{{class.cv.frags.value}}</div>
                 </div>
                 <div class="ship-class-stats-table-row">
                     <div class="ship-class-stats-label ship-class-type-label ship-class-sub">
                         <img class="ship-icon ship-class-sub filter-ss"
                             src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMSIgd2lkdGg9IjgzcHgiIGhlaWdodD0iNDRweCIgc3R5bGU9InNoYXBlLXJlbmRlcmluZzpnZW9tZXRyaWNQcmVjaXNpb247IHRleHQtcmVuZGVyaW5nOmdlb21ldHJpY1ByZWNpc2lvbjsgaW1hZ2UtcmVuZGVyaW5nOm9wdGltaXplUXVhbGl0eTsgZmlsbC1ydWxlOmV2ZW5vZGQ7IGNsaXAtcnVsZTpldmVub2RkIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CjxnPjxwYXRoIHN0eWxlPSJvcGFjaXR5OjAuOTc2IiBmaWxsPSIjZmVmZmZlIiBkPSJNIC0wLjUsLTAuNSBDIDAuODMzMzMzLC0wLjUgMi4xNjY2NywtMC41IDMuNSwtMC41QyA0LjU2NzY0LDAuNDM0NDc1IDUuOTAwOTcsMC43Njc4MDkgNy41LDAuNUMgNy41LDE0LjUgNy41LDI4LjUgNy41LDQyLjVDIDUuOTAwOTcsNDIuMjMyMiA0LjU2NzY0LDQyLjU2NTUgMy41LDQzLjVDIDIuMTY2NjcsNDMuNSAwLjgzMzMzMyw0My41IC0wLjUsNDMuNUMgLTAuNSwyOC44MzMzIC0wLjUsMTQuMTY2NyAtMC41LC0wLjUgWiIvPjwvZz4KPGc+PHBhdGggc3R5bGU9Im9wYWNpdHk6MC45MzgiIGZpbGw9IiNmZWZmZmUiIGQ9Ik0gODIuNSwyMC41IEMgODIuNSwyMS4xNjY3IDgyLjUsMjEuODMzMyA4Mi41LDIyLjVDIDYwLjEyNDIsMjguMDEwNiAzNy43OTA4LDMzLjY3NzMgMTUuNSwzOS41QyAxNS41LDI3LjUgMTUuNSwxNS41IDE1LjUsMy41QyAzNy43OTA4LDkuMzIyNzIgNjAuMTI0MiwxNC45ODk0IDgyLjUsMjAuNSBaIi8+PC9nPgo8L3N2Zz4K" />
                     </div>
-                    <div class="ship-class-stats-data battle-data ship-class-sub">{{type.ss.battles}}</div>
-                    <div class="ship-class-stats-data exp-data ship-class-sub" style="color: {{type.ss.exp.color}};">
-                        {{type.ss.exp.value}}</div>
+                    <div class="ship-class-stats-data battle-data ship-class-sub">{{class.ss.battles}}</div>
+                    <div class="ship-class-stats-data exp-data ship-class-sub" style="color: {{class.ss.exp.color}};">
+                        {{class.ss.exp.value}}</div>
                     <div class="ship-class-stats-data winrate-data ship-class-sub"
-                        style="color: {{type.ss.winrate.color}};">{{type.ss.winrate.value}}%</div>
+                        style="color: {{class.ss.winrate.color}};">{{class.ss.winrate.value}}%</div>
                     <div class="ship-class-stats-data avg-dmg-data ship-class-sub"
-                        style="color: {{type.ss.dmg.color}};">
-                        {{type.ss.dmg.value}}</div>
+                        style="color: {{class.ss.dmg.color}};">
+                        {{class.ss.dmg.value}}</div>
                     <div class="ship-class-stats-data avg-frags-data ship-class-sub"
-                        style="color: {{type.ss.frags.color}};">{{type.ss.frags.value}}</div>
+                        style="color: {{class.ss.frags.color}};">{{class.ss.frags.value}}</div>
                 </div>
             </div>
         </section>
