@@ -19,7 +19,7 @@ use utils::{IsacHelp, IsacInfo};
 use crate::{
     tasks::launch_renderer,
     utils::{
-        structs::{ExpectedJs, GuildDefaultRegion, LittleConstant, Patrons, ShipsPara},
+        structs::{ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipsPara},
         IsacError, LoadSaveFromJson,
     },
 };
@@ -66,7 +66,7 @@ async fn main() {
             patreon::background(),
             clan::clan_hybrid(),
             clan_top::clan_top(),
-            recent::recent(),
+            recent::recent_hybrid(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
@@ -135,6 +135,7 @@ pub struct Data {
     patron: Arc<RwLock<Patrons>>,
     expected_js: Arc<RwLock<ExpectedJs>>,
     ship_js: RwLock<ShipsPara>, // TODO make a command for update it
+    link_js: RwLock<Linked>,
     wg_api_token: String,
     guild_default: RwLock<GuildDefaultRegion>,
     constant: RwLock<LittleConstant>,
@@ -147,6 +148,7 @@ impl Data {
             patron: Arc::new(RwLock::new(Patrons::default())),
             expected_js: Arc::new(RwLock::new(ExpectedJs::load_json_sync())),
             ship_js: RwLock::new(ShipsPara::load_json_sync()),
+            link_js: RwLock::new(Linked::load_json_sync()),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: RwLock::new(GuildDefaultRegion::load_json_sync()),
             constant: RwLock::new(LittleConstant::load_json_sync()),

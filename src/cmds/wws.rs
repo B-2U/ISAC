@@ -16,8 +16,7 @@ use crate::{
                 SingleShipTemplate,
                 SingleShipTemplateSub,
             },
-            Linked, Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier,
-            Statistic,
+            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier, Statistic,
         },
         IsacError, IsacInfo, LoadSaveFromJson,
     },
@@ -63,9 +62,10 @@ pub async fn wws_slash(
         } else {
             ctx.author().clone()
         };
-        let mut linked_js: HashMap<_, _> = Linked::load_json().await.into();
-        linked_js
-            .remove(&user.id)
+        ctx.data()
+            .link_js
+            .read()
+            .get(&user.id)
             .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
                 user_name: Some(user.name.clone()),
             }))?

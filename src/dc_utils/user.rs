@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use poise::{
     async_trait,
     serenity_prelude::{
@@ -7,13 +5,7 @@ use poise::{
     },
 };
 
-use crate::{
-    utils::{
-        structs::{Linked, PartialPlayer},
-        LoadSaveFromJson,
-    },
-    Error,
-};
+use crate::{utils::structs::PartialPlayer, Error};
 
 #[async_trait]
 /// will only convert by user_id or mention, but not username
@@ -36,8 +28,7 @@ pub trait UserAddon: Sized {
 
     /// get the user's linked account if exist
     async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer> {
-        let mut linked_js: HashMap<_, _> = Linked::load_json().await.into();
-        linked_js.remove(&ctx.author().id)
+        ctx.data().link_js.read().get(&ctx.author().id)
     }
 
     /// get permissions

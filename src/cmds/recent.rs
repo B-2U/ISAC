@@ -4,10 +4,13 @@ use std::{
 };
 
 use itertools::Itertools;
-use poise::serenity_prelude::{AttachmentType, CreateComponents, CreateSelectMenuOption, Message};
+use poise::serenity_prelude::{
+    AttachmentType, CreateComponents, CreateSelectMenuOption, Message, User,
+};
 
 use crate::{
-    dc_utils::{Args, ContextAddon, InteractionAddon},
+    cmds::recent,
+    dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
             template_data::{RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render},
@@ -15,11 +18,65 @@ use crate::{
         },
         IsacError, IsacInfo,
     },
-    Context, Error,
+    Context, Data, Error,
 };
 
 const RECENT_LAST_REQUEST_LIMIT: u64 = 14;
 const RECENT_OMIT_LIMIT: usize = 50;
+
+pub fn recent_hybrid() -> poise::Command<Data, Error> {
+    let mut cmd = recent::recent_slash();
+    cmd.prefix_action = recent::recent().prefix_action;
+    cmd
+}
+
+/// last X days stats
+#[poise::command(slash_command, rename = "recent")]
+pub async fn recent_slash(
+    ctx: Context<'_>,
+    #[description = "player's ign, default: yourself"]
+    #[autocomplete = "auto_complete::player"]
+    player: Option<String>, // the String is a Serialized PartialPlayer struct
+    #[description = "@ping / discord user's ID, default: yourself"]
+    #[rename = "user"]
+    discord_user: Option<String>,
+    #[description = "last 1~30(90 for patreons) days of stats, default: 1"] days: Option<u64>,
+    #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
+) -> Result<(), Error> {
+    let partial_player = if let Some(player) =
+        player.and_then(|player_str| serde_json::from_str::<PartialPlayer>(&player_str).ok())
+    {
+        player
+    } else {
+        let user = if let Some(discord_user_str) = discord_user {
+            User::convert_strict(
+                ctx.serenity_context(),
+                ctx.guild_id(),
+                None,
+                &discord_user_str,
+            )
+            .await
+            .unwrap_or(ctx.author().clone())
+        } else {
+            ctx.author().clone()
+        };
+        ctx.data()
+            .link_js
+            .read()
+            .get(&user.id)
+            .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
+                user_name: Some(user.name.clone()),
+            }))?
+    };
+
+    func_recent(
+        &ctx,
+        partial_player,
+        battle_type.unwrap_or_default(),
+        days.unwrap_or(1),
+    )
+    .await
+}
 
 #[poise::command(prefix_command)]
 pub async fn recent(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {

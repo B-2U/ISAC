@@ -2,7 +2,7 @@ use crate::{
     cmds::setting,
     dc_utils::{auto_complete, ContextAddon, UserAddon},
     utils::{
-        structs::{Linked, PartialPlayer, Region},
+        structs::{PartialPlayer, Region},
         IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context, Data, Error,
@@ -27,9 +27,11 @@ pub async fn link(
         Err(IsacError::Info(IsacInfo::AutoCompleteError))?
     };
     let player = partial_player.get_player(&ctx).await?;
-    let mut linked_js = Linked::load_json().await;
-    linked_js.0.insert(ctx.author().id, partial_player);
-    linked_js.save_json().await;
+    {
+        let mut guard = ctx.data().link_js.write();
+        guard.0.insert(ctx.author().id, partial_player);
+        guard.save_json_sync();
+    }
     let _r = ctx
         .reply(format!(
             "Successfully linked with `{}` ({})!",

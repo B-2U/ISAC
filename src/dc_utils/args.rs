@@ -1,18 +1,18 @@
-use std::{collections::HashMap, str::FromStr, time::Duration};
+use std::{str::FromStr, time::Duration};
 
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use poise::serenity_prelude::{
-    ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
-    ReactionType, User, UserId,
+    ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed, CreateEmbedAuthor,
+    Message, ReactionType, User, UserId,
 };
 use regex::Regex;
 
 use crate::{
     utils::{
-        structs::{Linked, Mode, PartialClan, PartialPlayer, Region, Ship},
+        structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
         wws_api::WowsApi,
-        IsacError, IsacHelp, IsacInfo, LoadSaveFromJson,
+        IsacError, IsacHelp, IsacInfo,
     },
     Context,
 };
@@ -25,27 +25,25 @@ pub struct Args(Vec<String>);
 impl Args {
     /// try to parse discord user at first, if none, parsing region and searching ign
     pub async fn parse_user(&mut self, ctx: &Context<'_>) -> Result<PartialPlayer, IsacError> {
-        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
-
         let first_arg = self.check(0)?;
 
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            match linked_js.get(&user.id) {
+            match ctx.data().link_js.read().get(&user.id) {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    Ok(*linked_user)
+                    Ok(linked_user)
                 }
                 None => Err(IsacInfo::UserNotLinked {
                     user_name: Some(user.name.clone()),
                 })?,
             }
         } else if first_arg == "me" {
-            match linked_js.get(&ctx.author().id) {
+            match ctx.data().link_js.read().get(&ctx.author().id) {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    Ok(*linked_user)
+                    Ok(linked_user)
                 }
                 None => {
                     return Err(IsacInfo::UserNotLinked { user_name: None })?;
@@ -85,14 +83,13 @@ impl Args {
 
     /// try to parse discord user at first, if none, parsing region and searching ign
     pub async fn parse_clan(&mut self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
-        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
-
         let first_arg = self.check(0)?;
 
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            match linked_js.get(&user.id) {
+            let linked_user = { ctx.data().link_js.read().get(&user.id) };
+            match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
                     linked_user.clan(ctx).await
@@ -102,7 +99,8 @@ impl Args {
                 })?,
             }
         } else if first_arg == "me" {
-            match linked_js.get(&ctx.author().id) {
+            let linked_user = { ctx.data().link_js.read().get(&ctx.author().id) };
+            match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
                     linked_user.clan(ctx).await
@@ -183,7 +181,8 @@ impl Args {
         let inter_msg = ctx
             .send(|b| {
                 b.embeds = vec![embed];
-                b.components(|f| f.set_action_row(view.build()))
+                b.components = Some(view.build());
+                b
             })
             .await
             .map_err(|_| IsacError::Cancelled)?
@@ -298,8 +297,9 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     }
 
     /// build the `CreateActionRow` with current components state
-    fn build(&self) -> CreateActionRow {
+    fn build(&self) -> CreateComponents {
         const BTN_STYLE: ButtonStyle = ButtonStyle::Secondary;
+        let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
         if !self.candidates.is_empty() {
             let btn_1 = CreateButton::default()
@@ -339,6 +339,7 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
             .style(BTN_STYLE)
             .to_owned();
         row.add_button(btn_x);
-        row.to_owned()
+        view.set_action_row(row);
+        view
     }
 }

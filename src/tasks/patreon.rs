@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, sync::Arc, time::Duration};
+use std::{env, sync::Arc, time::Duration};
 
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
@@ -22,7 +22,7 @@ pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) 
         Lazy::new(|| RoleId(env::var("SUPPORTER_ROLE_ID").unwrap().parse().unwrap()));
 
     async fn get_patrons(http: &Arc<Http>) -> Result<Patrons, Error> {
-        let linked_js: HashMap<_, _> = Linked::load_json().await.into();
+        let linked_js = Linked::load_json().await;
         let guild = http.get_guild(*GUILD_ID).await?;
         let patron_vec = guild
             .members(http, None, None)
