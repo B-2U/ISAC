@@ -58,7 +58,6 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     let mut lb_cache = ShipLeaderboard::load_json().await;
 
     let mut lb_players = if let Some(lb_players) = lb_cache.get_ship(&region, &ship.ship_id, true) {
-        println!("using cache");
         lb_players
     } else {
         let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;

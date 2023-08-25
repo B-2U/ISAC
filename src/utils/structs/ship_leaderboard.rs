@@ -21,18 +21,15 @@ impl ShipLeaderboard {
         ship_id: &ShipId,
         timeout_check: bool,
     ) -> Option<Vec<ShipLeaderboardPlayer>> {
-        let timestamp = SystemTime::now()
+        let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        let ship_cache = self.0[region].get(ship_id);
-        if ship_cache.is_none()
-            || (timeout_check && (timestamp - ship_cache.unwrap().last_updated_at > 3600))
-        {
-            None
-        } else {
-            ship_cache.map(|s| s.players.clone())
-        }
+        self.0[region]
+            .get(ship_id)
+            // if `timeout_check` is required && `last_updated_at` over 3600 sec, filter it
+            .filter(|ship_cache| !timeout_check || now - ship_cache.last_updated_at <= 3600)
+            .map(|ship_cache| ship_cache.players.clone())
     }
     pub fn insert(&mut self, region: &Region, ship_id: ShipId, ship: ShipLeaderboardShip) {
         self.0.entry(*region).or_default().insert(ship_id, ship);
