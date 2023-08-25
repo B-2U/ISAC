@@ -4,8 +4,8 @@ use chrono::NaiveDate;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
-        AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor,
-        Message, ReactionType, User, UserId,
+        AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed,
+        CreateEmbedAuthor, Message, ReactionType, User, UserId,
     },
     FrameworkError,
 };
@@ -14,7 +14,7 @@ use regex::Regex;
 use scraper::{Element, Html, Selector};
 
 use crate::{
-    dc_utils::{Args, ContextAddon, EasyEmbed, InteractionAddon},
+    dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed, InteractionAddon},
     utils::{
         structs::{PartialPlayer, Region, Ship},
         wws_api::WowsApi,
@@ -68,7 +68,7 @@ pub async fn code(
             0 => {
                 ctx.send(|b| {
                     b.content(format!("{addition}wows code: **{code}**"))
-                        .components(|c| c.set_action_row(view.build()))
+                        .set_components(view.build())
                         .reply(true)
                 })
                 .await?
@@ -78,8 +78,8 @@ pub async fn code(
             _ => {
                 ctx.channel_id()
                     .send_message(&ctx, |b| {
-                        b.content(format!("wows code: **{code}**"))
-                            .components(|c| c.set_action_row(view.build()))
+                        b.set_components(view.build())
+                            .content(format!("wows code: **{code}**"))
                     })
                     .await?
             }
@@ -101,7 +101,7 @@ impl<'a> BonusView<'a> {
     fn new(code: &'a str) -> Self {
         Self { code }
     }
-    fn build(&self) -> CreateActionRow {
+    fn build(&self) -> CreateComponents {
         // sepereated them to 2 array becuz with a Array<Tuple> it formatted ugly
         const LABEL: [&str; 4] = ["Asia", "Na", "Eu", "Ru"];
         let buttons = [
@@ -119,11 +119,13 @@ impl<'a> BonusView<'a> {
             ),
             format!("https://lesta.ru/shop/bonus/?bonus_mode={}", self.code),
         ];
+        let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
         LABEL.iter().zip(buttons.iter()).for_each(|(label, btn)| {
             row.create_button(|b| b.label(label).url(btn).style(ButtonStyle::Link));
         });
-        row
+        view.set_action_row(row);
+        view
     }
 }
 
@@ -299,14 +301,10 @@ pub async fn roulette(
     //     .map(|&m| m.clone())
     //     .collect();
 
-    let mut view: RouletteView = RouletteView::new(cadidates, players, ctx.author().clone());
+    let mut view = RouletteView::new(cadidates, players, ctx.author().clone());
 
-    let embed = view.embed_build();
     let inter_msg = ctx
-        .send(|b| {
-            b.embeds = vec![embed];
-            b.components(|f| f.set_action_row(view.build()))
-        })
+        .send(|b| b.set_embed(view.embed_build()).set_components(view.build()))
         .await?
         .into_message()
         .await?;
@@ -415,10 +413,8 @@ impl RouletteView {
                 .await?;
         }
         // timeout;
-        msg.edit(ctx, |m| {
-            m.components(|f| f.add_action_row(self.timeout().build()))
-        })
-        .await?;
+        msg.edit(ctx, |m| m.set_components(self.timeout().build()))
+            .await?;
 
         Ok(())
     }
@@ -428,8 +424,9 @@ impl RouletteView {
         self.btn_3.disabled(true);
         self
     }
-    /// build the `CreateActionRow` with current components state
-    fn build(&self) -> CreateActionRow {
+    /// build the [`CreateComponents`] with current components state
+    fn build(&self) -> CreateComponents {
+        let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
         row.add_button(self.btn_1.clone());
         if self.players as usize >= 2 {
@@ -438,7 +435,8 @@ impl RouletteView {
         if self.players as usize >= 3 {
             row.add_button(self.btn_3.clone());
         }
-        row.to_owned()
+        view.set_action_row(row);
+        view
     }
 }
 

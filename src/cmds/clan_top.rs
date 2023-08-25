@@ -3,11 +3,16 @@ use std::time::Duration;
 use chrono::{DateTime, Utc};
 use futures::StreamExt;
 use poise::serenity_prelude::{
-    ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, Message, ReactionType, UserId,
+    ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed, Message,
+    ReactionType, UserId,
 };
 use serde::Deserialize;
 
-use crate::{dc_utils::InteractionAddon, utils::structs::Region, Context, Error};
+use crate::{
+    dc_utils::{CreateReplyAddon, InteractionAddon},
+    utils::structs::Region,
+    Context, Error,
+};
 
 #[poise::command(slash_command)]
 pub async fn clan_top(
@@ -34,10 +39,11 @@ pub async fn clan_top(
     let first_embed = view.build_embed().await?;
     let msg = ctx
         .send(|b| {
-            b.components(|c| c.add_action_row(view.build())).embed(|f| {
+            b.embed(|f| {
                 f.0 = first_embed.0;
                 f
             })
+            .set_components(view.build())
         })
         .await?
         .into_message()
@@ -102,17 +108,12 @@ impl ClanTopView {
             }
             if let Ok(embed) = self.build_embed().await {
                 let _r = interaction
-                    .edit_original_message(ctx, |m| {
-                        m.add_embed(embed)
-                            .components(|c| c.add_action_row(self.build()))
-                    })
+                    .edit_original_message(ctx, |m| m.add_embed(embed).set_components(self.build()))
                     .await;
             }
         }
         let _r = msg
-            .edit(ctx, |m| {
-                m.components(|c| c.set_action_row(self.timeout().build()))
-            })
+            .edit(ctx, |m| m.set_components(self.timeout().build()))
             .await;
         Ok(())
     }
@@ -158,7 +159,8 @@ impl ClanTopView {
         Ok(embed.to_owned())
     }
 
-    fn build(&self) -> CreateActionRow {
+    fn build(&self) -> CreateComponents {
+        let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
         let mut btn_left = CreateButton::default();
         btn_left
@@ -177,7 +179,8 @@ impl ClanTopView {
             btn_left.disabled(true);
         }
         row.add_button(btn_left).add_button(btn_right);
-        row
+        view.set_action_row(row);
+        view
     }
 
     async fn req(&self) -> Result<Vec<ClanTopLadderClan>, reqwest::Error> {

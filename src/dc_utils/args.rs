@@ -9,6 +9,7 @@ use poise::serenity_prelude::{
 use regex::Regex;
 
 use crate::{
+    dc_utils::CreateReplyAddon,
     utils::{
         structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
         wws_api::WowsApi,
@@ -179,11 +180,7 @@ impl Args {
         let view = PickView::new(players, ctx.author());
         let embed = view.embed_build();
         let inter_msg = ctx
-            .send(|b| {
-                b.embeds = vec![embed];
-                b.components = Some(view.build());
-                b
-            })
+            .send(|b| b.set_components(view.build()).set_embed(embed))
             .await
             .map_err(|_| IsacError::Cancelled)?
             .into_message()

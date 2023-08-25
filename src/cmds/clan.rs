@@ -7,7 +7,8 @@ use chrono::{DateTime, NaiveDateTime, Utc};
 use futures::StreamExt;
 use itertools::Itertools;
 use poise::serenity_prelude::{
-    AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, Message, UserId,
+    AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed,
+    Message, UserId,
 };
 use tokio::join;
 
@@ -15,7 +16,7 @@ use crate::{
     cmds::clan,
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
-        Args, ContextAddon, EasyEmbed, InteractionAddon,
+        Args, ContextAddon, CreateReplyAddon, EasyEmbed, InteractionAddon,
     },
     utils::{
         structs::{
@@ -202,7 +203,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
                 data: Cow::Borrowed(&img),
                 filename: "image.png".to_string(),
             })
-            .components(|c| c.add_action_row(view.build()))
+            .set_components(view.build())
             .reply(true)
         })
         .await?
@@ -330,20 +331,15 @@ impl ClanView {
                     continue;
                 };
                 let _r = interaction
-                    .edit_original_message(ctx, |m| {
-                        m.components(|c| c.set_action_row(self.pressed().build()))
-                    })
+                    .edit_original_message(ctx, |m| m.set_components(self.pressed().build()))
                     .await;
                 let current_season_num = { ctx.data().constant.read().clan_season };
                 func_clan_season(ctx, self.clan.clone(), current_season_num).await?
             }
         }
         // timeout;
-        msg.edit(ctx, |m| {
-            m.components(|f| f.add_action_row(self.timeout().build()))
-        })
-        .await?;
-
+        msg.edit(ctx, |m| m.set_components(self.timeout().build()))
+            .await?;
         Ok(())
     }
 
@@ -372,7 +368,7 @@ impl ClanView {
         )
     }
 
-    fn build(&self) -> CreateActionRow {
+    fn build(&self) -> CreateComponents {
         let (des, member, link) = {
             let mut des = CreateButton::default();
             des.label("Description")
@@ -394,13 +390,14 @@ impl ClanView {
             }
             (des, member, link)
         };
-
-        CreateActionRow::default()
-            .add_button(des)
+        let mut view = CreateComponents::default();
+        let mut row = CreateActionRow::default();
+        row.add_button(des)
             .add_button(member)
             .add_button(self.last_season_btn.clone())
-            .add_button(link)
-            .to_owned()
+            .add_button(link);
+        view.set_action_row(row);
+        view
     }
 
     fn timeout(&mut self) -> &Self {

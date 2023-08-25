@@ -1,10 +1,12 @@
 use std::{borrow::Cow, collections::HashMap, time::Duration};
 
-use poise::serenity_prelude::{AttachmentType, ButtonStyle, CreateActionRow, CreateButton, User};
+use poise::serenity_prelude::{
+    AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, User,
+};
 
 use crate::{
     cmds::wws,
-    dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
+    dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
             template_data::{
@@ -234,7 +236,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
                 data: Cow::Borrowed(&img),
                 filename: "image.png".to_string(),
             })
-            .components(|c| c.set_action_row(view.build()))
+            .set_components(view.build())
             .reply(true)
         })
         .await?
@@ -252,9 +254,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         let img_2 = overall_data.render_tiers(&ctx.data().client).await?;
         // disable button first
         let _ok = interaction
-            .edit_original_message(ctx, |m| {
-                m.components(|c| c.set_action_row(view.timout().build()))
-            })
+            .edit_original_message(ctx, |m| m.set_components(view.timout().build()))
             .await;
         let _ok = msg
             .edit(ctx, |m| {
@@ -262,15 +262,13 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
                     data: Cow::Borrowed(&img_2),
                     filename: "image.png".to_string(),
                 })
-                .components(|c| c.set_action_row(view.timout().build()))
+                .set_components(view.timout().build())
             })
             .await;
     } else {
         // timeout disable button
         let _ok = msg
-            .edit(ctx, |m| {
-                m.components(|c| c.set_action_row(view.timout().build()))
-            })
+            .edit(ctx, |m| m.set_components(view.timout().build()))
             .await;
     }
     Ok(())
@@ -294,9 +292,10 @@ impl WwsView {
         }
     }
 
-    fn build(&self) -> CreateActionRow {
-        CreateActionRow::default()
-            .add_button(self.by_tier_btn.clone())
+    fn build(&self) -> CreateComponents {
+        let mut view = CreateComponents::default();
+        let mut row = CreateActionRow::default();
+        row.add_button(self.by_tier_btn.clone())
             .create_button(|b| {
                 b.label("Official")
                     .url(self.player.profile_url().unwrap())
@@ -306,8 +305,9 @@ impl WwsView {
                 b.label("Stats & Numbers")
                     .url(self.player.wows_number_url().unwrap())
                     .style(ButtonStyle::Link)
-            })
-            .to_owned()
+            });
+        view.set_action_row(row);
+        view
     }
 
     fn timout(&mut self) -> &Self {
