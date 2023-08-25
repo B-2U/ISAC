@@ -134,7 +134,7 @@ pub async fn clan(
         .into_iter()
         .map(|(name, value)| poise::AutocompleteChoice {
             name: name.to_string(),
-            value: dbg!(serde_json::to_string(&value).unwrap()),
+            value: serde_json::to_string(&value).unwrap(),
         })
         .collect::<Vec<_>>()
         .into_iter()

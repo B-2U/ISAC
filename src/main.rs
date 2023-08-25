@@ -182,18 +182,18 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             }
         }
         // make the error become `debug` from `warning`
-        // poise::FrameworkError::UnknownCommand {
-        //     ctx: _,
-        //     msg: _,
-        //     prefix,
-        //     msg_content,
-        //     framework: _,
-        //     invocation_data: _,
-        //     trigger: _,
-        // } => {
-        //     tracing::debug!(
-        //     "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
-        // }
+        poise::FrameworkError::UnknownCommand {
+            ctx: _,
+            msg: _,
+            prefix,
+            msg_content,
+            framework: _,
+            invocation_data: _,
+            trigger: _,
+        } => {
+            tracing::debug!(
+            "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
+        }
         error => {
             if let Some(ctx) = error.ctx() {
                 help_buttons_msg(&ctx, OOPS).await;
