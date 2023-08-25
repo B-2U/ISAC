@@ -76,12 +76,7 @@ impl<'a> WowsApi<'a> {
             .await
             .unwrap();
 
-        let "ok" = res.status.as_str() else {
-            Err(IsacInfo::APIError {
-                msg: res.error.unwrap_or_default(),
-            })?
-        };
-        Ok(res.data)
+        res.try_into()
     }
     /// searching clan by its name or tag, It will never be a empty vec
     pub async fn clans(
@@ -270,6 +265,7 @@ impl<'a> WowsApi<'a> {
 struct VortexPlayerSearchRes {
     pub status: String,
     pub error: Option<String>,
+    #[serde(default)]
     pub data: Vec<VortexPlayerSearch>,
 }
 
@@ -284,6 +280,21 @@ pub struct VortexPlayerSearch {
 impl Display for VortexPlayerSearch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.name.replace('_', r"\_"))
+    }
+}
+
+// QA better way than impl to a Vec<>?
+impl TryFrom<VortexPlayerSearchRes> for Vec<VortexPlayerSearch> {
+    type Error = IsacError;
+
+    fn try_from(res: VortexPlayerSearchRes) -> Result<Self, Self::Error> {
+        if res.status.as_str() != "ok" {
+            Err(IsacInfo::APIError {
+                msg: res.error.unwrap_or_default(),
+            })?
+        } else {
+            Ok(res.data)
+        }
     }
 }
 

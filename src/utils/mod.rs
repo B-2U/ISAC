@@ -40,8 +40,10 @@ pub trait LoadSaveFromJson {
     where
         Self: DeserializeOwned,
     {
-        let reader =
-            std::io::BufReader::new(std::fs::File::open(&Self::PATH).expect("Failed to open file"));
+        let reader = std::io::BufReader::new(
+            std::fs::File::open(&Self::PATH)
+                .unwrap_or_else(|_| panic!("Failed to open file {:?}", Self::PATH)),
+        );
         serde_json::from_reader(reader).unwrap_or_else(|err| {
             panic!(
                 "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
