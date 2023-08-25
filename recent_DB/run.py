@@ -175,6 +175,7 @@ def async_run_update(region: str, now: int):
 @sched.scheduled_job("cron", hour="5")  # 1PM UTC+8
 def EU_update():
     start = int(time.time())
+    print(f"{tw_timestamp()} EU update start")
     create_process("eu", start)
     print(f"{tw_timestamp()} EU updated, time took: {int(time.time())- start}s")
 
@@ -182,6 +183,7 @@ def EU_update():
 @sched.scheduled_job("cron", hour="10")  # 6PM UTC+8
 def NA_update():
     start = int(time.time())
+    print(f"{tw_timestamp()} NA update start")
     create_process("na", start)
     print(f"{tw_timestamp()} NA updated, time took: {int(time.time())- start}s")
 
@@ -189,6 +191,7 @@ def NA_update():
 @sched.scheduled_job("cron", hour="21")  # 5AM UTC+8
 def ASIA_update():
     start = int(time.time())
+    print(f"{tw_timestamp()} ASIA update start")
     create_process("asia", start)
     print(f"{tw_timestamp()} ASIA updated, time took: {int(time.time())- start}s")
 
@@ -200,6 +203,6 @@ async def test():
 
 
 if __name__ == "__main__":
-    asyncio.run(test())
+    # asyncio.run(test())
     # asyncio.run(ASIA_update())
     sched.start()
