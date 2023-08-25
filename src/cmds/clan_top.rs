@@ -22,10 +22,7 @@ pub async fn clan_top(
     #[min = -1]
     #[description = "Clan Battle season, default: latest"]
     season: Option<i64>,
-    #[description = "specific region, default: up to your discord server setting"]
-    // this rename is useless, its just for preventing weird formatting without it
-    #[rename = "region"]
-    region: Option<Region>,
+    #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
     let region =
         region.unwrap_or_else(|| ctx.data().guild_default.read().get_default(ctx.guild_id()));

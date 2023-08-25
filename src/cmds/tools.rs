@@ -280,7 +280,7 @@ fn _rename_parse_clan(
 }
 
 /// Picking ships randomly for you
-#[poise::command(slash_command, discard_spare_arguments)]
+#[poise::command(slash_command)]
 pub async fn roulette(
     ctx: Context<'_>,
     #[description = "how many players in the div? default: 3"] players: Option<RoulettePlayer>,

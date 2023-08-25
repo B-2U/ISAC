@@ -45,9 +45,7 @@ pub async fn clan_slash(
     #[description = "clan's tag or name"]
     #[autocomplete = "auto_complete::clan"]
     clan: String,
-    #[description = "the specific season of Clan Battle, -1 for the latest season"] season: Option<
-        i64,
-    >,
+    #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i64>,
 ) -> Result<(), Error> {
     let auto_complete_clan: AutoCompleteClan =
         serde_json::from_str(&clan).map_err(|_| IsacError::Info(IsacInfo::AutoCompleteError))?;

@@ -18,7 +18,7 @@ use poise::{
 #[poise::command(slash_command)]
 pub async fn background(
     ctx: Context<'_>,
-    #[description = "please crop the image to about 4.5 : 1"] file: Attachment, // the String is a Serialized PartialPlayer struct
+    #[description = "width : height ~ 4.5 : 1"] file: Attachment, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
     if !ctx.data().patron.read().check_user(&ctx.author().id) {
         Err(IsacError::Info(IsacInfo::NeedPremium {

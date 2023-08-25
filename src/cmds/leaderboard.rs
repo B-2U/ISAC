@@ -43,7 +43,7 @@ pub async fn top_slash(
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
     ship_id: u64,
-    region: Option<Region>,
+    #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
     let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
         Err(IsacInfo::AutoCompleteError)?
