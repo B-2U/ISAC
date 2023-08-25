@@ -114,13 +114,17 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     }
 
     let clan_rename = if clan_detail.old_tag.is_some() {
+        // old_name and rename_at is possible to be null, thx WG
+        let rename_at = clan_detail.renamed_at.unwrap_or(1);
+        let old_name = clan_detail.old_name.unwrap_or_default();
+
         let datetime = DateTime::<Utc>::from_utc(
-            NaiveDateTime::from_timestamp_opt(clan_detail.renamed_at.unwrap() as i64, 0).unwrap(),
+            NaiveDateTime::from_timestamp_opt(rename_at as i64, 0).unwrap(),
             Utc,
         );
         Some(ClanTemplateRename {
             tag: clan_detail.old_tag.unwrap(),
-            name: clan_detail.old_name.unwrap(),
+            name: old_name,
             time: datetime.format("%B %e, %Y").to_string(),
         })
     } else {
