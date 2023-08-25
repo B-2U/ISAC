@@ -12,7 +12,7 @@ use std::{
     sync::Arc,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
-use tracing::error;
+use tracing::{debug, error};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 use utils::{IsacHelp, IsacInfo};
 
@@ -176,6 +176,7 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         } => isac_error_handler(&ctx, &IsacHelp::LackOfArguments.into()).await,
 
         poise::FrameworkError::Command { error, ctx } => {
+            // errors in commands here, include discord shits
             if let Some(isac_err) = error.downcast_ref::<IsacError>() {
                 isac_error_handler(&ctx, isac_err).await;
             } else {
@@ -193,11 +194,15 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             invocation_data: _,
             trigger: _,
         } => {
-            tracing::debug!(
+            debug!(
             "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
         }
         error => {
+            // panics in commands here
             if let Some(ctx) = error.ctx() {
+                // thread 'tokio-runtime-worker' panicked at 'uuuuuuh', src\cmds\owner.rs:8:5
+                // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+                // QA 這種是rust底層的logging嗎 有沒有可能拿出來
                 help_buttons_msg(&ctx, OOPS).await;
                 wws_error_logging(&ctx, &error.to_string().into()).await;
             } else {
@@ -214,7 +219,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
         IsacError::Help(help) => {
             let msg = match help {
                 utils::IsacHelp::LackOfArguments => {
-                    "Click the button to check commands' usage and Examples".to_string()
+                    "Click the button to check commands' usage and examples".to_string()
                 }
             };
             help_buttons_msg(&ctx, msg).await;
@@ -303,7 +308,7 @@ async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
             ))
         })
         .await;
-    println!("ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
+    error!("[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
 }
 
 async fn help_buttons_msg(ctx: &Context<'_>, msg: impl AsRef<str>) {
