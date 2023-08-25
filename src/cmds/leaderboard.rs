@@ -35,7 +35,7 @@ pub async fn top(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> 
     func_top(ctx, region, ship).await
 }
 
-///
+/// The top players on the specific ship's leaderboard
 #[poise::command(slash_command, rename = "top")]
 pub async fn top_slash(
     ctx: Context<'_>,

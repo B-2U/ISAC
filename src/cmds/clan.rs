@@ -38,7 +38,7 @@ pub fn clan_hybrid() -> poise::Command<Data, Error> {
     cmd
 }
 
-/// clan's overall & CB stats
+/// Clan's overall & CB stats
 #[poise::command(slash_command, rename = "clan")]
 pub async fn clan_slash(
     ctx: Context<'_>,

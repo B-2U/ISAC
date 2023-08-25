@@ -31,7 +31,7 @@ pub fn wws_hybrid() -> poise::Command<Data, Error> {
     wws
 }
 
-/// account / warship stats
+/// Account overall / Specific warship's stats
 #[poise::command(slash_command, rename = "wws")]
 pub async fn wws_slash(
     ctx: Context<'_>,

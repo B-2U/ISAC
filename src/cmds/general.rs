@@ -3,7 +3,7 @@ use poise::serenity_prelude::CreateEmbed;
 use crate::dc_utils::{ContextAddon, EasyEmbed};
 use crate::{Context, Error};
 
-/// the link for inviting ISAC
+/// The link for inviting ISAC
 #[poise::command(prefix_command, slash_command, discard_spare_arguments)]
 pub async fn invite(ctx: Context<'_>) -> Result<(), Error> {
     const INVITE_MSG: &str = "[Click here](https://discord.com/oauth2/authorize?client_id=961882964034203648&permissions=0&scope=bot%20applications.commands) to invite ISAC";
@@ -13,7 +13,7 @@ pub async fn invite(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
-/// Show help urls
+/// Show the help urls
 #[poise::command(prefix_command, slash_command, discard_spare_arguments)]
 pub async fn help(ctx: Context<'_>) -> Result<(), Error> {
     const HELP_MSG: &str = "Support server: https://discord.gg/nk7PSYrFWu \nCommands list: https://github.com/B-2U/ISAC";

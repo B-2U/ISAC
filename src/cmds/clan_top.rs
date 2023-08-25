@@ -14,6 +14,7 @@ use crate::{
     Context, Error,
 };
 
+/// The Clan Battle leaderboard
 #[poise::command(slash_command)]
 pub async fn clan_top(
     ctx: Context<'_>,

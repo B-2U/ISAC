@@ -279,6 +279,7 @@ fn _rename_parse_clan(
     Ok(history_names)
 }
 
+/// Picking ships randomly for you
 #[poise::command(slash_command, discard_spare_arguments)]
 pub async fn roulette(
     ctx: Context<'_>,

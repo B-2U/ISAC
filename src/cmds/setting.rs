@@ -15,7 +15,7 @@ pub fn link_hybrid() -> poise::Command<Data, Error> {
     cmd
 }
 
-/// link your wows account
+/// Link your wows account
 #[poise::command(slash_command)]
 pub async fn link(
     ctx: Context<'_>,

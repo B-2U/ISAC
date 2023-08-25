@@ -30,7 +30,7 @@ pub fn recent_hybrid() -> poise::Command<Data, Error> {
     cmd
 }
 
-/// last X days stats
+/// Last X days stats
 #[poise::command(slash_command, rename = "recent")]
 pub async fn recent_slash(
     ctx: Context<'_>,
