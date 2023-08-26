@@ -175,14 +175,13 @@ impl Args {
     async fn _pick<T: std::fmt::Display>(
         &self,
         ctx: &Context<'_>,
-        players: &Vec<T>,
+        candidates: &Vec<T>,
     ) -> Result<usize, IsacError> {
-        let view = PickView::new(players, ctx.author());
-        let embed = view.embed_build();
+        let view = PickView::new(candidates, ctx.author());
         let inter_msg = ctx
-            .send(|b| b.set_components(view.build()).set_embed(embed))
+            .send(|b| b.set_components(view.build()).set_embed(view.embed_build()))
             .await
-            .map_err(|_| IsacError::Cancelled)?
+            .map_err(|_| IsacInfo::EmbedPermission)?
             .into_message()
             .await
             .map_err(|_| IsacError::Cancelled)?;
@@ -256,20 +255,22 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     }
 
     fn embed_build(&self) -> CreateEmbed {
-        let author = CreateEmbedAuthor::default()
+        let mut author = CreateEmbedAuthor::default();
+        author
             .name(&self.user.name)
-            .icon_url(self.user.avatar_url().unwrap_or_default())
-            .to_owned();
+            .icon_url(self.user.avatar_url().unwrap_or_default());
 
-        let mut msg_text = String::new();
-        for (index, candidate) in self.candidates.iter().enumerate() {
-            msg_text += format!("{} {candidate}\n\n", self.emoji[index]).as_str();
-        }
-        msg_text += format!("{} None of above", self.x_emoji).as_str();
-        let embed = CreateEmbed::default_new()
-            .description(msg_text)
-            .set_author(author)
-            .to_owned();
+        let mut msg_text = self
+            .candidates
+            .iter()
+            .enumerate()
+            .map(|(index, candidate)| format!("{} {}\n\n", self.emoji[index], candidate))
+            .collect::<String>();
+
+        msg_text += &format!("{} None of above", self.x_emoji);
+
+        let mut embed = CreateEmbed::isac();
+        embed.set_author(author).description(msg_text);
         embed
     }
     async fn interactions(&self, ctx: &Context<'_>, author: UserId, msg: Message) -> Option<u8> {

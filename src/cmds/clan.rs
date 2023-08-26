@@ -307,7 +307,7 @@ impl ClanView {
         {
             let custom_id = interaction.data.custom_id.as_str();
             if custom_id == "clan_description" {
-                let embed = CreateEmbed::default_new()
+                let embed = CreateEmbed::isac()
                     .description(self.description.clone())
                     .to_owned();
                 let _r = interaction
@@ -316,7 +316,7 @@ impl ClanView {
                     })
                     .await;
             } else if custom_id == "clan_members" {
-                let embed = CreateEmbed::default_new()
+                let embed = CreateEmbed::isac()
                     .description(self.members_table())
                     .to_owned();
                 let _r = interaction

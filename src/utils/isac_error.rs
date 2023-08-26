@@ -95,6 +95,8 @@ pub enum IsacInfo {
         msg: String,
     },
     AutoCompleteError,
+
+    EmbedPermission,
 }
 
 impl From<reqwest::Error> for IsacError {

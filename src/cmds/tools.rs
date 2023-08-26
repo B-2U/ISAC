@@ -376,7 +376,7 @@ impl RouletteView {
         for (index, ship) in self.ships.iter().enumerate() {
             msg_text += format!("{} {ship}\n\n", EMOJI[index]).as_str();
         }
-        let embed = CreateEmbed::default_new()
+        let embed = CreateEmbed::isac()
             .description(msg_text)
             .set_author(author)
             .to_owned();

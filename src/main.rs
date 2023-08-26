@@ -272,6 +272,7 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
                     season
                 ),
                 IsacInfo::NeedPremium { msg } => format!("{msg}\n{PREMIUM}"),
+                IsacInfo::EmbedPermission => format!("❌ This error means ISAC don't have to permission to send embed here, please check the **Embed Links** availability in the permission setting"),
             };
             let _r = ctx
                 .send(|b| b.content(msg).reply(true).ephemeral(true))
