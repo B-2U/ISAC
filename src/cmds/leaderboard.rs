@@ -93,6 +93,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     };
     lb_players.truncate(truncate_len);
 
+    let ship_id = ship.ship_id;
     let data = LeaderboardTemplate {
         ship,
         region,
@@ -104,6 +105,20 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
             b.attachment(AttachmentType::Bytes {
                 data: Cow::Borrowed(&img),
                 filename: "image.png".to_string(),
+            })
+            .components(|c| {
+                c.create_action_row(|r| {
+                    r.create_button(|b| {
+                        b.style(poise::serenity_prelude::ButtonStyle::Link)
+                            .url(
+                                region
+                                    .number_url(format!("/ship/{ship_id},/"))
+                                    .unwrap()
+                                    .to_string(),
+                            )
+                            .label("Stats & Numbers")
+                    })
+                })
             })
             .reply(true)
         })
