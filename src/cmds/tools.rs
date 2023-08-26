@@ -306,7 +306,8 @@ pub async fn roulette(
 
     let inter_msg = ctx
         .send(|b| b.set_embed(view.embed_build()).set_components(view.build()))
-        .await?
+        .await
+        .map_err(|_| IsacError::Info(crate::utils::IsacInfo::EmbedPermission))?
         .into_message()
         .await?;
 
