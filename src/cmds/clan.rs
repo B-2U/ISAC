@@ -154,7 +154,6 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         exp: clan_members.avg.exp_per_battle.round() as u64,
         wr_dis: ClanTemplateWrDis::sort_wr(&clan_members.items),
     };
-    // QA 下面的邏輯有更好的改法嗎? 要補齊缺的賽季
     let mut clan_seasons: Vec<ClanTemplateSeason> = clan
         .stats
         .ratings
