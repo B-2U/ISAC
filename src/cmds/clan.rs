@@ -22,7 +22,7 @@ use crate::{
         structs::{
             template_data::{
                 ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
-                ClanTemplateSeasonValue, ClanTemplateStats, ClanTemplateWrDis, Render,
+                ClanTemplateStats, ClanTemplateWrDis, Render,
             },
             ClanMember, PartialClan, StatisticValueType,
         },
@@ -168,22 +168,13 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         .map(|f| f.into())
         .collect();
     // fill the missing seasons
-    let mut filled = false;
-    for season in (current_season_num - 3)..=current_season_num {
-        if !clan_seasons.iter().any(|s| s.season == season) {
-            clan_seasons.push(ClanTemplateSeason {
-                season,
-                battles: 0,
-                winrate: StatisticValueType::Winrate { value: 0.0 }.into(),
-                win_streak: 0,
-                now: ClanTemplateSeasonValue::default(),
-                max: ClanTemplateSeasonValue::default(),
-            });
-            filled = true;
-        }
-    }
-    // sort again if there did miss some
-    if filled {
+    let missing_seasons = ((current_season_num - 3)..=current_season_num)
+        .filter(|season| !clan_seasons.iter().any(|s| s.season == *season))
+        .map(|season| ClanTemplateSeason::default_season(season))
+        .collect::<Vec<_>>();
+
+    if !missing_seasons.is_empty() {
+        clan_seasons.extend(missing_seasons);
         clan_seasons.sort_by(|a, b| b.season.cmp(&a.season));
     }
 

@@ -176,7 +176,7 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         } => isac_error_handler(&ctx, &IsacHelp::LackOfArguments.into()).await,
 
         poise::FrameworkError::Command { error, ctx } => {
-            // errors in commands here, include discord shits
+            // errors returned here, include discord shits
             if let Some(isac_err) = error.downcast_ref::<IsacError>() {
                 isac_error_handler(&ctx, isac_err).await;
             } else {
@@ -198,7 +198,7 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
         }
         error => {
-            // panics in commands here
+            // panics and else here
             if let Some(ctx) = error.ctx() {
                 // thread 'tokio-runtime-worker' panicked at 'uuuuuuh', src\cmds\owner.rs:8:5
                 // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
@@ -289,8 +289,8 @@ async fn isac_error_handler(ctx: &Context<'_>, error: &IsacError) {
 // TODO: better error msg, python's tracback?
 /// loging to the terminal and discord channel
 async fn wws_error_logging(ctx: &Context<'_>, error: &Error) {
-    let user = ctx.author();
-    let user_id = user.id;
+    let user: &str = ctx.author().name.as_ref();
+    let user_id = ctx.author().id;
     let channel_id = ctx.channel_id();
     let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
     let input = ctx.invocation_string();
