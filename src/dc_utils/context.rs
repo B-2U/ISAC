@@ -49,7 +49,7 @@ impl MyTyping {
     pub fn stop(self) {
         if let MyTyping::Typing(mut typing) = self {
             if let Some(typing) = typing.take() {
-                let _r = typing.stop();
+                typing.stop();
             }
         }
     }
