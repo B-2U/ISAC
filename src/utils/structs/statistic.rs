@@ -52,7 +52,7 @@ impl Statistic {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
     pub value: String,
-    pub color: String, // it's actually a hex color code in string
+    pub color: String, // hex color code in string
 }
 
 impl StatisticValue {
@@ -107,7 +107,7 @@ pub enum StatisticValueType<'a> {
         ship_id: &'a ShipId,
     },
 }
-
+// QA 他們兩個之間的類型轉換怎麼設計
 impl From<StatisticValueType<'_>> for StatisticValue {
     fn from(value: StatisticValueType<'_>) -> StatisticValue {
         let (value_str, color) = match value {
