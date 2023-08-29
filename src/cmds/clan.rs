@@ -56,7 +56,7 @@ pub async fn clan_slash(
         .swap_remove(0);
 
     if let Some(season) = season {
-        let current_season_num = { ctx.data().constant.read().clan_season };
+        let current_season_num = ctx.data().constant.read().clan_season;
         let season = match season.is_positive() {
             false => current_season_num,
             true => season.abs() as u32,
@@ -76,7 +76,7 @@ pub async fn clan(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error>
         func_clan(&ctx, partial_clan).await
     } else {
         // clan season
-        let current_season_num = { ctx.data().constant.read().clan_season };
+        let current_season_num = ctx.data().constant.read().clan_season;
         let season_num = {
             let s = args.check(0)?.parse::<i32>().unwrap_or(-1);
             match s.is_positive() {
@@ -89,7 +89,7 @@ pub async fn clan(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error>
 }
 
 async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), Error> {
-    let current_season_num = { ctx.data().constant.read().clan_season };
+    let current_season_num = ctx.data().constant.read().clan_season;
     let typing = ctx.typing().await;
     let (clan_detail, clan_members, clan) = join!(
         partial_clan.clan_details(&ctx),
@@ -321,7 +321,7 @@ impl ClanView {
                 let _r = interaction
                     .edit_original_message(ctx, |m| m.set_components(self.pressed().build()))
                     .await;
-                let current_season_num = { ctx.data().constant.read().clan_season };
+                let current_season_num = ctx.data().constant.read().clan_season;
                 func_clan_season(ctx, self.clan.clone(), current_season_num).await?
             }
         }

@@ -89,7 +89,7 @@ impl Args {
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            let linked_user = { ctx.data().link_js.read().get(&user.id) };
+            let linked_user = ctx.data().link_js.read().get(&user.id);
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
@@ -100,7 +100,7 @@ impl Args {
                 })?,
             }
         } else if first_arg == "me" {
-            let linked_user = { ctx.data().link_js.read().get(&ctx.author().id) };
+            let linked_user = ctx.data().link_js.read().get(&ctx.author().id);
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;

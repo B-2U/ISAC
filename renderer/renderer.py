@@ -4,7 +4,7 @@ import os
 import time
 import math
 import pystache
-from quart import Quart, send_file, request
+from quart import Quart, Response, send_file, request
 from contextlib import asynccontextmanager
 
 from playwright.async_api import async_playwright
@@ -51,81 +51,77 @@ def render_html(template_path: str, data: dict) -> str:
     return html_renderer.render_path(template_path, data)
 
 
+async def return_png(bin: io.BytesIO) -> Response:
+    return await send_file(
+        bin,
+        attachment_filename="overall.png",
+        mimetype="image/png",
+    )
+
+
+# @app.route("/overall_gif", methods=["POST"])
+# async def overall_gif():
+#     data = await request.get_json()
+#     html = render_html(f"{TEMPLATE_PATH}/overall.html", data)
+#     video = await renderer.screenshot(html)
+#     return await send_file(
+#         await renderer.screenshot(html),
+#         attachment_filename="single_ship.gif",
+#         mimetype="image/gif",
+#     )
+#     return await return_png(await renderer.screenshot(html))
+
+
 @app.route("/overall", methods=["POST"])
 async def overall():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/overall.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="overall.png",
-        mimetype="image/png",
-    )
+    t = time.time()
+    img = await renderer.screenshot(html)
+    print(time.time() - t)
+    return await return_png(img)
 
 
 @app.route("/overall_tiers", methods=["POST"])
 async def overall_tiers():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/overall_tiers.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="overall_tiers.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/clan_season", methods=["POST"])
 async def clan_season():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/clan_season.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="clan_season.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/clan", methods=["POST"])
 async def clan():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/clan.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="clan.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/recent", methods=["POST"])
 async def recent():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/recent.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="recent.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/leaderboard", methods=["POST"])
 async def leaderboard():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/leaderboard.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="leaderboard.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/single_ship", methods=["POST"])
 async def single_ship():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/single_ship.html", data)
-    return await send_file(
-        await renderer.screenshot(html),
-        attachment_filename="single_ship.png",
-        mimetype="image/png",
-    )
+    return await return_png(await renderer.screenshot(html))
 
 
 @app.before_serving

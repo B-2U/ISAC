@@ -14,7 +14,7 @@ use crate::utils::{
 pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
 
 impl ShipLeaderboard {
-    ///
+    /// get the players on the ship's leaderboard
     pub fn get_ship(
         &self,
         region: &Region,

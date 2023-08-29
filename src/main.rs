@@ -9,7 +9,7 @@ use poise::serenity_prelude::{self as serenity, Activity, UserId};
 use std::{
     collections::HashSet,
     env,
-    sync::Arc,
+    sync::{Arc, Mutex},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tracing::{debug, error};
@@ -19,7 +19,10 @@ use crate::{
     tasks::launch_renderer,
     utils::{
         error_handler::{isac_err_handler, isac_err_logging, isac_get_help},
-        structs::{ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipsPara},
+        structs::{
+            ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, Pfp, ShipLeaderboard,
+            ShipsPara,
+        },
         IsacError, IsacHelp, LoadSaveFromJson,
     },
 };
@@ -138,6 +141,8 @@ pub struct Data {
     wg_api_token: String,
     guild_default: RwLock<GuildDefaultRegion>,
     constant: RwLock<LittleConstant>,
+    pfp: RwLock<Pfp>,
+    leaderboard: Mutex<ShipLeaderboard>,
 }
 
 impl Data {
@@ -151,6 +156,8 @@ impl Data {
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: RwLock::new(GuildDefaultRegion::load_json_sync()),
             constant: RwLock::new(LittleConstant::load_json_sync()),
+            pfp: RwLock::new(Pfp::load_json_sync()),
+            leaderboard: Mutex::new(ShipLeaderboard::load_json_sync()),
         }
     }
 }

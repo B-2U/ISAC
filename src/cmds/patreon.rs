@@ -3,10 +3,7 @@ use std::borrow::Cow;
 use crate::{
     cmds::wws::func_wws,
     dc_utils::{ContextAddon, UserAddon},
-    utils::{
-        structs::{Pfp, PfpData},
-        IsacError, IsacInfo, LoadSaveFromJson,
-    },
+    utils::{structs::PfpData, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Error,
 };
 use poise::{
@@ -61,18 +58,21 @@ pub async fn background(
         })
         .await?;
     let url = msg.attachments[0].url.clone();
-    let mut pfp_js = Pfp::load_json().await;
-    pfp_js
-        .0
-        .retain(|_, patron| patron.discord_id != ctx.author().id);
-    pfp_js.0.insert(
-        player.uid,
-        PfpData {
-            url,
-            name: ctx.author().name.clone(),
-            discord_id: ctx.author().id,
-        },
-    );
-    pfp_js.save_json().await;
+    {
+        let mut pfp_js = ctx.data().pfp.write();
+        pfp_js
+            .0
+            .retain(|_, patron| patron.discord_id != ctx.author().id);
+        pfp_js.0.insert(
+            player.uid,
+            PfpData {
+                url,
+                name: ctx.author().name.clone(),
+                discord_id: ctx.author().id,
+            },
+        );
+        pfp_js.save_json_sync();
+    }
+
     func_wws(&ctx, player).await
 }

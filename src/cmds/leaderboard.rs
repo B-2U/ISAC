@@ -13,8 +13,7 @@ use crate::{
     utils::{
         structs::{
             template_data::{LeaderboardTemplate, Render},
-            Region, Ship, ShipId, ShipLeaderboard, ShipLeaderboardPlayer, ShipLeaderboardShip,
-            StatisticValue,
+            Region, Ship, ShipId, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
         },
         IsacError, IsacInfo, LoadSaveFromJson,
     },
@@ -55,22 +54,30 @@ pub async fn top_slash(
 async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Error> {
     let _typing = ctx.typing().await;
     let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap();
-    let mut lb_cache = ShipLeaderboard::load_json().await;
+    let lb_players = ctx
+        .data()
+        .leaderboard
+        .lock()
+        .expect("lb poisoned!")
+        .get_ship(&region, &ship.ship_id, true);
 
-    let mut lb_players = if let Some(lb_players) = lb_cache.get_ship(&region, &ship.ship_id, true) {
-        lb_players
-    } else {
-        let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;
-        lb_cache.insert(
-            &region,
-            ship.ship_id,
-            ShipLeaderboardShip {
-                players: lb_players.clone(),
-                last_updated_at: timestamp.as_secs(),
-            },
-        );
-        lb_cache.save_json().await;
-        lb_players
+    let mut lb_players = match lb_players {
+        Some(p) => p,
+        None => {
+            let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;
+            let mut lb_cache = ctx.data().leaderboard.lock().expect("lb poisoned!");
+
+            lb_cache.insert(
+                &region,
+                ship.ship_id,
+                ShipLeaderboardShip {
+                    players: lb_players.clone(),
+                    last_updated_at: timestamp.as_secs(),
+                },
+            );
+            lb_cache.save_json_sync();
+            lb_players
+        }
     };
 
     // if user is in the leaderboard, set color and swap its index if needed

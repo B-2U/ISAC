@@ -134,8 +134,8 @@ impl Player {
         let dogtag_bg = player_dogtag.get_background();
         let premium = data.patron.read().check_player(&uid);
         let pfp = if premium {
-            let mut pfp_js: HashMap<_, _> = Pfp::load_json().await.into();
-            pfp_js.remove(&uid).unwrap_or_default().url
+            let pfp_js = data.pfp.read();
+            pfp_js.get(&uid).unwrap_or_default().url
         } else {
             "".to_string()
         };
@@ -187,7 +187,14 @@ impl From<Pfp> for HashMap<u64, PfpData> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl Pfp {
+    /// a shortcut to self.0.get(), and auto clone
+    pub fn get(&self, uid: &u64) -> Option<PfpData> {
+        self.0.get(uid).cloned()
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PfpData {
     pub url: String,
     pub name: String, // user name, its just for checking

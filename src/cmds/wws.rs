@@ -18,9 +18,9 @@ use crate::{
                 SingleShipTemplate,
                 SingleShipTemplateSub,
             },
-            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipLeaderboard, ShipTier, Statistic,
+            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic,
         },
-        IsacError, IsacInfo, LoadSaveFromJson,
+        IsacError, IsacInfo,
     },
     Context, Data, Error,
 };
@@ -139,8 +139,11 @@ async fn func_ship(
         ))
     };
     // getting player rank in the leaderboard
-    let ranking = ShipLeaderboard::load_json()
-        .await
+    let ranking = ctx
+        .data()
+        .leaderboard
+        .lock()
+        .expect("lb poisoned!")
         .get_ship(&player.region, &ship.ship_id, false)
         .and_then(|players| {
             players
