@@ -63,7 +63,7 @@ pub async fn isac_err_handler(ctx: &Context<'_>, error: &IsacError) {
                     mode,
                 } => {
                     format!(
-                        "Player: `{ign}` hasn't played any battle in `{ship_name}` in `{}`",
+                        "Player: `{ign}` hasn't played any battle in **{ship_name}** in **{}**",
                         mode.upper()
                     )
                 }
@@ -71,7 +71,7 @@ pub async fn isac_err_handler(ctx: &Context<'_>, error: &IsacError) {
                     "❌ please select an option in the results!".to_string()
                 }
                 IsacInfo::ClanNoBattle { clan, season } => format!(
-                    "**[{}]** ({}) did not participate in season {}",
+                    "**[{}]** ({}) did not participate in season **{}**",
                     clan.tag.replace("_", r"\_"),
                     clan.region,
                     season

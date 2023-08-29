@@ -188,6 +188,16 @@ impl ShipStatsCollection {
         self
     }
 
+    /// shortcut to `self.0.retain`
+    pub fn retain<P>(mut self, predicate: P) -> Self
+    where
+        Self: Sized,
+        P: FnMut(&ShipId, &mut ShipModeStatsPair) -> bool,
+    {
+        self.0.retain(predicate);
+        self
+    }
+
     /// consume Self and sort the given ships by their class
     pub fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
         let mut map: HashMap<ShipClass, ShipStatsCollection> = ShipClass::iter()

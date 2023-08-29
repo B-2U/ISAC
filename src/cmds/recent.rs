@@ -13,8 +13,12 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
-            template_data::{RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render},
-            Mode, PartialPlayer, Player, RecentPlayer, RecentPlayerType, ShipStatsCollection,
+            template_data::{
+                RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
+                SingleShipTemplateSub,
+            },
+            Mode, PartialPlayer, Player, RecentPlayer, RecentPlayerType, Ship, ShipId,
+            ShipModeStatsPair, ShipStatsCollection,
         },
         IsacError, IsacInfo,
     },
@@ -41,6 +45,10 @@ pub async fn recent_slash(
     #[rename = "user"]
     discord_user: Option<String>,
     #[description = "last 1~30(90 for patreons) days of stats, default: 1"] days: Option<u64>,
+    #[description = "specific warship, default: all ships' recent"]
+    #[rename = "warship"]
+    #[autocomplete = "auto_complete::ship"]
+    ship_id: Option<u64>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
     let partial_player = if let Some(player) =
@@ -68,12 +76,22 @@ pub async fn recent_slash(
                 user_name: Some(user.name.clone()),
             }))?
     };
+    // keep None as None, and raise Err if ship_id is Some(), but no matched ship found
+    let ship = ship_id
+        .map(
+            |ship_id| match ShipId(ship_id).get_ship(&ctx.data().ship_js) {
+                Some(ship) => Ok(ship),
+                None => Err(IsacError::Info(IsacInfo::AutoCompleteError)),
+            },
+        )
+        .transpose()?;
 
     func_recent(
         &ctx,
         partial_player,
         battle_type.unwrap_or_default(),
         days.unwrap_or(1),
+        ship,
     )
     .await
 }
@@ -83,8 +101,14 @@ pub async fn recent(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
     let partial_player = args.parse_user(&ctx).await?;
     let mode = args.parse_mode().unwrap_or_default();
     let day = args.parse_day().unwrap_or(1);
-    // TODO new feature, parse_ship() here?
-    func_recent(&ctx, partial_player, mode, day).await
+    let ship = if !args.is_empty() {
+        // specific ship
+        Some(args.parse_ship(&ctx).await?)
+    } else {
+        None
+    };
+
+    func_recent(&ctx, partial_player, mode, day, ship).await
 }
 
 async fn func_recent(
@@ -92,6 +116,7 @@ async fn func_recent(
     partial_player: PartialPlayer,
     mode: Mode,
     day: u64,
+    specific_ship: Option<Ship>,
 ) -> Result<(), Error> {
     let typing1 = ctx.typing().await;
     let max_day = match ctx.data().patron.read().check_user(&ctx.author().id) {
@@ -99,8 +124,17 @@ async fn func_recent(
         false => 30_u64,
     };
     let player = partial_player.get_player(ctx).await?;
+    // QA making a custom filter, better way...? and I have to call as_ref() beloweds
+    let filter: Box<dyn Fn(&ShipId, &mut ShipModeStatsPair) -> bool + Send + Sync> =
+        if let Some(ship) = specific_ship.as_ref() {
+            Box::new(move |k, _v| k == &ship.ship_id)
+        } else {
+            Box::new(|_k, _v| true)
+        };
+
     let current_ships = partial_player.all_ships(ctx).await?;
     let (is_new, is_active, player_data) = load_player(&player, &current_ships).await;
+    let current_ships_filted = current_ships.retain(filter.as_ref());
     if is_new {
         let msg = format!(
             "`{}` wasn't in the database, please play a game then try the command again",
@@ -114,11 +148,17 @@ async fn func_recent(
         .as_secs();
 
     let mut target_day = day;
-    let mut ask_struct = AskDay::new(ctx, player.ign.clone(), mode, is_active);
+    let mut ask_struct = AskDay::new(
+        ctx,
+        player.ign.clone(),
+        mode,
+        specific_ship.as_ref().map(|s| s.name.clone()),
+        is_active,
+    );
 
     typing1.stop();
-    // getting available history
-    let (exact_time, stats) = loop {
+    // getting the stats diff compared with history
+    let (exact_day, mut stats) = loop {
         if target_day > max_day {
             Err(IsacError::Info(IsacInfo::NeedPremium {
                 msg: format!("**{target_day}** is illegal, min: **1** max:**{max_day}**"),
@@ -130,12 +170,12 @@ async fn func_recent(
                 .get_date(&target_time)
                 .await
                 .and_then(|(exact_time, old_ships)| {
-                    current_ships
-                        .compare(old_ships)
+                    current_ships_filted
+                        .compare(old_ships.retain(filter.as_ref()))
                         .map(|stats| (exact_time, stats))
                 })
         {
-            break (exact_time, stats);
+            break (((now - exact_time) as f64 / 86400.0).ceil() as u64, stats);
         } else {
             // no data or the same, ask user to re-select
             let available_times = player_data.available_dates(&target_time);
@@ -156,38 +196,81 @@ async fn func_recent(
     let _typing2 = ctx.typing().await;
     // parsing and render
     let expected_js = &ctx.data().expected_js;
-    let div = RecentTemplateDiv {
-        pvp: stats.to_statistic(expected_js, Mode::Pvp),
-        pvp_solo: stats.to_statistic(expected_js, Mode::Solo),
-        pvp_div2: stats.to_statistic(expected_js, Mode::Div2),
-        pvp_div3: stats.to_statistic(expected_js, Mode::Div3),
-        rank_solo: stats.to_statistic(expected_js, Mode::Rank),
-    };
-    let ships = stats
-        .0
-        .into_iter()
-        .filter_map(|(ship_id, ship_stats)| {
-            ship_stats
-                .to_statistic(&ship_id, expected_js, mode)
-                .map(|stats| RecentTemplateShip {
-                    info: ship_id.get_ship(&ctx.data().ship_js).unwrap_or_default(),
-                    stats,
-                })
-        })
-        .sorted_by_key(|ship| (-(ship.stats.battles as i64), -(ship.info.tier as i64)))
-        .take(RECENT_OMIT_LIMIT)
-        .collect_vec();
+    let clan = player.clan(ctx).await?;
+    // QA 這個超大的if else感覺好糟...
+    let img = if let Some(ship) = specific_ship.as_ref() {
+        // recent ship
+        let ship_stats = stats
+            .0
+            .remove(&ship.ship_id)
+            .expect("it should not be None");
+        let Some(main_mode) = ship_stats.to_statistic(&ship.ship_id, &ctx.data().expected_js, mode) else {
+            Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
+                ign: player.ign.clone(),
+                ship_name: ship.name.clone(),
+                mode,
+            }))?
+        };
+        let sub_modes = if let Mode::Rank = mode {
+            None
+        } else {
+            Some(SingleShipTemplateSub::new(
+                ship_stats
+                    .to_statistic(&ship.ship_id, expected_js, Mode::Solo)
+                    .unwrap_or_default(),
+                ship_stats
+                    .to_statistic(&ship.ship_id, expected_js, Mode::Div2)
+                    .unwrap_or_default(),
+                ship_stats
+                    .to_statistic(&ship.ship_id, expected_js, Mode::Div3)
+                    .unwrap_or_default(),
+            ))
+        };
+        let data = SingleShipTemplate {
+            ship: ship.clone(),
+            ranking: None,
+            main_mode_name: format!("({} days) {}", exact_day, mode.render_name()),
+            main_mode,
+            sub_modes,
+            clan,
+            user: player,
+        };
+        data.render(&ctx.data().client).await?
+    } else {
+        // recent all
+        let div = RecentTemplateDiv {
+            pvp: stats.to_statistic(expected_js, Mode::Pvp),
+            pvp_solo: stats.to_statistic(expected_js, Mode::Solo),
+            pvp_div2: stats.to_statistic(expected_js, Mode::Div2),
+            pvp_div3: stats.to_statistic(expected_js, Mode::Div3),
+            rank_solo: stats.to_statistic(expected_js, Mode::Rank),
+        };
+        let ships = stats
+            .0
+            .into_iter()
+            .filter_map(|(ship_id, ship_stats)| {
+                ship_stats
+                    .to_statistic(&ship_id, expected_js, mode)
+                    .map(|stats| RecentTemplateShip {
+                        info: ship_id.get_ship(&ctx.data().ship_js).unwrap_or_default(),
+                        stats,
+                    })
+            })
+            .sorted_by_key(|ship| (-(ship.stats.battles as i64), -(ship.info.tier as i64)))
+            .take(RECENT_OMIT_LIMIT)
+            .collect_vec();
 
-    let data = RecentTemplate {
-        clan: player.clan(ctx).await?,
-        user: player,
-        ships,
-        day: ((now - exact_time) as f64 / 86400.0).ceil() as u64,
-        main_mode_name: mode.render_name().to_string(),
-        main: div.get_mode(&mode).cloned().unwrap_or_default(),
-        div,
+        let data = RecentTemplate {
+            clan,
+            user: player,
+            ships,
+            day: exact_day,
+            main_mode_name: mode.render_name().to_string(),
+            main: div.get_mode(&mode).cloned().unwrap_or_default(),
+            div,
+        };
+        data.render(&ctx.data().client).await?
     };
-    let img = data.render(&ctx.data().client).await?;
     let attachment = AttachmentType::Bytes {
         data: Cow::Borrowed(&img),
         filename: "image.png".to_string(),
@@ -205,7 +288,7 @@ async fn func_recent(
 
     Ok(())
 }
-/// laod player data, update the last_requst timestamp, put in current_ships if needed
+/// load player data, update the last_requst timestamp, put in current_ships if needed
 async fn load_player(
     player: &Player,
     curren_ships: &ShipStatsCollection,
@@ -255,16 +338,24 @@ pub struct AskDay<'a> {
     pub mode: Mode,
     pub ask_msg: Option<Message>,
     pub is_active: bool,
+    pub ship_name: Option<String>, // ship name
 }
 
 impl<'a> AskDay<'a> {
-    pub fn new(ctx: &'a Context<'_>, ign: String, mode: Mode, is_active: bool) -> Self {
+    pub fn new(
+        ctx: &'a Context<'_>,
+        ign: String,
+        mode: Mode,
+        ship_name: Option<String>,
+        is_active: bool,
+    ) -> Self {
         Self {
             ctx,
             ign,
             mode,
             ask_msg: None,
             is_active,
+            ship_name,
         }
     }
     /// ask user to select a day, return None if user didn't response
@@ -308,8 +399,12 @@ impl<'a> AskDay<'a> {
             }
         };
         let msg_content = {
+            let specific_ship = self.ship_name.as_ref().map_or_else(
+                || "".to_string(),
+                |ship_name| format!(" in **{}**", ship_name),
+            );
             let mut content = format!(
-                "`{}` played 0 battle in **{}** last **{}** day.",
+                "`{}` played 0 battle{specific_ship} in **{}** last **{}** day.",
                 self.ign,
                 self.mode.upper(),
                 current_day
@@ -365,7 +460,9 @@ impl<'a> AskDay<'a> {
             .author_id(self.ctx.author().id)
             .await
         {
-            let _r = interaction.edit_original_message(self.ctx, |m| m).await;
+            let _r = interaction
+                .edit_original_message(self.ctx, |m| m.set_components(CreateComponents::default()))
+                .await;
             Some(
                 interaction.data.values[0] // there should be one and only one value because of the min max limits
                     .parse::<u64>()

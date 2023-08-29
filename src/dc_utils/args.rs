@@ -150,7 +150,7 @@ impl Args {
         }
     }
 
-    /// searching for matching ships' name
+    /// searching for matching ships' name, Err if no argument left || No matched ship || Error when user picking
     ///
     /// ## Note:
     /// this should be runned in the last, since it will consume all the remained arguments
@@ -160,7 +160,7 @@ impl Args {
         let ship_input = self.0.iter().join(" ");
         self.0.clear();
 
-        let candidates = {
+        let mut candidates = {
             let ship_js = ctx.data().ship_js.read();
             ship_js.search_name(&ship_input, 4)?
         };
@@ -169,7 +169,7 @@ impl Args {
             true => 0,
             false => self._pick(ctx, &candidates).await?,
         };
-        Ok(candidates[index].clone())
+        Ok(candidates.remove(index))
     }
     /// let user select the ship or player from candidates
     async fn _pick<T: std::fmt::Display>(
