@@ -61,12 +61,11 @@ impl RecentPlayer {
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: RecentPlayer = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);
-                serde_json::from_reader(reader).unwrap_or_else(|err| {
-                    panic!("Failed to deserialize file: {:?}\n Err: {err}", path,)
-                })
+                serde_json::from_reader(reader)
             })
             .await
-            .unwrap();
+            .unwrap()
+            .unwrap_or_else(|err| panic!("Failed to deserialize file: {:?}\n Err: {err}", path,));
             data.player = *player;
             Some(data)
         } else {
