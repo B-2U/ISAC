@@ -166,8 +166,11 @@ class Renderer:
     async def screenshot(self, html) -> io.BytesIO:
         if os.name != "posix":
             # html for debug
-            with open("./temp/screenshot_output.html", "w", encoding="UTF-8") as f:
-                f.write(html)
+            try:
+                with open("./temp/screenshot_output.html", "w", encoding="UTF-8") as f:
+                    f.write(html)
+            except:
+                pass
 
         async with self.new_page() as page:
             await page.set_content(html)
@@ -195,11 +198,6 @@ class Renderer:
                     {
                         "name": "apiConsent",
                         "value": "1",
-                        "url": "https://ru.wows-numbers.com",
-                    },
-                    {
-                        "name": "apiConsent",
-                        "value": "1",
                         "url": "https://wows-numbers.com",
                     },
                 ]
@@ -218,39 +216,6 @@ class Renderer:
             yield page
         finally:
             await page.close()
-
-    # async def wws_stats_website_update(self, region, user):
-    #     _region = NUMBER_REGION[region]
-    #     async with self.new_page() as page:
-    #         try:
-    #             await page.goto(
-    #                 f'https://{region}wows-numbers.com/player/{user["uid"]},/'
-    #             )
-    #             result = await page.query_selector(".loading")
-    #             if result == None:
-    #                 pass
-    #             else:
-    #                 await page.wait_for_selector(".loading", state="hidden")
-    #         except Exception as e:
-    #             # print(e)
-    #             pass
-
-    # async def wws_stats_recent_scrape(self, url):
-    #     async with self.new_page() as page:
-    #         try:
-    #             # response = await page.goto(url)
-    #             # print(response.headers['status'])
-    #             # await page.screenshot({'path': './screen.png', 'fullPage': True})
-    #             # await page.waitForSelector('.cf-browser-verification', {'hidden':1})
-    #             response = await page.goto(url)
-    #             content = await page.content()
-    #             if response.ok:
-    #                 return content
-    #             else:
-    #                 return None
-    #         except Exception as e:
-    #             print(e)
-    #             raise utils.IsacError("❌ Update timeout, plz try again")
 
 
 renderer = None

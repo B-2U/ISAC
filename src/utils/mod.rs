@@ -3,6 +3,8 @@ pub mod structs;
 pub mod wws_api;
 
 mod isac_error;
+use std::fs;
+
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
 use poise::async_trait;
@@ -92,6 +94,9 @@ pub trait LoadSaveFromJson {
     where
         Self: Serialize,
     {
+        if let Some(parent_dir) = std::path::Path::new(Self::PATH).parent() {
+            fs::create_dir_all(parent_dir).unwrap();
+        }
         let file = std::fs::File::create(&Self::PATH)
             .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", Self::PATH));
         serde_json::to_writer(file, &self).unwrap_or_else(|err| {
