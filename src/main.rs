@@ -33,11 +33,11 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().expect("Failed to load .env file");
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(EnvFilter::from_env("LOGGER"))
         .init();
+    dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
     launch_renderer().await;
 
     let (prefix, token) = if cfg!(windows) {
