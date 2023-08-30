@@ -8,6 +8,7 @@ web_src/*
 temp/
 webdriver/*
 test_res/
+.vscode
 
 # Added by cargo
 
