@@ -28,16 +28,17 @@ pub trait LoadSaveFromJson {
                 std::fs::File::open(&Self::PATH)
                     .unwrap_or_else(|_| panic!("Failed to open file: {}", Self::PATH)),
             );
-            serde_json::from_reader(reader).unwrap_or_else(|err| {
-                panic!(
-                    "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
-                    Self::PATH,
-                    std::any::type_name::<Self>()
-                )
-            })
+            serde_json::from_reader(reader)
         })
         .await
         .unwrap()
+        .unwrap_or_else(|err| {
+            panic!(
+                "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
+                Self::PATH,
+                std::any::type_name::<Self>()
+            )
+        })
     }
 
     fn load_json_sync() -> Self
