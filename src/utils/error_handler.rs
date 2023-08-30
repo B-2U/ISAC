@@ -99,21 +99,17 @@ pub async fn isac_err_logging(ctx: &Context<'_>, error: &Error) {
     let channel_id = ctx.channel_id();
     let guild = ctx.guild().map(|f| f.name).unwrap_or("PM".to_string());
     let input = ctx.invocation_string();
-    let web_hook = Webhook::from_url(
-        ctx,
-        env::var("ERR_WEB_HOOK")
-            .expect("Missing web hook url")
-            .as_ref(),
-    )
-    .await
-    .unwrap();
-    let _r = web_hook
-        .execute(ctx, false, |b| {
-            b.content(format!(
-                "``` ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} ``` ``` {error} ```"
-            ))
-        })
-        .await;
+    if let Ok(webhook_url) = env::var("ERR_WEB_HOOK") {
+        let web_hook = Webhook::from_url(ctx, &webhook_url).await.unwrap();
+        let _r = web_hook
+            .execute(ctx, false, |b| {
+                b.content(format!(
+                    "``` ERROR \n[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} ``` ``` {error} ```"
+                ))
+            })
+            .await;
+    }
+
     error!("[{input}] \n{user}, {user_id} \n{channel_id} \n{guild} \n{error}");
 }
 
