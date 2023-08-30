@@ -8,6 +8,7 @@ pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 use poise::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::io::AsyncWriteExt;
+use tracing::warn;
 
 /// load and save the struct with given json path
 ///
@@ -39,19 +40,26 @@ pub trait LoadSaveFromJson {
 
     fn load_json_sync() -> Self
     where
-        Self: DeserializeOwned,
+        Self: DeserializeOwned + Serialize + Default,
     {
-        let reader = std::io::BufReader::new(
-            std::fs::File::open(&Self::PATH)
-                .unwrap_or_else(|_| panic!("Failed to open file {:?}", Self::PATH)),
-        );
-        serde_json::from_reader(reader).unwrap_or_else(|err| {
-            panic!(
-                "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
-                Self::PATH,
-                std::any::type_name::<Self>()
-            )
-        })
+        if let Ok(file) = std::fs::File::open(&Self::PATH) {
+            let reader = std::io::BufReader::new(file);
+            serde_json::from_reader(reader).unwrap_or_else(|err| {
+                panic!(
+                    "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
+                    Self::PATH,
+                    std::any::type_name::<Self>()
+                )
+            })
+        } else {
+            warn!(
+                "file: {} wasn't existed, initializing a dafault one",
+                Self::PATH
+            );
+            let default = Self::default();
+            default.save_json_sync();
+            default
+        }
     }
 
     async fn save_json(&self)

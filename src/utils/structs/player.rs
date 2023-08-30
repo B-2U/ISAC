@@ -174,7 +174,7 @@ impl PlayerDogTag {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Pfp(pub HashMap<u64, PfpData>);
 
 impl LoadSaveFromJson for Pfp {

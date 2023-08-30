@@ -125,7 +125,7 @@ impl Region {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct GuildDefaultRegion(pub HashMap<GuildId, Region>);
 
 impl GuildDefaultRegion {

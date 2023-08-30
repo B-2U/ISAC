@@ -6,7 +6,7 @@ use serde_with::{serde_as, DisplayFromStr};
 
 use crate::utils::LoadSaveFromJson;
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Dogtag(pub HashMap<u64, DogtagData>);
 
 impl LoadSaveFromJson for Dogtag {

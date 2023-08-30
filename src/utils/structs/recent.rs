@@ -58,8 +58,7 @@ impl RecentPlayer {
             player.region.lower(),
             player.uid
         );
-        if let Ok(_) = tokio::fs::metadata(&path).await {
-            let file = std::fs::File::open(&path).ok().unwrap();
+        if let Ok(file) = std::fs::File::open(&path) {
             let mut data: RecentPlayer = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);
                 serde_json::from_reader(reader).unwrap_or_else(|err| {

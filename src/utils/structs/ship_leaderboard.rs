@@ -10,7 +10,7 @@ use crate::utils::{
     LoadSaveFromJson,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
 
 impl ShipLeaderboard {

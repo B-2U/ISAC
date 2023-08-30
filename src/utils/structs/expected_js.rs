@@ -4,7 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::utils::LoadSaveFromJson;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct ExpectedJs {
     pub time: u64,
     #[serde(deserialize_with = "deserialize_data")]

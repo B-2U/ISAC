@@ -11,7 +11,7 @@ use crate::utils::{
 };
 
 /// the struct for laoding ships_para.json
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct ShipsPara(pub HashMap<ShipId, Ship>);
 
 impl LoadSaveFromJson for ShipsPara {

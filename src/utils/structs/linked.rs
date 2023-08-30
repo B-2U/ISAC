@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Linked(pub HashMap<UserId, PartialPlayer>);
 
 impl LoadSaveFromJson for Linked {
