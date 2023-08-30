@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import aiohttp
+import dotenv
 
 # from wowspy import WowsAsync, Wows
 from datetime import datetime, timezone, timedelta
@@ -12,7 +13,6 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 sched = BlockingScheduler(timezone="GMT", job_defaults={"misfire_grace_time": 30 * 60})
 
-api_key = "40651eccb00abf54ba1135af751ced1e"
 RECENT_LAST_REQUEST_LIMIT = 14
 MAX_DAY = 91
 
@@ -86,12 +86,7 @@ async def statistics_of_players_ships(
 
 async def update(region: str, now: int):
     async with aiohttp.ClientSession() as session:
-        # my_api = WowsAsync(api_key, session)
-        # fields = "ship_id, rank_solo, rank_solo.battles, rank_solo.frags, rank_solo.planes_killed, rank_solo.wins, rank_solo.damage_dealt, pvp.battles, pvp.frags, pvp.planes_killed, pvp.wins, pvp.damage_dealt, pvp_div2, pvp_div2.battles, pvp_div2.frags, pvp_div2.planes_killed, pvp_div2.wins, pvp_div2.damage_dealt, pvp_div3, pvp_div3.battles, pvp_div3.frags, pvp_div3.planes_killed, pvp_div3.wins, pvp_div3.damage_dealt,, pvp_solo, pvp_solo.battles, pvp_solo.frags, pvp_solo.planes_killed, pvp_solo.wins, pvp_solo.damage_dealt"
-
         files = os.listdir(f"./players/{region}/")
-        # with open("../user_data/pfp.json", "r") as f:
-        #     pfp_js = json.load(f)
         if files == None:
             return
         for file in files:
