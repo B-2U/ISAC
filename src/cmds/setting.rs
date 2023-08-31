@@ -1,5 +1,5 @@
 use crate::{
-    dc_utils::{auto_complete, UserAddon},
+    dc_utils::{auto_complete, ContextAddon, UserAddon},
     utils::{
         structs::{PartialPlayer, Region},
         IsacError, IsacInfo, LoadSaveFromJson,
