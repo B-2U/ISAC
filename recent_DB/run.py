@@ -22,14 +22,12 @@ def domain(region):
     return official_domain[region]
 
 
-###
-# return empty dict if player is hidden
-###
 async def statistics_of_players_ships(
     session,
     region: str,
     account_id: int,
 ) -> dict:
+    """merge player's all modes  stats in to one, early return if profile hidden"""
     modes = ["pvp_solo", "pvp_div2", "pvp_div3", "rank_solo", "pvp"]
     sub_modes = ["pvp_solo", "pvp_div2", "pvp_div3", "rank_solo"]
 
@@ -157,6 +155,7 @@ def tw_timestamp():
     return tpe.strftime("[%m/%d %H:%M]")
 
 
+# a process layer for completely clean up consumed memory
 def create_process(region: str, now: int):
     p = Process(target=async_run_update, args=(region, now))
     p.start()
@@ -198,6 +197,4 @@ async def test():
 
 
 if __name__ == "__main__":
-    # asyncio.run(test())
-    # asyncio.run(ASIA_update())
     sched.start()
