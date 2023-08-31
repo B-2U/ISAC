@@ -9,6 +9,7 @@ use poise::serenity_prelude::{self as serenity, Activity, UserId};
 use std::{
     collections::HashSet,
     env,
+    ops::Deref,
     sync::{Arc, Mutex},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -82,10 +83,8 @@ async fn main() {
         ..Default::default()
     };
     // TODO better way than cloning everything? seems the framwork doesn't accept Arc<Data>....
-    let data = Data::new().await;
-    let patrons_arc = Arc::clone(&data.patron);
-    let expected_js_arc = Arc::clone(&data.expected_js);
-    let client_clone = data.client.clone();
+    let data = Data::new();
+    let arc_data = data.clone();
     let bot = poise::Framework::builder()
         .token(token)
         .setup(move |ctx, ready, framework| {
@@ -117,9 +116,12 @@ async fn main() {
     });
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
-    tokio::spawn(async move { tasks::patron_updater(http, patrons_arc).await });
+    let patron = Arc::clone(&arc_data.patron);
+    tokio::spawn(async move { tasks::patron_updater(http, patron).await });
     // update expected json
-    tokio::spawn(async move { tasks::expected_updater(client_clone, expected_js_arc).await });
+    let client = arc_data.client.clone();
+    let expected = Arc::clone(&arc_data.expected_js);
+    tokio::spawn(async move { tasks::expected_updater(client, expected).await });
 
     // this is how to use serenity's `data`
     // {
@@ -131,8 +133,29 @@ async fn main() {
     }
 }
 
-/// My custom Data
+/// My custom Data, it already uses an [`Arc`] internally.
+/// well its a bit tricky, but I'm lazy to clone them before bot building one by one
+#[derive(Clone)]
 pub struct Data {
+    pub inner: Arc<DataInner>,
+}
+
+impl Deref for Data {
+    type Target = DataInner;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl Data {
+    pub fn new() -> Self {
+        Self {
+            inner: Arc::new(DataInner::new()),
+        }
+    }
+}
+pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<RwLock<Patrons>>,
     expected_js: Arc<RwLock<ExpectedJs>>,
@@ -145,9 +168,9 @@ pub struct Data {
     leaderboard: Mutex<ShipLeaderboard>,
 }
 
-impl Data {
-    async fn new() -> Self {
-        Data {
+impl DataInner {
+    fn new() -> Self {
+        DataInner {
             client: reqwest::Client::new(),
             patron: Arc::new(RwLock::new(Patrons::default())),
             expected_js: Arc::new(RwLock::new(ExpectedJs::load_json_sync())),
