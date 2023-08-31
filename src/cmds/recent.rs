@@ -229,7 +229,7 @@ async fn func_recent(
         let data = SingleShipTemplate {
             ship: ship.clone(),
             ranking: None,
-            main_mode_name: format!("({} days) {}", exact_day, mode.render_name()),
+            suffix: format!("({} days) {}", exact_day, mode.render_name()),
             main_mode,
             sub_modes,
             clan,
@@ -265,7 +265,7 @@ async fn func_recent(
             user: player,
             ships,
             day: exact_day,
-            main_mode_name: mode.render_name().to_string(),
+            suffix: mode.render_name().to_string(),
             main: div.get_mode(&mode).cloned().unwrap_or_default(),
             div,
         };

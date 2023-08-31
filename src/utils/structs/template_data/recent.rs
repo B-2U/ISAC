@@ -7,8 +7,8 @@ pub struct RecentTemplate {
     pub clan: PartialClan,
     pub user: Player,
     pub ships: Vec<RecentTemplateShip>,
-    pub day: u64,               // the exact_day
-    pub main_mode_name: String, // mode.render_name()
+    pub day: u64,       // the exact_day
+    pub suffix: String, // mode.render_name()
     pub main: Statistic,
     pub div: RecentTemplateDiv,
 }

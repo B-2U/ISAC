@@ -15,7 +15,7 @@ pub struct SingleShipTemplate {
     pub ship: Ship,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ranking: Option<u64>,
-    pub main_mode_name: String, // mode.render_name()
+    pub suffix: String, // additional info, e.g. (last 2 days) (Rank)
     pub main_mode: Statistic,
     #[serde(serialize_with = "serialize_sub_modes")]
     pub sub_modes: Option<SingleShipTemplateSub>,

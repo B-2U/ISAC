@@ -155,7 +155,7 @@ async fn func_ship(
     let data = SingleShipTemplate {
         ship,
         ranking,
-        main_mode_name: mode.render_name().to_string(),
+        suffix: mode.render_name().to_string(),
         main_mode: stats,
         sub_modes,
         clan,
