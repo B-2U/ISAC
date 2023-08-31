@@ -3,7 +3,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use futures::StreamExt;
 use itertools::Itertools;
 use poise::serenity_prelude::{
@@ -118,10 +118,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         let rename_at = clan_detail.renamed_at.unwrap_or(1);
         let old_name = clan_detail.old_name.unwrap_or_default();
 
-        let datetime = DateTime::<Utc>::from_utc(
-            NaiveDateTime::from_timestamp_opt(rename_at as i64, 0).unwrap(),
-            Utc,
-        );
+        let datetime = NaiveDateTime::from_timestamp_opt(rename_at as i64, 0).unwrap();
         Some(ClanTemplateRename {
             tag: clan_detail.old_tag.unwrap(),
             name: old_name,
