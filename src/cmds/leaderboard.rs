@@ -8,7 +8,6 @@ use regex::Regex;
 use scraper::{node::Element, ElementRef, Html, Selector};
 
 use crate::{
-    cmds::leaderboard,
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     utils::{
         structs::{
@@ -21,22 +20,24 @@ use crate::{
 };
 
 pub fn top_hybrid() -> poise::Command<Data, Error> {
-    let mut cmd = leaderboard::top_slash();
-    cmd.prefix_action = leaderboard::top().prefix_action;
-    cmd.aliases = leaderboard::top().aliases;
-    cmd
+    poise::Command {
+        prefix_action: top_prefix().prefix_action,
+        slash_action: top().slash_action,
+        aliases: top_prefix().aliases,
+        ..top()
+    }
 }
 
 #[poise::command(prefix_command, aliases("dalao"))]
-pub async fn top(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn top_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let region = args.parse_region(&ctx).await?;
     let ship = args.parse_ship(&ctx).await?;
     func_top(ctx, region, ship).await
 }
 
 /// The top players on the specific ship's leaderboard
-#[poise::command(slash_command, rename = "top")]
-pub async fn top_slash(
+#[poise::command(slash_command)]
+pub async fn top(
     ctx: Context<'_>,
     #[description = "warship's name"]
     #[rename = "warship"]

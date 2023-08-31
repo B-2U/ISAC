@@ -9,7 +9,6 @@ use poise::serenity_prelude::{
 };
 
 use crate::{
-    cmds::recent,
     dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
@@ -29,14 +28,16 @@ const RECENT_LAST_REQUEST_LIMIT: u64 = 14;
 const RECENT_OMIT_LIMIT: usize = 50;
 
 pub fn recent_hybrid() -> poise::Command<Data, Error> {
-    let mut cmd = recent::recent_slash();
-    cmd.prefix_action = recent::recent().prefix_action;
-    cmd
+    poise::Command {
+        prefix_action: recent_prefix().prefix_action,
+        slash_action: recent().slash_action,
+        ..recent()
+    }
 }
 
 /// Last X days stats
-#[poise::command(slash_command, rename = "recent")]
-pub async fn recent_slash(
+#[poise::command(slash_command)]
+pub async fn recent(
     ctx: Context<'_>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
@@ -97,7 +98,7 @@ pub async fn recent_slash(
 }
 
 #[poise::command(prefix_command)]
-pub async fn recent(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn recent_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let partial_player = args.parse_user(&ctx).await?;
     let mode = args.parse_mode().unwrap_or_default();
     let day = args.parse_day().unwrap_or(1);

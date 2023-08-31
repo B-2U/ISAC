@@ -13,7 +13,6 @@ use poise::serenity_prelude::{
 use tokio::join;
 
 use crate::{
-    cmds::clan,
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
         Args, ContextAddon, CreateReplyAddon, EasyEmbed, InteractionAddon,
@@ -33,14 +32,16 @@ use crate::{
 };
 
 pub fn clan_hybrid() -> poise::Command<Data, Error> {
-    let mut cmd = clan::clan_slash();
-    cmd.prefix_action = clan::clan().prefix_action;
-    cmd
+    poise::Command {
+        prefix_action: clan_prefix().prefix_action,
+        slash_action: clan().slash_action,
+        ..clan()
+    }
 }
 
 /// Clan's overall & CB stats
-#[poise::command(slash_command, rename = "clan")]
-pub async fn clan_slash(
+#[poise::command(slash_command)]
+pub async fn clan(
     ctx: Context<'_>,
     #[description = "clan's tag or name"]
     #[autocomplete = "auto_complete::clan"]
@@ -68,7 +69,7 @@ pub async fn clan_slash(
 }
 
 #[poise::command(prefix_command)]
-pub async fn clan(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn clan_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let partial_clan = args.parse_clan(&ctx).await?;
 
     // clan overall

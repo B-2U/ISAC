@@ -5,7 +5,6 @@ use poise::serenity_prelude::{
 };
 
 use crate::{
-    cmds::wws,
     dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
     utils::{
         structs::{
@@ -26,14 +25,16 @@ use crate::{
 };
 
 pub fn wws_hybrid() -> poise::Command<Data, Error> {
-    let mut wws = wws::wws_slash();
-    wws.prefix_action = wws::wws().prefix_action;
-    wws
+    poise::Command {
+        prefix_action: wws_prefix().prefix_action,
+        slash_action: wws().slash_action,
+        ..wws()
+    }
 }
 
 /// Account overall / Specific warship's stats
-#[poise::command(slash_command, rename = "wws")]
-pub async fn wws_slash(
+#[poise::command(slash_command)]
+pub async fn wws(
     ctx: Context<'_>,
     #[description = "specific warship, default: account's overall stats"]
     #[rename = "warship"]
@@ -88,7 +89,7 @@ pub async fn wws_slash(
 }
 
 #[poise::command(prefix_command)]
-pub async fn wws(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn wws_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let typing = ctx.typing().await;
 
     let partial_player = args.parse_user(&ctx).await?;

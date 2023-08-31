@@ -1,6 +1,5 @@
 use crate::{
-    cmds::setting,
-    dc_utils::{auto_complete, ContextAddon, UserAddon},
+    dc_utils::{auto_complete, UserAddon},
     utils::{
         structs::{PartialPlayer, Region},
         IsacError, IsacInfo, LoadSaveFromJson,
@@ -10,9 +9,11 @@ use crate::{
 use poise;
 
 pub fn link_hybrid() -> poise::Command<Data, Error> {
-    let mut cmd = setting::link();
-    cmd.prefix_action = setting::link_prefix().prefix_action;
-    cmd
+    poise::Command {
+        prefix_action: link_prefix().prefix_action,
+        slash_action: link().slash_action,
+        ..link()
+    }
 }
 
 /// Link your wows account
