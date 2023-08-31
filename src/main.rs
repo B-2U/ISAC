@@ -82,7 +82,6 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    // TODO better way than cloning everything? seems the framwork doesn't accept Arc<Data>....
     let data = Data::new();
     let arc_data = data.clone();
     let bot = poise::Framework::builder()
