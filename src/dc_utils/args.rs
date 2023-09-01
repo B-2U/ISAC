@@ -85,6 +85,7 @@ impl Args {
     /// try to parse discord user at first, if none, parsing region and searching ign
     pub async fn parse_clan(&mut self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
         let first_arg = self.check(0)?;
+        let api = WowsApi::new(ctx);
 
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
@@ -93,7 +94,7 @@ impl Args {
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    linked_user.clan(ctx).await
+                    linked_user.clan(&api).await
                 }
                 None => Err(IsacInfo::UserNotLinked {
                     user_name: Some(user.name.clone()),
@@ -104,7 +105,7 @@ impl Args {
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    linked_user.clan(ctx).await
+                    linked_user.clan(&api).await
                 }
                 None => {
                     return Err(IsacInfo::UserNotLinked { user_name: None })?;
@@ -115,7 +116,7 @@ impl Args {
             let region = self.parse_region(ctx).await?;
             let clan_name = self.remove(0)?;
 
-            let mut clans = WowsApi::new(&ctx).clans(&region, &clan_name).await?;
+            let mut clans = api.clans(&region, &clan_name).await?;
             Ok(clans.remove(0))
         }
     }

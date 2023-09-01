@@ -6,7 +6,7 @@ use crate::{
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
     },
-    Context, Data,
+    Data,
 };
 
 use poise::serenity_prelude::UserId;
@@ -23,9 +23,8 @@ pub struct PartialPlayer {
 }
 impl PartialPlayer {
     /// turn partial player into [`Player`]
-    pub async fn get_player(&self, ctx: &Context<'_>) -> Result<Player, IsacError> {
-        let api = WowsApi::new(ctx);
-        api.player_personal_data(ctx, self.region, self.uid).await
+    pub async fn get_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
+        api.player_personal_data(self.region, self.uid).await
     }
     /// the link of player's wow-number page
     pub fn wows_number_url(&self) -> Result<Url, IsacError> {
@@ -36,23 +35,20 @@ impl PartialPlayer {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
     /// player's clan data, only error when request or api issue
-    pub async fn clan(&self, ctx: &Context<'_>) -> Result<PartialClan, IsacError> {
-        let api = WowsApi::new(ctx);
+    pub async fn clan(&self, api: &WowsApi<'_>) -> Result<PartialClan, IsacError> {
         api.player_clan(&self.region, self.uid).await
     }
     /// all ships' statistics
-    pub async fn all_ships(&self, ctx: &Context<'_>) -> Result<ShipStatsCollection, IsacError> {
-        let api = WowsApi::new(ctx);
+    pub async fn all_ships(&self, api: &WowsApi<'_>) -> Result<ShipStatsCollection, IsacError> {
         api.statistics_of_player_ships(self.region, self.uid, None)
             .await
     }
     /// specific ship's statistics
     pub async fn single_ship(
         &self,
-        ctx: &Context<'_>,
+        api: &WowsApi<'_>,
         ship: &Ship,
     ) -> Result<Option<(ShipId, ShipModeStatsPair)>, IsacError> {
-        let api = WowsApi::new(ctx);
         let ship_pair = api
             .statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
             .await?

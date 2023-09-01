@@ -2,6 +2,7 @@ use crate::{
     dc_utils::{auto_complete, ContextAddon, UserAddon},
     utils::{
         structs::{PartialPlayer, Region},
+        wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
     },
     Context, Data, Error,
@@ -27,7 +28,8 @@ pub async fn link(
     let Ok(partial_player) = serde_json::from_str::<PartialPlayer>(&player) else {
         Err(IsacError::Info(IsacInfo::AutoCompleteError))?
     };
-    let player = partial_player.get_player(&ctx).await?;
+    let api = WowsApi::new(&ctx);
+    let player = partial_player.get_player(&api).await?;
     {
         let mut guard = ctx.data().link_js.write();
         guard.0.insert(ctx.author().id, partial_player);

@@ -50,8 +50,8 @@ pub async fn clan(
 ) -> Result<(), Error> {
     let auto_complete_clan: AutoCompleteClan =
         serde_json::from_str(&clan).map_err(|_| IsacError::Info(IsacInfo::AutoCompleteError))?;
-    let wws_api = WowsApi::new(&ctx);
-    let partial_clan = wws_api
+    let api = WowsApi::new(&ctx);
+    let partial_clan = api
         .clans(&auto_complete_clan.region, &auto_complete_clan.tag)
         .await?
         .swap_remove(0);
@@ -91,11 +91,13 @@ pub async fn clan_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(),
 
 async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), Error> {
     let current_season_num = ctx.data().constant.read().clan_season;
+    // QA WowsApi too odd...?
+    let api = WowsApi::new(ctx);
     let typing = ctx.typing().await;
     let (clan_detail, clan_members, clan) = join!(
-        partial_clan.clan_details(&ctx),
-        partial_clan.clan_members(&ctx, None, None),
-        partial_clan.get_clan(&ctx)
+        partial_clan.clan_details(&api),
+        partial_clan.clan_members(&api, None, None),
+        partial_clan.get_clan(&api)
     );
     // QA 能省掉這三行unwrap嗎?
     let clan_detail = clan_detail?;
@@ -205,10 +207,11 @@ async fn func_clan_season(
     partial_clan: PartialClan,
     season_num: u32,
 ) -> Result<(), Error> {
+    let api = WowsApi::new(ctx);
     let _typing = ctx.typing().await;
     // QA 下面ratings跟filtered_members魔改clan_members感覺不太好?
     let mut clan_members = partial_clan
-        .clan_members(&ctx, Some("cvc"), Some(season_num))
+        .clan_members(&api, Some("cvc"), Some(season_num))
         .await?;
     // filter out the latest season ratings
     let ratings = clan_members

@@ -19,6 +19,7 @@ use crate::{
             },
             Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic,
         },
+        wws_api::WowsApi,
         IsacError, IsacInfo,
     },
     Context, Data, Error,
@@ -114,9 +115,10 @@ async fn func_ship(
     mode: Mode,
 ) -> Result<(), Error> {
     let _typing = ctx.typing().await;
-    let player = partial_player.get_player(&ctx).await?;
-    let clan = player.clan(&ctx).await?;
-    let (ship_id, ship_stats) = player.single_ship(&ctx, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
+    let api = WowsApi::new(ctx);
+    let player = partial_player.get_player(&api).await?;
+    let clan = player.clan(&api).await?;
+    let (ship_id, ship_stats) = player.single_ship(&api, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
     let Some(stats) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
         Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
             ign: player.ign.clone(),
@@ -179,11 +181,12 @@ async fn func_ship(
 
 pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Result<(), Error> {
     let typing = ctx.typing().await;
-    let player = partial_player.get_player(&ctx).await?;
-    let clan = player.clan(&ctx).await?;
+    let api = WowsApi::new(ctx);
+    let player = partial_player.get_player(&api).await?;
+    let clan = player.clan(&api).await?;
 
     // wws
-    let ships = player.all_ships(&ctx).await?;
+    let ships = player.all_ships(&api).await?;
     let div = OverallTemplateDiv::new(
         ships
             .to_statistic(&ctx.data().expected_js, Mode::Pvp)

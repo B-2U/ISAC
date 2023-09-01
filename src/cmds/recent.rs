@@ -19,6 +19,7 @@ use crate::{
             Mode, PartialPlayer, Player, RecentPlayer, RecentPlayerType, Ship, ShipId,
             ShipModeStatsPair, ShipStatsCollection,
         },
+        wws_api::WowsApi,
         IsacError, IsacInfo,
     },
     Context, Data, Error,
@@ -120,11 +121,12 @@ async fn func_recent(
     specific_ship: Option<Ship>,
 ) -> Result<(), Error> {
     let typing1 = ctx.typing().await;
+    let api = WowsApi::new(ctx);
     let max_day = match ctx.data().patron.read().check_user(&ctx.author().id) {
         true => 91_u64, // well its actually 90, this is for some 90 days data get ceiling to 91
         false => 30_u64,
     };
-    let player = partial_player.get_player(ctx).await?;
+    let player = partial_player.get_player(&api).await?;
     // QA making a custom filter, better way...? and I have to call as_ref() beloweds
     let filter: Box<dyn Fn(&ShipId, &mut ShipModeStatsPair) -> bool + Send + Sync> =
         if let Some(ship) = specific_ship.as_ref() {
@@ -133,7 +135,7 @@ async fn func_recent(
             Box::new(|_k, _v| true)
         };
 
-    let current_ships = partial_player.all_ships(ctx).await?;
+    let current_ships = partial_player.all_ships(&api).await?;
     let (is_new, is_active, player_data) = load_player(&player, &current_ships).await;
     let current_ships_filted = current_ships.retain(filter.as_ref());
     if is_new {
@@ -197,7 +199,7 @@ async fn func_recent(
     let _typing2 = ctx.typing().await;
     // parsing and render
     let expected_js = &ctx.data().expected_js;
-    let clan = player.clan(ctx).await?;
+    let clan = player.clan(&api).await?;
     // QA 這個超大的if else感覺好糟...
     let img = if let Some(ship) = specific_ship.as_ref() {
         // recent ship

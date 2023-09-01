@@ -468,9 +468,9 @@ pub enum RouletteTier {
 }
 
 #[poise::command(prefix_command)]
-pub async fn uid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
-    let mut args = args.unwrap_or_default();
-    let player = args.parse_user(&ctx).await?.get_player(&ctx).await?;
+pub async fn uid(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+    let api = WowsApi::new(&ctx);
+    let player = args.parse_user(&ctx).await?.get_player(&api).await?;
     let _r = ctx
         .reply(format!("`{}`'s UID: **{}**", player.ign, player.uid))
         .await;

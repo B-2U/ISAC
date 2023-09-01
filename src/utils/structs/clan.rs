@@ -1,15 +1,12 @@
 use std::collections::HashSet;
 
-use crate::{
-    utils::{
-        structs::{
-            template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
-            ClanDetail, Region, StatisticValueType,
-        },
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
+use crate::utils::{
+    structs::{
+        template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
+        ClanDetail, Region, StatisticValueType,
     },
-    Context,
+    wws_api::WowsApi,
+    IsacError, IsacInfo,
 };
 
 use reqwest::Url;
@@ -40,12 +37,12 @@ impl PartialClan {
         format!("{:x}", input)
     }
     /// clan details from vortex, has all CB seasons data
-    pub async fn get_clan(&self, ctx: &Context<'_>) -> Result<Clan, IsacError> {
-        WowsApi::new(&ctx).clan_stats(self.region, self.id).await
+    pub async fn get_clan(&self, api: &WowsApi<'_>) -> Result<Clan, IsacError> {
+        api.clan_stats(self.region, self.id).await
     }
     /// clan details from official api, include clan rename history
-    pub async fn clan_details(&self, ctx: &Context<'_>) -> Result<ClanDetail, IsacError> {
-        WowsApi::new(&ctx).clan_details(self.region, self.id).await
+    pub async fn clan_details(&self, api: &WowsApi<'_>) -> Result<ClanDetail, IsacError> {
+        api.clan_details(self.region, self.id).await
     }
     /// clan members from vortex, has members stats
     ///
@@ -53,13 +50,11 @@ impl PartialClan {
     /// season only work when mode = "cvc"
     pub async fn clan_members(
         &self,
-        ctx: &Context<'_>,
+        api: &WowsApi<'_>,
         mode: Option<&str>,
         season: Option<u32>,
     ) -> Result<ClanMemberRes, IsacError> {
-        WowsApi::new(&ctx)
-            .clan_members(self.region, self.id, mode, season)
-            .await
+        api.clan_members(self.region, self.id, mode, season).await
     }
 
     pub fn parse(json: Value, region: Region) -> Result<Self, IsacError> {

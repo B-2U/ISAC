@@ -1,9 +1,8 @@
-use std::fmt::Display;
-
 use futures::future::try_join_all;
 use reqwest::{Client, IntoUrl, Response, Url};
 use serde::Deserialize;
 use serde_json::Value;
+use std::fmt::Display;
 use strum::IntoEnumIterator;
 
 use crate::{
@@ -11,7 +10,7 @@ use crate::{
         Clan, ClanDetail, ClanDetailRes, ClanMemberRes, ClanRes, Mode, PartialClan, Player, Region,
         ShipId, ShipStatsCollection, VortexShipResponse,
     },
-    Context,
+    Context, Data,
 };
 
 use super::{IsacError, IsacInfo};
@@ -19,6 +18,7 @@ use super::{IsacError, IsacInfo};
 pub struct WowsApi<'a> {
     pub client: &'a Client,
     token: &'a str,
+    data: &'a Data,
 }
 
 impl<'a> WowsApi<'a> {
@@ -26,6 +26,7 @@ impl<'a> WowsApi<'a> {
         Self {
             client: &ctx.data().client,
             token: &ctx.data().wg_api_token,
+            data: &ctx.data(),
         }
     }
 
@@ -44,7 +45,6 @@ impl<'a> WowsApi<'a> {
     /// get player's details with region and uid
     pub async fn player_personal_data(
         &self,
-        ctx: &Context<'_>,
         region: Region,
         uid: u64,
     ) -> Result<Player, IsacError> {
@@ -52,7 +52,7 @@ impl<'a> WowsApi<'a> {
 
         let res = self._get(url).await?.json::<Value>().await.unwrap();
 
-        Player::parse(ctx.data(), region, res).await
+        Player::parse(self.data, region, res).await
     }
     /// searching player with ign
     pub async fn players(
