@@ -62,7 +62,7 @@ async def return_png(bin: io.BytesIO) -> Response:
 # @app.route("/overall_gif", methods=["POST"])
 # async def overall_gif():
 #     data = await request.get_json()
-#     html = render_html(f"{TEMPLATE_PATH}/overall.html", data)
+#     html = render_html(f"{TEMPLATE_PATH}/overall.hbs", data)
 #     video = await renderer.screenshot(html)
 #     return await send_file(
 #         await renderer.screenshot(html),
@@ -75,7 +75,7 @@ async def return_png(bin: io.BytesIO) -> Response:
 @app.route("/overall", methods=["POST"])
 async def overall():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/overall.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/overall.hbs", data)
     t = time.time()
     img = await renderer.screenshot(html)
     print(time.time() - t)
@@ -85,42 +85,42 @@ async def overall():
 @app.route("/overall_tiers", methods=["POST"])
 async def overall_tiers():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/overall_tiers.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/overall_tiers.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/clan_season", methods=["POST"])
 async def clan_season():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/clan_season.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/clan_season.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/clan", methods=["POST"])
 async def clan():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/clan.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/clan.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/recent", methods=["POST"])
 async def recent():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/recent.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/recent.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/leaderboard", methods=["POST"])
 async def leaderboard():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/leaderboard.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/leaderboard.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
 @app.route("/single_ship", methods=["POST"])
 async def single_ship():
     data = await request.get_json()
-    html = render_html(f"{TEMPLATE_PATH}/single_ship.html", data)
+    html = render_html(f"{TEMPLATE_PATH}/single_ship.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
