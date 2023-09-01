@@ -4,7 +4,7 @@ DB
 recent_DB/players/*
 user_data/*
 web_src/*
-**/*.html.json
+**/*.hbs.json
 temp/
 webdriver/*
 test_res/
