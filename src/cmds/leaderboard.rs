@@ -80,6 +80,12 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
             lb_players
         }
     };
+    // color patrons
+    lb_players.iter_mut().take(15).for_each(|p| {
+        if ctx.data().patron.read().check_player(&p.uid) {
+            p.color = "#e85a6b".to_string();
+        }
+    });
 
     // if user is in the leaderboard, set color and swap its index if needed
     let truncate_len = if let Some((p_index, p)) =
@@ -92,12 +98,12 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         p.color = "#ffcc66".to_string();
         if p_index >= 15 {
             lb_players.swap(15, p_index);
-            16
+            16 // user in top 100
         } else {
-            15
+            15 // user in top 15
         }
     } else {
-        15
+        15 // user not in leaderboard
     };
     lb_players.truncate(truncate_len);
 
