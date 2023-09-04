@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
-use crate::utils::{
-    structs::{
-        template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
-        ClanDetail, Region, StatisticValueType,
+use crate::{
+    template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
+    utils::{
+        structs::{ClanDetail, Region, StatisticValueType},
+        wws_api::WowsApi,
+        IsacError, IsacInfo,
     },
-    wws_api::WowsApi,
-    IsacError, IsacInfo,
 };
 
 use reqwest::Url;

@@ -9,9 +9,9 @@ use scraper::{node::Element, ElementRef, Html, Selector};
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    template_data::{LeaderboardTemplate, Render},
     utils::{
         structs::{
-            template_data::{LeaderboardTemplate, Render},
             Region, Ship, ShipId, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
         },
         IsacError, IsacInfo, LoadSaveFromJson,

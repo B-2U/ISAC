@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::utils::structs::{template_data::Render, Mode, PartialClan, Player, Ship, Statistic};
+use super::Render;
+use crate::utils::structs::{Mode, PartialClan, Player, Ship, Statistic};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RecentTemplate {

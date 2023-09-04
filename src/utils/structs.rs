@@ -1,5 +1,3 @@
-pub mod template_data;
-
 mod dogtag;
 
 pub use dogtag::*;

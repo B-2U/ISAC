@@ -6,19 +6,12 @@ use poise::serenity_prelude::{
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
+    template_data::{
+        OverallTemplate, OverallTemplateClass, OverallTemplateDiv, OverallTemplateTier, Render,
+        SingleShipTemplate, SingleShipTemplateSub,
+    },
     utils::{
-        structs::{
-            template_data::{
-                OverallTemplate,
-                OverallTemplateClass,
-                OverallTemplateDiv,
-                OverallTemplateTier,
-                Render, // Render trait一定要在這裡也 use 嗎?
-                SingleShipTemplate,
-                SingleShipTemplateSub,
-            },
-            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic,
-        },
+        structs::{Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic},
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },

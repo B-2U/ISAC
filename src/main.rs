@@ -2,6 +2,7 @@ mod cmds;
 use cmds::*;
 mod dc_utils;
 mod tasks;
+mod template_data;
 mod utils;
 
 use parking_lot::RwLock;

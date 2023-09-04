@@ -1,9 +1,8 @@
 use serde::Serialize;
 
-use super::Render;
+use super::{ClanTemplateSeason, Render};
 use crate::utils::structs::{
-    template_data::ClanTemplateSeason, ClanMember, ClanStatsSeason, PartialClan, StatisticValue,
-    StatisticValueType,
+    ClanMember, ClanStatsSeason, PartialClan, StatisticValue, StatisticValueType,
 };
 
 #[derive(Debug, Serialize)]

@@ -10,12 +10,12 @@ use poise::serenity_prelude::{
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
+    template_data::{
+        RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
+        SingleShipTemplateSub,
+    },
     utils::{
         structs::{
-            template_data::{
-                RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
-                SingleShipTemplateSub,
-            },
             Mode, PartialPlayer, Player, RecentPlayer, RecentPlayerType, Ship, ShipId,
             ShipModeStatsPair, ShipStatsCollection,
         },
