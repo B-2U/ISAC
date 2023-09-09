@@ -173,6 +173,7 @@ pub async fn fetch_ship_leaderboard(
     let mut leader_board = vec![];
 
     let get_color_value = |element: ElementRef<'_>| -> StatisticValue {
+        use either::Either::Right as F64;
         let span = element.select(&span_selector).next().unwrap();
         let color = color_re
             .captures(&span.value().attr("style").unwrap())
@@ -182,14 +183,17 @@ pub async fn fetch_ship_leaderboard(
             .as_str()
             .to_string();
         // let color = if color == "#A00DC5" { "#9d42f3" } else { color }.to_string();
+        let winrate = span
+            .text()
+            .next()
+            .unwrap()
+            .chars()
+            .filter(|c| !c.is_whitespace() && *c != '%')
+            .collect::<String>()
+            .parse::<f64>()
+            .unwrap();
         StatisticValue {
-            value: span
-                .text()
-                .next()
-                .unwrap()
-                .chars()
-                .filter(|c| !c.is_whitespace() && *c != '%')
-                .collect(),
+            value: F64(winrate),
             color,
         }
     };

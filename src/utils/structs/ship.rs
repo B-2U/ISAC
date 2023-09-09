@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fmt::Display, sync::Arc};
 
-use parking_lot::{RwLock, RwLockReadGuard};
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use serde_repr::Deserialize_repr;
@@ -188,16 +188,6 @@ impl ShipStatsCollection {
         self
     }
 
-    /// shortcut to `self.0.retain`
-    pub fn retain<P>(mut self, predicate: P) -> Self
-    where
-        Self: Sized,
-        P: FnMut(&ShipId, &mut ShipModeStatsPair) -> bool,
-    {
-        self.0.retain(predicate);
-        self
-    }
-
     /// consume Self and sort the given ships by their class
     pub fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
         let mut map: HashMap<ShipClass, ShipStatsCollection> = ShipClass::iter()
@@ -364,32 +354,45 @@ impl ShipModeStatsPair {
         expected_js: &Arc<RwLock<ExpectedJs>>,
         mode: Mode,
     ) -> Option<Statistic> {
-        let Some(s) = self.get(&mode) else {
+        let Some(stats) = self.get(&mode) else {
             return None;
         };
-        let avg = s.calc(ship_id, &expected_js.read());
-        use StatisticValueType::*;
-        let pr = avg.expected.map(|expected| {
-            let n_wr = f64::max(0.0, avg.winrate / expected.winrate - 0.7) / 0.3;
-            let n_dmg = f64::max(0.0, avg.dmg / expected.dmg - 0.4) / 0.6;
-            let n_frags = f64::max(0.0, avg.frags / expected.frags - 0.1) / 0.9;
+        let battles = stats.battles_count;
+
+        let winrate = stats.wins as f64 / battles as f64 * 100.0;
+        let dmg = stats.damage_dealt as f64 / battles as f64;
+        let frags = stats.frags as f64 / battles as f64;
+        let planes = stats.planes_killed as f64 / battles as f64;
+        let exp = stats.original_exp as f64 / battles as f64;
+        let potential = stats.art_agro as f64 / battles as f64;
+        let scout = stats.scouting_damage as f64 / battles as f64;
+        let hitrate = if stats.shots_by_main != 0 {
+            (stats.hits_by_main as f64 / stats.shots_by_main as f64 * 10000.0).round() / 100.0
+        } else {
+            0.0
+        };
+        use StatisticValueType as S;
+        let pr = expected_js.read().data.get(&ship_id.0).map(|expected| {
+            let n_wr = f64::max(0.0, winrate / expected.winrate - 0.7) / 0.3;
+            let n_dmg = f64::max(0.0, dmg / expected.dmg - 0.4) / 0.6;
+            let n_frags = f64::max(0.0, frags / expected.frags - 0.1) / 0.9;
             150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags
         });
         Some(Statistic::new(
-            avg.battles,
-            Winrate { value: avg.winrate },
-            ShipDmg {
+            battles,
+            S::Winrate { value: winrate },
+            S::ShipDmg {
                 expected_js,
-                value: avg.dmg,
+                value: dmg,
                 ship_id,
             },
-            Frags { value: avg.frags },
-            Planes { value: avg.planes },
-            Pr { value: pr },
-            Exp { value: avg.exp },
-            avg.potential.round() as u64,
-            avg.scout.round() as u64,
-            avg.hitrate,
+            S::Frags { value: frags },
+            S::Planes { value: planes },
+            S::Pr { value: pr },
+            S::Exp { value: exp },
+            potential.round() as u64,
+            scout.round() as u64,
+            hitrate,
         ))
     }
 }
@@ -443,59 +446,6 @@ pub struct ShipStats {
     scouting_damage: u64,
     shots_by_main: u64,
     hits_by_main: u64,
-}
-
-impl ShipStats {
-    /// get the datas needed for constructing [`Statistic`]
-    pub fn calc(
-        &self,
-        ship_id: &ShipId,
-        expected_js: &RwLockReadGuard<ExpectedJs>,
-    ) -> ShipStatsAvg {
-        let battles = self.battles_count;
-
-        let winrate = self.wins as f64 / battles as f64 * 100.0;
-        let dmg = self.damage_dealt as f64 / battles as f64;
-        let frags = self.frags as f64 / battles as f64;
-        let planes = self.planes_killed as f64 / battles as f64;
-        let exp = self.original_exp as f64 / battles as f64;
-        let potential = self.art_agro as f64 / battles as f64;
-        let scout = self.scouting_damage as f64 / battles as f64;
-        let hitrate = if self.shots_by_main != 0 {
-            (self.hits_by_main as f64 / self.shots_by_main as f64 * 10000.0).round() / 100.0
-        } else {
-            0.0
-        };
-        ShipStatsAvg {
-            battles,
-            winrate,
-            dmg,
-            frags,
-            planes,
-            exp,
-            potential,
-            scout,
-            hitrate,
-            expected: expected_js.data.get(&ship_id.0).copied(),
-        }
-        // two decimal places
-    }
-}
-
-// QA its actually really useless, used by only once method, and that method used only once too
-/// a struct for holding calculated [`ShipStats`]
-#[derive(Debug)]
-pub struct ShipStatsAvg {
-    battles: u64,
-    winrate: f64, // already * 100
-    dmg: f64,
-    frags: f64,
-    planes: f64,
-    exp: f64,
-    potential: f64,
-    scout: f64,
-    hitrate: f64,
-    expected: Option<ShipExpected>,
 }
 
 #[derive(Debug, Deserialize)]

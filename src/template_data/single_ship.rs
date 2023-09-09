@@ -5,9 +5,12 @@ use reqwest::Client;
 use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 
 use super::Render;
-use crate::utils::{
-    structs::{PartialClan, Player, Ship, Statistic},
-    IsacError, IsacInfo,
+use crate::{
+    utils::{
+        structs::{Mode, PartialClan, Player, Ship, ShipId, ShipModeStatsPair, Statistic},
+        IsacError, IsacInfo,
+    },
+    Context,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -55,6 +58,51 @@ impl SingleShipTemplate {
             .map_err(|_| IsacInfo::GeneralError {
                 msg: "screenshot failed".to_string(),
             })?)
+    }
+    // QA 這種方式真的算正面嗎?
+    /// a helper function to build up the structure, raise [`IsacInfo::PlayerNoBattleShip`] if the main_mode battle_counts is 0
+    pub fn new(
+        ctx: &Context<'_>,
+        ship: Ship,
+        ranking: Option<u64>,
+        suffix: String,
+        ship_id: ShipId,
+        ship_stats: ShipModeStatsPair,
+        mode: Mode,
+        clan: PartialClan,
+        player: Player,
+    ) -> Result<Self, IsacInfo> {
+        let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
+            Err(IsacInfo::PlayerNoBattleShip {
+                ign: player.ign.clone(),
+                ship_name: ship.name.clone(),
+                mode,
+            })?
+        };
+        let sub_modes = if let Mode::Rank = mode {
+            None
+        } else {
+            Some(SingleShipTemplateSub::new(
+                ship_stats
+                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Solo)
+                    .unwrap_or_default(),
+                ship_stats
+                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div2)
+                    .unwrap_or_default(),
+                ship_stats
+                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div3)
+                    .unwrap_or_default(),
+            ))
+        };
+        Ok(SingleShipTemplate {
+            ship,
+            ranking,
+            suffix,
+            main_mode,
+            sub_modes,
+            clan,
+            user: player,
+        })
     }
 }
 

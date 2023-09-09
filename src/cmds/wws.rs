@@ -8,7 +8,7 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
     template_data::{
         OverallTemplate, OverallTemplateClass, OverallTemplateDiv, OverallTemplateTier, Render,
-        SingleShipTemplate, SingleShipTemplateSub,
+        SingleShipTemplate,
     },
     utils::{
         structs::{Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic},
@@ -112,28 +112,7 @@ async fn func_ship(
     let player = partial_player.get_player(&api).await?;
     let clan = player.clan(&api).await?;
     let (ship_id, ship_stats) = player.single_ship(&api, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
-    let Some(stats) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
-        Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
-            ign: player.ign.clone(),
-            ship_name: ship.name.clone(),
-            mode,
-        }))?
-    };
-    let sub_modes = if let Mode::Rank = mode {
-        None
-    } else {
-        Some(SingleShipTemplateSub::new(
-            ship_stats
-                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Solo)
-                .unwrap_or_default(),
-            ship_stats
-                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div2)
-                .unwrap_or_default(),
-            ship_stats
-                .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div3)
-                .unwrap_or_default(),
-        ))
-    };
+
     // getting player rank in the leaderboard
     let ranking = ctx
         .data()
@@ -148,15 +127,17 @@ async fn func_ship(
                 .map(|p| p.rank)
         });
 
-    let data = SingleShipTemplate {
+    let data = SingleShipTemplate::new(
+        ctx,
         ship,
         ranking,
-        suffix: mode.render_name().to_string(),
-        main_mode: stats,
-        sub_modes,
+        mode.render_name().to_string(),
+        ship_id,
+        ship_stats,
+        mode,
         clan,
-        user: player,
-    };
+        player,
+    )?;
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
         .send(|b| {
