@@ -22,7 +22,6 @@ pub async fn background(
             msg: "".to_string(),
         }))?
     }
-    // QA shorter way to deal with this? as_ref()
     if !file
         .content_type
         .as_ref()

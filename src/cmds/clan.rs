@@ -217,7 +217,6 @@ async fn func_clan_season(
         .ratings
         .take()
         .ok_or(IsacError::Info(IsacInfo::ClanNoBattle {
-            // QA 這裡不clone會報moved value, rust analyzer 缺陷?
             clan: partial_clan.clone(),
             season: season_num,
         }))?

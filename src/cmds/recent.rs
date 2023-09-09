@@ -126,7 +126,6 @@ async fn func_recent(
         false => 30_u64,
     };
     let player = partial_player.get_player(&api).await?;
-    // QA making a custom filter, better way...? and I have to call as_ref() beloweds
     let filter = specific_ship
         .as_ref()
         .map(|ship| |ship_id: &ShipId, _v: &mut ShipModeStatsPair| ship_id == &ship.ship_id);
