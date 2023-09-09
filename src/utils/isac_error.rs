@@ -5,38 +5,16 @@ use crate::{
     Error,
 };
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum IsacError {
-    Help(IsacHelp),
-    Info(IsacInfo),
+    #[error("IsacError: {0}")]
+    Help(#[from] IsacHelp),
+    #[error("IsacError: {0}")]
+    Info(#[from] IsacInfo),
+    #[error("IsacError: Cancelled")]
     Cancelled,
-    UnknownError(Error),
-}
-
-impl std::error::Error for IsacError {}
-
-impl From<IsacHelp> for IsacError {
-    fn from(value: IsacHelp) -> Self {
-        Self::Help(value)
-    }
-}
-
-impl From<IsacInfo> for IsacError {
-    fn from(value: IsacInfo) -> Self {
-        Self::Info(value)
-    }
-}
-
-impl From<Error> for IsacError {
-    fn from(err: Error) -> Self {
-        IsacError::UnknownError(err)
-    }
-}
-
-impl fmt::Display for IsacError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "IsacError")
-    }
+    #[error("IsacError: {0}")]
+    UnknownError(#[from] Error),
 }
 
 #[derive(Debug, strum::Display, thiserror::Error)]
