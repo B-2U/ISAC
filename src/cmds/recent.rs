@@ -12,7 +12,6 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
     template_data::{
         RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
-        SingleShipTemplateSub,
     },
     utils::{
         structs::{
@@ -128,16 +127,22 @@ async fn func_recent(
     };
     let player = partial_player.get_player(&api).await?;
     // QA making a custom filter, better way...? and I have to call as_ref() beloweds
-    let filter: Box<dyn Fn(&ShipId, &mut ShipModeStatsPair) -> bool + Send + Sync> =
-        if let Some(ship) = specific_ship.as_ref() {
-            Box::new(move |k, _v| k == &ship.ship_id)
-        } else {
-            Box::new(|_k, _v| true)
-        };
+    let filter = specific_ship
+        .as_ref()
+        .map(|ship| |ship_id: &ShipId, _v: &mut ShipModeStatsPair| ship_id == &ship.ship_id);
 
-    let current_ships = partial_player.all_ships(&api).await?;
+    // let filter: Box<dyn Fn(&ShipId, &mut ShipModeStatsPair) -> bool + Send + Sync> =
+    //     if let Some(ship) = specific_ship.as_ref() {
+    //         Box::new(move |k, _v| k == &ship.ship_id)
+    //     } else {
+    //         Box::new(|_k, _v| true)
+    //     };
+
+    let mut current_ships = partial_player.all_ships(&api).await?;
     let (is_new, is_active, player_data) = load_player(&player, &current_ships).await;
-    let current_ships_filted = current_ships.retain(filter.as_ref());
+    if let Some(f) = filter {
+        current_ships.0.retain(f);
+    }
     if is_new {
         let msg = format!(
             "`{}` wasn't in the database, please play a game then try the command again",
@@ -172,9 +177,12 @@ async fn func_recent(
             player_data
                 .get_date(&target_time)
                 .await
-                .and_then(|(exact_time, old_ships)| {
-                    current_ships_filted
-                        .compare(old_ships.retain(filter.as_ref()))
+                .and_then(|(exact_time, mut old_ships)| {
+                    if let Some(f) = filter {
+                        old_ships.0.retain(f);
+                    }
+                    current_ships
+                        .compare(old_ships)
                         .map(|stats| (exact_time, stats))
                 })
         {
@@ -196,6 +204,7 @@ async fn func_recent(
             }
         }
     };
+    // got the history, constructing template data
     let _typing2 = ctx.typing().await;
     // parsing and render
     let expected_js = &ctx.data().expected_js;
@@ -203,41 +212,22 @@ async fn func_recent(
     // QA 這個超大的if else感覺好糟...
     let img = if let Some(ship) = specific_ship.as_ref() {
         // recent ship
-        let ship_stats = stats
+        let (ship_id, ship_stats) = stats
             .0
-            .remove(&ship.ship_id)
+            .remove_entry(&ship.ship_id)
             .expect("it should not be None");
-        let Some(main_mode) = ship_stats.to_statistic(&ship.ship_id, &ctx.data().expected_js, mode) else {
-            Err(IsacError::Info(IsacInfo::PlayerNoBattleShip {
-                ign: player.ign.clone(),
-                ship_name: ship.name.clone(),
-                mode,
-            }))?
-        };
-        let sub_modes = if let Mode::Rank = mode {
-            None
-        } else {
-            Some(SingleShipTemplateSub::new(
-                ship_stats
-                    .to_statistic(&ship.ship_id, expected_js, Mode::Solo)
-                    .unwrap_or_default(),
-                ship_stats
-                    .to_statistic(&ship.ship_id, expected_js, Mode::Div2)
-                    .unwrap_or_default(),
-                ship_stats
-                    .to_statistic(&ship.ship_id, expected_js, Mode::Div3)
-                    .unwrap_or_default(),
-            ))
-        };
-        let data = SingleShipTemplate {
-            ship: ship.clone(),
-            ranking: None,
-            suffix: format!("({} days) {}", exact_day, mode.render_name()),
-            main_mode,
-            sub_modes,
+
+        let data = SingleShipTemplate::new(
+            ctx,
+            ship.clone(),
+            None,
+            format!("({} days) {}", exact_day, mode.render_name()),
+            ship_id,
+            ship_stats,
+            mode,
             clan,
-            user: player,
-        };
+            player,
+        )?;
         data.render(&ctx.data().client).await?
     } else {
         // recent all
