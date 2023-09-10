@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashSet, sync::Arc};
+use std::{borrow::Cow, sync::Arc};
 
 use chrono::NaiveDate;
 use poise::{
@@ -18,7 +18,7 @@ use crate::{
     utils::{
         structs::{PartialPlayer, Region, Ship},
         wws_api::WowsApi,
-        IsacError,
+        IsacError, IsacInfo,
     },
     Context, Data, Error,
 };
@@ -130,10 +130,12 @@ impl<'a> BonusView<'a> {
 }
 
 #[poise::command(prefix_command)]
-pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
-    let mut args = args.unwrap_or_default();
-    let player = args.parse_user(&ctx).await?;
+pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let _typing = ctx.typing().await;
+    let api = WowsApi::new(&ctx);
+    let player = args.parse_user(&ctx).await?;
+    // this is just for rasing error when player profile is hidden
+    let _ = player.get_player(&api).await?;
     let res_text = ctx
         .data()
         .client
@@ -142,8 +144,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
         .await?
         .text()
         .await?;
-    let record_clans_uid =
-        _rename_parse_player(res_text).map_err(|err| IsacError::UnknownError(err))?;
+    let record_clans_uid = _rename_parse_player(res_text)?;
 
     let mut name_history = vec![];
     for clan_uid in record_clans_uid {
@@ -198,7 +199,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), 
     Ok(())
 }
 
-fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<HashSet<u64>, Error> {
+fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, IsacError> {
     let html = Html::parse_document(html_text.as_ref());
 
     let table_selector = Selector::parse(".table-styled").unwrap();
@@ -210,7 +211,9 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<HashSet<u64>, Erro
     let target_table = match tables.len() {
         1 => tables[0],
         2 => tables[1],
-        _ => Err("target_table.len() is not 1 or 2")?,
+        _ => Err(IsacInfo::GeneralError {
+            msg: "No transfer history".to_string(),
+        })?,
     };
     let cells_selector = Selector::parse("tr").unwrap();
     let a_selector = Selector::parse("a").unwrap();
