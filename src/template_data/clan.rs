@@ -35,20 +35,6 @@ pub struct ClanTemplateSeason {
     pub max: ClanTemplateSeasonValue,
 }
 
-impl ClanTemplateSeason {
-    /// make a default data with given season
-    pub fn default_season(season_num: u32) -> Self {
-        Self {
-            season: season_num,
-            battles: Default::default(),
-            winrate: Default::default(),
-            win_streak: Default::default(),
-            now: Default::default(),
-            max: Default::default(),
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Default)]
 pub struct ClanTemplateSeasonValue {
     pub color: String, // hex color, from the league

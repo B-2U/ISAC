@@ -22,7 +22,7 @@ use crate::{
         ClanTemplateStats, ClanTemplateWrDis, Render,
     },
     utils::{
-        structs::{ClanMember, PartialClan, StatisticValueType},
+        structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
     },
@@ -167,7 +167,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     // fill the missing seasons
     let missing_seasons = ((current_season_num - 3)..=current_season_num)
         .filter(|season| !clan_seasons.iter().any(|s| s.season == *season))
-        .map(|season| ClanTemplateSeason::default_season(season))
+        .map(|season| ClanStatsSeason::default_season(season).into())
         .collect::<Vec<_>>();
 
     if !missing_seasons.is_empty() {
@@ -212,7 +212,7 @@ async fn func_clan_season(
         .clan_members(&api, Some("cvc"), Some(season_num))
         .await?;
     // filter out the latest season ratings
-    let ratings = clan_members
+    let mut ratings = clan_members
         .avg
         .ratings
         .take()
@@ -224,11 +224,13 @@ async fn func_clan_season(
         .filter(|m| m.season_number == season_num)
         .collect::<Vec<_>>();
     // early return if there's no rating
-    if ratings.len() < 2 {
-        Err(IsacError::Info(IsacInfo::ClanNoBattle {
+    match ratings.len() {
+        0 => Err(IsacError::Info(IsacInfo::ClanNoBattle {
             clan: partial_clan.clone(),
             season: season_num,
-        }))?
+        }))?,
+        1 => ratings.push(ClanStatsSeason::default_season(season_num)),
+        _ => (),
     }
     let filtered_members = clan_members
         .items

@@ -160,6 +160,22 @@ pub struct ClanStatsSeason {
     pub team_number: u8,             // should be only 1 or 2
     pub is_best_season_rating: bool, // 2 teams, 1 true 1 false
 }
+impl ClanStatsSeason {
+    /// make a default data with given season
+    pub fn default_season(season_num: u32) -> Self {
+        Self {
+            now: Default::default(),
+            max: Default::default(),
+            battles_count: 0,
+            wins_count: 0,
+            current_winning_streak: 0,
+            longest_winning_streak: 0,
+            season_number: season_num,
+            team_number: 0,
+            is_best_season_rating: false,
+        }
+    }
+}
 
 impl From<ClanStatsSeason> for ClanTemplateSeason {
     fn from(v: ClanStatsSeason) -> Self {
@@ -177,7 +193,7 @@ impl From<ClanStatsSeason> for ClanTemplateSeason {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Hash, Default)]
 pub struct ClanStatsRating {
     pub league: ClanLeague,     // 0, 1, 2, 3, 4
     pub division: ClanDivision, // 1, 2, 3
