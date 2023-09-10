@@ -71,7 +71,7 @@ impl SingleShipTemplate {
         mode: Mode,
         clan: Option<PartialClan>,
         player: Player,
-    ) -> Result<Self, IsacInfo> {
+    ) -> Result<Self, IsacError> {
         let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
             Err(IsacInfo::PlayerNoBattleShip {
                 ign: player.ign.clone(),
