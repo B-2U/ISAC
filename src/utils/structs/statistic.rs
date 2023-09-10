@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use either::Either;
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -52,7 +51,7 @@ impl Statistic {
 // QA value actually can be u64 or f64, better way than String?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
-    pub value: Either<u64, f64>,
+    pub value: String,
     pub color: String, // hex color code in string
 }
 
@@ -75,7 +74,7 @@ impl StatisticValue {
 impl Default for StatisticValue {
     fn default() -> Self {
         Self {
-            value: Either::Left(0),
+            value: "0".to_string(),
             color: "#999999".to_string(),
         }
     }
@@ -110,7 +109,6 @@ pub enum StatisticValueType<'a> {
 }
 impl From<StatisticValueType<'_>> for StatisticValue {
     fn from(value: StatisticValueType<'_>) -> StatisticValue {
-        use either::Either::{Left as U64, Right as F64};
         let (value, color) = match value {
             StatisticValueType::Winrate { value } => {
                 const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
@@ -130,7 +128,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
                     .unwrap_or("#fff");
-                (F64(Self::_round_2(value)), color.to_string())
+                (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Frags { value } => {
                 const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
@@ -148,7 +146,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
                     .unwrap_or("#fff");
-                (F64(Self::_round_2(value)), color.to_string())
+                (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Planes { value } => {
                 const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
@@ -166,7 +164,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
                     .unwrap_or("#fff");
-                (F64(Self::_round_2(value)), color.to_string())
+                (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Pr { value } => {
                 const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
@@ -187,9 +185,9 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                         .find(|(v, _)| &(value as i64) >= v)
                         .map(|(_, color)| *color)
                         .unwrap_or("#fff");
-                    (U64(Self::_round_int(value)), color.to_string())
+                    (Self::_round_int(value).to_string(), color.to_string())
                 } else {
-                    (U64(0), "#999999".to_string())
+                    (0.to_string(), "#999999".to_string())
                 }
             }
             StatisticValueType::OverallDmg { value } => {
@@ -208,7 +206,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     .find(|(v, _)| &(value as i64) >= v)
                     .map(|(_, color)| *color)
                     .unwrap_or("#fff");
-                (U64(Self::_round_int(value)), color.to_string())
+                (Self::_round_int(value).to_string(), color.to_string())
             }
             StatisticValueType::ShipDmg {
                 expected_js,
@@ -235,7 +233,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     "999999" // ship doesn't have expected value yet
                 };
 
-                (U64(Self::_round_int(value)), color.to_string())
+                (Self::_round_int(value).to_string(), color.to_string())
             }
             StatisticValueType::Exp { value } => {
                 const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
@@ -255,7 +253,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     .find(|(v, _)| &(value as i64) >= v)
                     .map(|(_, color)| *color)
                     .unwrap_or("#fff");
-                (U64(Self::_round_int(value)), color.to_string())
+                (Self::_round_int(value).to_string(), color.to_string())
             }
         };
         StatisticValue { value, color }
