@@ -182,7 +182,9 @@
                         <img src="{{user.dogtag}}" onerror="this.style.display='none'">
                         <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
                     </div>
+                    {{#clan}}
                     <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    {{/clan}}
                     <span class="user-id">{{user.ign}}</span>
                     <span class="region-box">{{user.region}}</span>
                 </div>
