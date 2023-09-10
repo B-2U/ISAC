@@ -26,6 +26,9 @@ pub enum IsacInfo {
     UserNotLinked {
         user_name: Option<String>, // give None if its author himself
     },
+    UserNoClan {
+        user_name: Option<String>, // give None if its author himself
+    },
     TooShortIgn {
         ign: String,
     },
@@ -85,6 +88,12 @@ impl Display for IsacInfo {
                     format!("**{user_name}** haven't linked to any wows account yet")
                 }
                 None => "You haven't linked your account yet.\nEnter `/link`".to_string(),
+            },
+            IsacInfo::UserNoClan { user_name } => match user_name.as_ref() {
+                Some(user_name) => {
+                    format!("**{user_name}** is not in a clan")
+                }
+                None => "You are not in a clan".to_string(),
             },
             IsacInfo::TooShortIgn { ign } => {
                 format!("❌ At least 3 charactars for ign searching: `{ign}`")

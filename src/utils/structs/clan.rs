@@ -57,7 +57,7 @@ impl PartialClan {
         api.clan_members(self.region, self.id, mode, season).await
     }
 
-    pub fn parse(json: Value, region: Region) -> Result<Self, IsacError> {
+    pub fn parse(json: Value, region: Region) -> Result<Option<Self>, IsacError> {
         fn err(s: impl AsRef<str>) -> IsacInfo {
             IsacInfo::APIError {
                 msg: s.as_ref().into(),
@@ -76,7 +76,7 @@ impl PartialClan {
         // not in a clan
         let clan_id = match clan_id.is_u64() {
             true => clan_id.as_u64().ok_or(err("clan_id convert failed"))?,
-            false => return Ok(PartialClan::default()),
+            false => return Ok(None),
         };
 
         let third_layer = sec_layer.get("clan").unwrap();
@@ -97,13 +97,13 @@ impl PartialClan {
         //     .and_then(|f| f.as_u64())
         //     .unwrap();
 
-        Ok(PartialClan {
+        Ok(Some(PartialClan {
             tag: tag.to_string(),
             color: Self::decimal_to_hex(color),
             id: clan_id,
             name: name.to_string(),
             region,
-        })
+        }))
     }
 }
 

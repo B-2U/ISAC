@@ -94,7 +94,12 @@ impl Args {
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    linked_user.clan(&api).await
+                    linked_user.clan(&api).await?.ok_or(
+                        IsacInfo::UserNoClan {
+                            user_name: Some(user.name),
+                        }
+                        .into(),
+                    )
                 }
                 None => Err(IsacInfo::UserNotLinked {
                     user_name: Some(user.name.clone()),
@@ -105,7 +110,10 @@ impl Args {
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    linked_user.clan(&api).await
+                    linked_user
+                        .clan(&api)
+                        .await?
+                        .ok_or(IsacInfo::UserNoClan { user_name: None }.into())
                 }
                 None => {
                     return Err(IsacInfo::UserNotLinked { user_name: None })?;

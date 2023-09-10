@@ -5,7 +5,7 @@ use crate::utils::structs::{Mode, PartialClan, Player, Ship, Statistic};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RecentTemplate {
-    pub clan: PartialClan,
+    pub clan: Option<PartialClan>,
     pub user: Player,
     pub ships: Vec<RecentTemplateShip>,
     pub day: u64,       // the exact_day

@@ -107,11 +107,11 @@ impl<'a> WowsApi<'a> {
         &self,
         region: &Region,
         player_uid: u64,
-    ) -> Result<PartialClan, IsacError> {
+    ) -> Result<Option<PartialClan>, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"))?;
         // again, custom parsing? test url: https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
         let js_value = self._get(url).await?.json::<Value>().await.unwrap();
-        Ok(PartialClan::parse(js_value, *region)?) // will return a default clan if the player is not in any clan
+        PartialClan::parse(js_value, *region)
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still

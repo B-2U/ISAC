@@ -22,7 +22,7 @@ pub struct SingleShipTemplate {
     pub main_mode: Statistic,
     #[serde(serialize_with = "serialize_sub_modes")]
     pub sub_modes: Option<SingleShipTemplateSub>,
-    pub clan: PartialClan,
+    pub clan: Option<PartialClan>,
     pub user: Player,
 }
 impl Render for SingleShipTemplate {
@@ -69,7 +69,7 @@ impl SingleShipTemplate {
         ship_id: ShipId,
         ship_stats: ShipModeStatsPair,
         mode: Mode,
-        clan: PartialClan,
+        clan: Option<PartialClan>,
         player: Player,
     ) -> Result<Self, IsacInfo> {
         let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {

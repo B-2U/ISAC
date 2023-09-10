@@ -35,7 +35,7 @@ impl PartialPlayer {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
     /// player's clan data, only error when request or api issue
-    pub async fn clan(&self, api: &WowsApi<'_>) -> Result<PartialClan, IsacError> {
+    pub async fn clan(&self, api: &WowsApi<'_>) -> Result<Option<PartialClan>, IsacError> {
         api.player_clan(&self.region, self.uid).await
     }
     /// all ships' statistics

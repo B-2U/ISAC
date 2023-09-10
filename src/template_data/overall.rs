@@ -14,7 +14,7 @@ pub struct OverallTemplate {
     pub div: OverallTemplateDiv,
     pub tier: OverallTemplateTier,
     pub class: OverallTemplateClass,
-    pub clan: PartialClan,
+    pub clan: Option<PartialClan>,
     pub user: Player,
 }
 
