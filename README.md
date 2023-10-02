@@ -1,6 +1,6 @@
 ![](https://i.imgur.com/YT4ZlZc.png)
 
-**English** | [中文](https://github.com/B-2U/ISAC---wws-stats-bot/blob/main/README_zh.md) | [日本語](https://github.com/B-2U/ISAC---wws-stats-bot/blob/main/README_ja.md)
+**English** | [中文](https://github.com/B-2U/ISAC/blob/master/README_zh.md) | [日本語](https://github.com/B-2U/ISAC/blob/master/README_ja.md)
 
 ## A World of Warships stats discord bot
 
