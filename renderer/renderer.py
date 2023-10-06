@@ -19,27 +19,27 @@ app = Quart(__name__)
 
 
 # some numbers like clan_id get formatted too, but it's fine since we don't need them here
-def format_big_num_with_commas(value):
-    if isinstance(value, dict):
-        return {k: format_big_num_with_commas(v) for k, v in value.items()}
-    elif isinstance(value, list):
-        return [format_big_num_with_commas(item) for item in value]
-    # transfer str int to int first
-    elif isinstance(value, str):
-        if value.isdecimal():
-            value = int(value)
-        else:
-            return value
-    if isinstance(value, int):
-        if value > 0:
-            digits = int(math.log10(value)) + 1
-        elif value == 0:
-            digits = 1
-        else:
-            digits = int(math.log10(-value)) + 1
-        return "{:,}".format(value) if digits >= 5 else value
+# def format_big_num_with_commas(value):
+#     if isinstance(value, dict):
+#         return {k: format_big_num_with_commas(v) for k, v in value.items()}
+#     elif isinstance(value, list):
+#         return [format_big_num_with_commas(item) for item in value]
+#     # transfer str int to int first
+#     elif isinstance(value, str):
+#         if value.isdecimal():
+#             value = int(value)
+#         else:
+#             return value
+#     if isinstance(value, int):
+#         if value > 0:
+#             digits = int(math.log10(value)) + 1
+#         elif value == 0:
+#             digits = 1
+#         else:
+#             digits = int(math.log10(-value)) + 1
+#         return "{:,}".format(value) if digits >= 5 else value
 
-    return value
+#     return value
 
 
 def render_html(template_path: str, data: dict) -> str:
@@ -47,7 +47,7 @@ def render_html(template_path: str, data: dict) -> str:
         # json for debug
         with open(f"{template_path}.json", "w", encoding="UTF-8") as f:
             json.dump(data, f, indent=2)
-    data = format_big_num_with_commas(data)
+    # data = format_big_num_with_commas(data)
     return html_renderer.render_path(template_path, data)
 
 
