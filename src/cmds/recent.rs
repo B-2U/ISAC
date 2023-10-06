@@ -36,7 +36,7 @@ pub fn recent_hybrid() -> poise::Command<Data, Error> {
 }
 
 /// Last X days stats
-#[poise::command(slash_command)]
+#[poise::command(slash_command, user_cooldown = 5)]
 pub async fn recent(
     ctx: Context<'_>,
     #[description = "player's ign, default: yourself"]

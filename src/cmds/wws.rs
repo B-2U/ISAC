@@ -27,7 +27,7 @@ pub fn wws_hybrid() -> poise::Command<Data, Error> {
 }
 
 /// Account overall / Specific warship's stats
-#[poise::command(slash_command)]
+#[poise::command(slash_command, user_cooldown = 5)]
 pub async fn wws(
     ctx: Context<'_>,
     #[description = "specific warship, default: account's overall stats"]
