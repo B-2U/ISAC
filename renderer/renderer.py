@@ -76,9 +76,7 @@ async def return_png(bin: io.BytesIO) -> Response:
 async def overall():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/overall.hbs", data)
-    t = time.time()
     img = await renderer.screenshot(html)
-    print(time.time() - t)
     return await return_png(img)
 
 
