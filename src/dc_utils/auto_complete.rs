@@ -107,6 +107,7 @@ pub async fn clan(
     ctx: Context<'_>,
     input: &str,
 ) -> impl Iterator<Item = poise::AutocompleteChoice<String>> {
+    let input: Vec<&str> = input.split_whitespace().collect();
     if input.is_empty() {
         vec![
             (
@@ -139,7 +140,6 @@ pub async fn clan(
         .collect::<Vec<_>>()
         .into_iter()
     } else {
-        let input: Vec<&str> = input.split_whitespace().collect();
         let (region, clan_name) = match input.len() {
             0 => unreachable!(
                 "this should never happen, since we already deal with input.is_empty() aboved"
