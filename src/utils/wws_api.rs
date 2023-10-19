@@ -66,8 +66,12 @@ impl<'a> WowsApi<'a> {
                 ign: ign.to_string(),
             })?
         }
-        let Ok(url) = region.vortex_url(format!("/api/accounts/search/autocomplete/{ign}/?limit={limit}")) else {
-            Err(IsacInfo::InvalidIgn { ign: ign.to_string() })?
+        let Ok(url) = region.vortex_url(format!(
+            "/api/accounts/search/autocomplete/{ign}/?limit={limit}"
+        )) else {
+            Err(IsacInfo::InvalidIgn {
+                ign: ign.to_string(),
+            })?
         };
         let res = self
             ._get(url)
@@ -84,8 +88,12 @@ impl<'a> WowsApi<'a> {
         region: &Region,
         clan_name: &str,
     ) -> Result<Vec<PartialClan>, IsacError> {
-        let Ok(url) = region.clan_url(format!("/api/search/autocomplete/?search={clan_name}&type=clans")) else {
-            Err(IsacInfo::InvalidClan { clan: clan_name.to_string() })?
+        let Ok(url) = region.clan_url(format!(
+            "/api/search/autocomplete/?search={clan_name}&type=clans"
+        )) else {
+            Err(IsacInfo::InvalidClan {
+                clan: clan_name.to_string(),
+            })?
         };
         let mut res = self._get(url).await?.json::<ClanSearchRes>().await.unwrap();
         let clans = res.search_autocomplete_result.take().map(|clan| {

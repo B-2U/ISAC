@@ -160,7 +160,9 @@ pub async fn fetch_ship_leaderboard(
     // Find the ranking table
     let table_selector = Selector::parse(".ranking-table").unwrap();
     let Some(table) = html.select(&table_selector).skip(5).next() else {
-        Err(IsacInfo::GeneralError { msg: format!("❌ No one on the leaderboard of `{}` yet", ship.name) })?
+        Err(IsacInfo::GeneralError {
+            msg: format!("❌ No one on the leaderboard of `{}` yet", ship.name),
+        })?
     };
 
     // Parse cells in the table

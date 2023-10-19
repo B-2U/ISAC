@@ -85,8 +85,14 @@ impl Player {
     /// parsing player from returned json
     pub async fn parse(data: &Data, region: Region, input: Value) -> Result<Player, IsacError> {
         let first_layer = input.as_object().unwrap();
-        let "ok" = first_layer.get("status").and_then(|f|f.as_str()).unwrap() else {
-            Err(IsacInfo::APIError { msg: first_layer.get("error").and_then(|f| f.as_str()).unwrap().to_string() })?
+        let "ok" = first_layer.get("status").and_then(|f| f.as_str()).unwrap() else {
+            Err(IsacInfo::APIError {
+                msg: first_layer
+                    .get("error")
+                    .and_then(|f| f.as_str())
+                    .unwrap()
+                    .to_string(),
+            })?
         };
         let (uid, sec_layer) = first_layer
             .get("data")
