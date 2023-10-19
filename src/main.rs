@@ -1,3 +1,6 @@
+// Using enum unqualified is bad form. See https://youtu.be/8j_FbjiowvE?t=97.
+#![deny(clippy::enum_glob_use)]
+
 mod cmds;
 use cmds::*;
 mod dc_utils;

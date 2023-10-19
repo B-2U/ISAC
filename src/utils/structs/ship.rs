@@ -274,23 +274,23 @@ impl ShipStatsCollection {
         if battles == 0 {
             return None;
         };
-        use StatisticValueType::*;
-        let winrate = Winrate {
+        use StatisticValueType as S;
+        let winrate = S::Winrate {
             value: ttl_wins as f64 / battles as f64 * 100.0,
         };
-        let dmg = OverallDmg {
+        let dmg = S::OverallDmg {
             value: ttl_dmg as f64 / battles as f64,
         };
-        let frags = Frags {
+        let frags = S::Frags {
             value: ttl_frags as f64 / battles as f64,
         };
-        let planes = Planes {
+        let planes = S::Planes {
             value: ttl_planes as f64 / battles as f64,
         };
-        let exp: StatisticValueType<'_> = Exp {
+        let exp: StatisticValueType<'_> = S::Exp {
             value: ttl_exp as f64 / battles as f64,
         };
-        let pr = Pr {
+        let pr = S::Pr {
             value: {
                 let n_wr = f64::max(0.0, ttl_wins as f64 / exp_ttl_wins - 0.7) / 0.3;
                 let n_dmg = f64::max(0.0, ttl_dmg as f64 / exp_ttl_dmg - 0.4) / 0.6;
