@@ -28,6 +28,7 @@ pub enum ShipClass {
     CV,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, Deserialize_repr, Serialize, EnumIter, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum ShipTier {
@@ -93,14 +94,8 @@ impl Display for Ship {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct ShipStatsCollection(pub HashMap<ShipId, ShipModeStatsPair>);
-
-impl Default for ShipStatsCollection {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
 
 impl TryFrom<VortexShipResponse> for ShipStatsCollection {
     type Error = IsacError;
@@ -113,10 +108,10 @@ impl TryFrom<VortexShipResponse> for ShipStatsCollection {
             msg: "expected PlayerStats".to_owned(),
         })?;
         if player_stats.hidden_profile.is_some() || player_stats.statistics.is_none() {
-            return Err(IsacInfo::PlayerHidden {
+            Err(IsacInfo::PlayerHidden {
                 ign: player_stats.name.clone(),
             }
-            .into());
+            .into())
         } else {
             Ok(player_stats.statistics.take().unwrap()) // the if `statistics.is_none()` above already handle the None possibility
         }
@@ -127,7 +122,7 @@ impl ShipStatsCollection {
     /// merging the responses from vortex
     pub fn merge(mut self, mut other: Self) -> Self {
         for (ship_id, main_pair) in self.0.iter_mut() {
-            if let Some(sub_pair) = other.0.remove(&ship_id) {
+            if let Some(sub_pair) = other.0.remove(ship_id) {
                 main_pair.0.extend(sub_pair.0)
             }
         }
@@ -334,13 +329,8 @@ impl Display for ShipId {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(try_from = "JsonValue")]
+#[derive(Default)]
 pub struct ShipModeStatsPair(pub HashMap<Mode, ShipStats>);
-
-impl Default for ShipModeStatsPair {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
 
 impl ShipModeStatsPair {
     /// a shorcut of `self.0.get

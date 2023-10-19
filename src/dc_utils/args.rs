@@ -1,4 +1,4 @@
-use std::{str::FromStr, time::Duration};
+use std::{fmt::Write, str::FromStr, time::Duration};
 
 use itertools::Itertools;
 use once_cell::sync::Lazy;
@@ -232,9 +232,9 @@ impl Args {
 impl FromStr for Args {
     type Err = IsacError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        const RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""[^"]+"|\S+"#).unwrap());
+        static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""[^"]+"|\S+"#).unwrap());
         Ok(Args(
-            RE.find_iter(&input)
+            RE.find_iter(input)
                 .map(|s| s.as_str().trim_matches('"').to_string())
                 .collect(),
         ))
@@ -269,12 +269,13 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
             .name(&self.user.name)
             .icon_url(self.user.avatar_url().unwrap_or_default());
 
-        let mut msg_text = self
-            .candidates
-            .iter()
-            .enumerate()
-            .map(|(index, candidate)| format!("{} {}\n\n", self.emoji[index], candidate))
-            .collect::<String>();
+        let mut msg_text = self.candidates.iter().enumerate().fold(
+            String::new(),
+            |mut buf, (index, candidate)| {
+                let _ = writeln!(buf, "{} {}\n", self.emoji[index], candidate);
+                buf
+            },
+        );
 
         msg_text += &format!("{} None of above", self.x_emoji);
 

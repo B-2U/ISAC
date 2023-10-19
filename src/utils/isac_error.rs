@@ -130,12 +130,12 @@ impl Display for IsacInfo {
             }
             IsacInfo::ClanNoBattle { clan, season } => format!(
                 "**[{}]** ({}) did not participate in season **{}**",
-                clan.tag.replace("_", r"\_"),
+                clan.tag.replace('_', r"\_"),
                 clan.region,
                 season
             ),
             IsacInfo::NeedPremium { msg } => format!("{msg}\n{PREMIUM}"),
-            IsacInfo::EmbedPermission => format!("❌ This error means ISAC don't have to permission to send embed here, please check the **Embed Links** in the permission setting, \nOr you can just re-invite ISAC in discord to let it grant the permission"),
+            IsacInfo::EmbedPermission => "❌ This error means ISAC don't have to permission to send embed here, please check the **Embed Links** in the permission setting, \nOr you can just re-invite ISAC in discord to let it grant the permission".to_string(),
         };
         write!(f, "{}", msg)
     }

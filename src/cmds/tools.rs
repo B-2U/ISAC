@@ -1,4 +1,4 @@
-use std::{borrow::Cow, sync::Arc};
+use std::{borrow::Cow, fmt::Write, sync::Arc};
 
 use chrono::NaiveDate;
 use poise::{
@@ -160,8 +160,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
             .await
             .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
         let text = res.text().await.unwrap();
-        name_history
-            .extend(_rename_parse_clan(text, &player).map_err(|err| IsacError::UnknownError(err))?);
+        name_history.extend(_rename_parse_clan(text, &player).map_err(IsacError::UnknownError)?);
     }
     name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
     let filtered_history: Vec<_> = name_history
@@ -182,10 +181,12 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
 
     let output = filtered_history
         .iter()
-        .map(|(date, ign)| format!("{}, {}\n", ign, date.format("%d.%m.%Y")))
-        .collect::<String>();
+        .fold(String::new(), |mut buf, (date, ign)| {
+            let _ = writeln!(buf, "{}, {}", ign, date.format("%d.%m.%Y"));
+            buf
+        });
     let output = format!("```py\n{}\n```", output);
-    if let Err(_) = ctx.reply(&output).await {
+    if ctx.reply(&output).await.is_err() {
         // the history might exceed the limit
         let _r = ctx
             .send(|b| {
@@ -224,7 +225,7 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, IsacErro
         .filter_map(|cell| {
             let _clan_href = cell
                 .select(&a_selector)
-                .nth(0)
+                .next()
                 .and_then(|f| f.value().attr("href"))?;
             clan_regex
                 .captures(_clan_href)?
@@ -394,7 +395,7 @@ impl RouletteView {
         duration: std::time::Duration,
     ) -> Result<(), Error> {
         while let Some(interaction) = msg
-            .await_component_interactions(&ctx)
+            .await_component_interactions(ctx)
             .timeout(duration)
             .author_id(author)
             .build()
@@ -455,6 +456,7 @@ pub enum RoulettePlayer {
     Three = 3,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, poise::ChoiceParameter, Clone, Copy)]
 pub enum RouletteTier {
     I = 1,

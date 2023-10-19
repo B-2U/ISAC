@@ -91,7 +91,7 @@ impl ClanTopView {
         mut msg: Message,
     ) -> Result<(), Error> {
         while let Some(interaction) = msg
-            .await_component_interactions(&ctx)
+            .await_component_interactions(ctx)
             .timeout(Duration::from_secs(60))
             .author_id(author)
             .build()
@@ -144,7 +144,7 @@ impl ClanTopView {
         for clan in res_clans {
             let name = format!(
                 "[{}]    rating: {}",
-                clan.tag.replace("_", r"\_"),
+                clan.tag.replace('_', r"\_"),
                 clan.division_rating
             );
             let timestamp = DateTime::parse_from_str(&clan.last_battle_at, "%Y-%m-%d %H:%M:%S%z")

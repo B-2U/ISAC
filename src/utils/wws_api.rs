@@ -26,7 +26,7 @@ impl<'a> WowsApi<'a> {
         Self {
             client: &ctx.data().client,
             token: &ctx.data().wg_api_token,
-            data: &ctx.data(),
+            data: ctx.data(),
         }
     }
 
@@ -98,7 +98,7 @@ impl<'a> WowsApi<'a> {
         let mut res = self._get(url).await?.json::<ClanSearchRes>().await.unwrap();
         let clans = res.search_autocomplete_result.take().map(|clan| {
             clan.into_iter()
-                .map(|c| c.to_partial_clan(*region))
+                .map(|c| c.into_partial_clan(*region))
                 .collect::<Vec<_>>()
         });
 
@@ -263,8 +263,7 @@ impl<'a> WowsApi<'a> {
             .map_err(Self::_err_wrap)?
             .json::<ClanDetailRes>()
             .await
-            .unwrap()
-            .into();
+            .unwrap();
         clan_res.data()
     }
 }
@@ -321,7 +320,7 @@ struct ClanSearchResClan {
 }
 
 impl ClanSearchResClan {
-    fn to_partial_clan(self, region: Region) -> PartialClan {
+    fn into_partial_clan(self, region: Region) -> PartialClan {
         PartialClan {
             tag: self.tag,
             color: self.hex_color,

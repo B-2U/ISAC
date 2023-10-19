@@ -29,7 +29,7 @@ impl PartialClan {
         self.region.number_url(format!(
             "/clan/{},{}/",
             self.id,
-            self.name.replace(" ", "-")
+            self.name.replace(' ', "-")
         ))
     }
 
@@ -238,6 +238,7 @@ impl ClanLeague {
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash, Default)]
 #[repr(u8)]
 pub enum ClanDivision {

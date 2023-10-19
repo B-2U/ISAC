@@ -83,7 +83,7 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    let data = Data::new();
+    let data = Data::default();
     let arc_data = data.clone();
     let bot = poise::Framework::builder()
         .token(token)
@@ -104,7 +104,7 @@ async fn main() {
         .build()
         .await
         .unwrap();
-    let shard_manager = Arc::clone(&bot.shard_manager());
+    let shard_manager = Arc::clone(bot.shard_manager());
     // QA how to gracefully shut down?
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
@@ -135,7 +135,7 @@ async fn main() {
 
 /// My custom Data, it already uses an [`Arc`] internally.
 /// well its a bit tricky, but I'm lazy to clone them before bot building one by one
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Data {
     pub inner: Arc<DataInner>,
 }
@@ -148,13 +148,6 @@ impl Deref for Data {
     }
 }
 
-impl Data {
-    pub fn new() -> Self {
-        Self {
-            inner: Arc::new(DataInner::new()),
-        }
-    }
-}
 pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<RwLock<Patrons>>,
@@ -168,8 +161,8 @@ pub struct DataInner {
     leaderboard: Mutex<ShipLeaderboard>,
 }
 
-impl DataInner {
-    fn new() -> Self {
+impl Default for DataInner {
+    fn default() -> Self {
         DataInner {
             client: reqwest::Client::new(),
             patron: Arc::new(RwLock::new(Patrons::default())),
@@ -240,10 +233,8 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
                 // QA 這種是rust底層的logging嗎 有沒有可能拿出來
                 isac_get_help(&ctx, None).await;
                 isac_err_logging(&ctx, &error.to_string().into()).await;
-            } else {
-                if let Err(e) = poise::builtins::on_error(error).await {
-                    error!("Error while handling error: {}", e)
-                }
+            } else if let Err(e) = poise::builtins::on_error(error).await {
+                error!("Error while handling error: {}", e)
             }
         }
     }

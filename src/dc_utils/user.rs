@@ -37,7 +37,7 @@ pub trait UserAddon: Sized {
         ctx.http()
             .get_member(guild_id.0, ctx.author().id.0)
             .await?
-            .permissions(&ctx.cache().ok_or::<Error>("get cache failed".into())?)
+            .permissions(ctx.cache().ok_or::<Error>("get cache failed".into())?)
             .map_err(|err| err.into())
     }
 }

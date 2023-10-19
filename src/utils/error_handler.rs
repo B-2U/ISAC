@@ -32,8 +32,8 @@ pub async fn isac_err_handler(ctx: &Context<'_>, error: &IsacError) {
         }
         IsacError::Cancelled => (),
         IsacError::UnknownError(err) => {
-            isac_err_logging(&ctx, err).await;
-            isac_get_help(&ctx, None).await
+            isac_err_logging(ctx, err).await;
+            isac_get_help(ctx, None).await
         }
     };
 }

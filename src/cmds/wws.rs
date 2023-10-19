@@ -177,7 +177,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
     );
     let class: OverallTemplateClass = ships
         .clone()
-        .sort_class(&ctx)
+        .sort_class(ctx)
         .into_iter()
         .map(|(class, ships)| {
             (
@@ -190,7 +190,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         .collect::<HashMap<ShipClass, Statistic>>()
         .into();
     let tier: OverallTemplateTier = ships
-        .sort_tier(&ctx)
+        .sort_tier(ctx)
         .into_iter()
         .map(|(class, ships)| {
             (

@@ -159,7 +159,7 @@ pub async fn fetch_ship_leaderboard(
     let html = Html::parse_document(&res_text);
     // Find the ranking table
     let table_selector = Selector::parse(".ranking-table").unwrap();
-    let Some(table) = html.select(&table_selector).skip(5).next() else {
+    let Some(table) = html.select(&table_selector).nth(5) else {
         Err(IsacInfo::GeneralError {
             msg: format!("❌ No one on the leaderboard of `{}` yet", ship.name),
         })?
@@ -179,7 +179,7 @@ pub async fn fetch_ship_leaderboard(
     let get_color_value = |element: ElementRef<'_>| -> StatisticValue {
         let span = element.select(&span_selector).next().unwrap();
         let color = color_re
-            .captures(&span.value().attr("style").unwrap())
+            .captures(span.value().attr("style").unwrap())
             .unwrap()
             .get(0)
             .unwrap()
@@ -226,7 +226,7 @@ pub async fn fetch_ship_leaderboard(
         let (clan, (uid, ign)) = if value_1.len() == 2 {
             let clan = value_1[0].text().collect::<String>();
             let value = value_1[1].value();
-            (clan, get_uid_and_ign(&value))
+            (clan, get_uid_and_ign(value))
         } else {
             ("".to_string(), get_uid_and_ign(value_1[0].value()))
         };
