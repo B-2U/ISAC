@@ -25,13 +25,14 @@ pub async fn ship(
 }
 
 /// return a serialized [`PartialPlayer`] struct
-pub async fn player(
-    ctx: Context<'_>,
-    input: &str,
-) -> impl Iterator<Item = poise::AutocompleteChoice<String>> {
+pub async fn player(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoice<String>> {
     let input: Vec<&str> = input.split_whitespace().collect();
-    if input.is_empty() {
-        vec![
+    let Some((region, ign)) = (match input.len() {
+        0 => None,
+        1 => Some((Region::Asia, input[0])),
+        _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
+    }) else {
+        return [
             (
                 "Usage: <region(optional)> <ign>",
                 PartialPlayer {
@@ -73,43 +74,34 @@ pub async fn player(
             name: name.to_string(),
             value: serde_json::to_string(&value).unwrap(),
         })
-        .collect::<Vec<_>>()
+        .collect();
+    };
+    let api = WowsApi::new(&ctx);
+    let candidates = api.players(&region, ign, 8).await.unwrap_or_default();
+    candidates
         .into_iter()
-    } else {
-        let (region, ign) = match input.len() {
-            0 => unreachable!(
-                "this should never happen, since we already deal with input.is_empty() aboved"
-            ),
-            1 => (Region::Asia, input[0]),
-            _ => (Region::parse(input[0]).unwrap_or_default(), input[1]),
-        };
-        let api = WowsApi::new(&ctx);
-        let candidates = api.players(&region, ign, 8).await.unwrap_or_default();
-        candidates
-            .into_iter()
-            .map(|vortex_p| {
-                let partial_p = PartialPlayer {
-                    region,
-                    uid: vortex_p.uid,
-                };
-                poise::AutocompleteChoice {
-                    name: format!("{} [{}]", vortex_p.name, region),
-                    value: serde_json::to_string(&partial_p).unwrap(),
-                }
-            })
-            .collect::<Vec<_>>()
-            .into_iter()
-    }
+        .map(|vortex_p| {
+            let partial_p = PartialPlayer {
+                region,
+                uid: vortex_p.uid,
+            };
+            poise::AutocompleteChoice {
+                name: format!("{} [{}]", vortex_p.name, region),
+                value: serde_json::to_string(&partial_p).unwrap(),
+            }
+        })
+        .collect()
 }
 
 /// return a serialized [`AutoCompleteClan`] struct
-pub async fn clan(
-    ctx: Context<'_>,
-    input: &str,
-) -> impl Iterator<Item = poise::AutocompleteChoice<String>> {
+pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoice<String>> {
     let input: Vec<&str> = input.split_whitespace().collect();
-    if input.is_empty() {
-        vec![
+    let Some((region, clan_name)) = (match input.len() {
+        0 => None,
+        1 => Some((Region::Asia, input[0])),
+        _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
+    }) else {
+        return [
             (
                 "Example: VOR",
                 AutoCompleteClan {
@@ -137,30 +129,20 @@ pub async fn clan(
             name: name.to_string(),
             value: serde_json::to_string(&value).unwrap(),
         })
-        .collect::<Vec<_>>()
+        .collect();
+    };
+    let api = WowsApi::new(&ctx);
+    let candidates = api.clans(&region, clan_name).await.unwrap_or_default();
+    candidates
         .into_iter()
-    } else {
-        let (region, clan_name) = match input.len() {
-            0 => unreachable!(
-                "this should never happen, since we already deal with input.is_empty() aboved"
-            ),
-            1 => (Region::Asia, input[0]),
-            _ => (Region::parse(input[0]).unwrap_or_default(), input[1]),
-        };
-        let api = WowsApi::new(&ctx);
-        let candidates = api.clans(&region, clan_name).await.unwrap_or_default();
-        candidates
-            .into_iter()
-            .map(|clan| {
-                let auto_complete_clan: AutoCompleteClan = clan.clone().into();
-                poise::AutocompleteChoice {
-                    name: format!("[{}] {} ({})", clan.tag, clan.name, clan.region),
-                    value: serde_json::to_string(&auto_complete_clan).unwrap(),
-                }
-            })
-            .collect::<Vec<_>>()
-            .into_iter()
-    }
+        .map(|clan| {
+            let auto_complete_clan: AutoCompleteClan = clan.clone().into();
+            poise::AutocompleteChoice {
+                name: format!("[{}] {} ({})", clan.tag, clan.name, clan.region),
+                value: serde_json::to_string(&auto_complete_clan).unwrap(),
+            }
+        })
+        .collect()
 }
 
 /// a temp struct for passing autocomplete result back due to the value size limit (100), can be removed if there's a better way lik command data()
