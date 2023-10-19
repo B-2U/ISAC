@@ -61,6 +61,7 @@ impl SingleShipTemplate {
     }
     // QA 這種方式真的算正面嗎?
     /// a helper function to build up the structure, raise [`IsacInfo::PlayerNoBattleShip`] if the main_mode battle_counts is 0
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ctx: &Context<'_>,
         ship: Ship,
