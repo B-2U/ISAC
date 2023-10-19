@@ -20,34 +20,6 @@ pub struct Statistic {
     pub hitrate: f64,
 }
 
-impl Statistic {
-    pub fn new<T: Into<StatisticValue>>(
-        battles: u64,
-        winrate: T,
-        dmg: T,
-        frags: T,
-        planes: T,
-        pr: T,
-        exp: T,
-        potential: u64,
-        scout: u64,
-        hitrate: f64,
-    ) -> Self {
-        Self {
-            battles,
-            winrate: winrate.into(),
-            dmg: dmg.into(),
-            frags: frags.into(),
-            planes: planes.into(),
-            pr: pr.into(),
-            exp: exp.into(),
-            potential,
-            scout,
-            hitrate,
-        }
-    }
-}
-
 // QA value actually can be u64 or f64, better way than String?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {

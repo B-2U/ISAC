@@ -277,19 +277,24 @@ impl ShipStatsCollection {
         use StatisticValueType as S;
         let winrate = S::Winrate {
             value: ttl_wins as f64 / battles as f64 * 100.0,
-        };
+        }
+        .into();
         let dmg = S::OverallDmg {
             value: ttl_dmg as f64 / battles as f64,
-        };
+        }
+        .into();
         let frags = S::Frags {
             value: ttl_frags as f64 / battles as f64,
-        };
+        }
+        .into();
         let planes = S::Planes {
             value: ttl_planes as f64 / battles as f64,
-        };
-        let exp: StatisticValueType<'_> = S::Exp {
+        }
+        .into();
+        let exp = S::Exp {
             value: ttl_exp as f64 / battles as f64,
-        };
+        }
+        .into();
         let pr = S::Pr {
             value: {
                 let n_wr = f64::max(0.0, ttl_wins as f64 / exp_ttl_wins - 0.7) / 0.3;
@@ -297,7 +302,8 @@ impl ShipStatsCollection {
                 let n_frags = f64::max(0.0, ttl_frags as f64 / exp_ttl_frags - 0.1) / 0.9;
                 Some(150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags)
             },
-        };
+        }
+        .into();
         fn rounded_div(a: u64, b: u64) -> u64 {
             (a as f64 / b as f64).round() as u64
         }
@@ -305,9 +311,18 @@ impl ShipStatsCollection {
         let scout = rounded_div(ttl_scout, battles);
         let hitrate = (hits as f64 / shots as f64 * 10000.0).round() / 100.0; // two decimal places
 
-        Some(Statistic::new(
-            battles, winrate, dmg, frags, planes, pr, exp, potential, scout, hitrate,
-        ))
+        Some(Statistic {
+            battles,
+            winrate,
+            dmg,
+            frags,
+            planes,
+            pr,
+            exp,
+            potential,
+            scout,
+            hitrate,
+        })
     }
 }
 
@@ -361,29 +376,30 @@ impl ShipModeStatsPair {
         } else {
             0.0
         };
-        use StatisticValueType as S;
         let pr = expected_js.read().data.get(&ship_id.0).map(|expected| {
             let n_wr = f64::max(0.0, winrate / expected.winrate - 0.7) / 0.3;
             let n_dmg = f64::max(0.0, dmg / expected.dmg - 0.4) / 0.6;
             let n_frags = f64::max(0.0, frags / expected.frags - 0.1) / 0.9;
             150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags
         });
-        Some(Statistic::new(
+        use StatisticValueType as S;
+        Some(Statistic {
             battles,
-            S::Winrate { value: winrate },
-            S::ShipDmg {
+            winrate: S::Winrate { value: winrate }.into(),
+            dmg: S::ShipDmg {
                 expected_js,
                 value: dmg,
                 ship_id,
-            },
-            S::Frags { value: frags },
-            S::Planes { value: planes },
-            S::Pr { value: pr },
-            S::Exp { value: exp },
-            potential.round() as u64,
-            scout.round() as u64,
+            }
+            .into(),
+            frags: S::Frags { value: frags }.into(),
+            planes: S::Planes { value: planes }.into(),
+            pr: S::Pr { value: pr }.into(),
+            exp: S::Exp { value: exp }.into(),
+            potential: potential.round() as u64,
+            scout: scout.round() as u64,
             hitrate,
-        ))
+        })
     }
 }
 
