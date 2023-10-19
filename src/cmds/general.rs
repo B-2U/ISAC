@@ -1,6 +1,6 @@
 use poise::serenity_prelude::CreateEmbed;
 
-use crate::dc_utils::{ContextAddon, EasyEmbed};
+use crate::dc_utils::EasyEmbed;
 use crate::{Context, Error};
 
 /// The link for inviting ISAC

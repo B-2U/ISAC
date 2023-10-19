@@ -276,7 +276,7 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
             .map(|(index, candidate)| format!("{} {}\n\n", self.emoji[index], candidate))
             .collect::<String>();
 
-        msg_text += &format!("{} None of above", self.x_emoji);
+        msg_text += format!("{} None of above", self.x_emoji).as_str();
 
         let mut embed = CreateEmbed::isac();
         embed.set_author(author).description(msg_text);

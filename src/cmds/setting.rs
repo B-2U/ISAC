@@ -1,5 +1,5 @@
 use crate::{
-    dc_utils::{auto_complete, ContextAddon, UserAddon},
+    dc_utils::{auto_complete, UserAddon},
     utils::{
         structs::{PartialPlayer, Region},
         wws_api::WowsApi,
