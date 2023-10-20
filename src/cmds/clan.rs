@@ -45,7 +45,7 @@ pub async fn clan(
     #[description = "clan's tag or name"]
     #[autocomplete = "auto_complete::clan"]
     clan: String,
-    #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i64>,
+    #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i32>,
 ) -> Result<(), Error> {
     let auto_complete_clan: AutoCompleteClan =
         serde_json::from_str(&clan).map_err(|_| IsacError::Info(IsacInfo::AutoCompleteError))?;
@@ -59,7 +59,7 @@ pub async fn clan(
         let current_season_num = ctx.data().constant.read().clan_season;
         let season = match season.is_positive() {
             false => current_season_num,
-            true => season.unsigned_abs() as u32,
+            true => season.unsigned_abs(),
         };
         func_clan_season(&ctx, partial_clan, season).await
     } else {
