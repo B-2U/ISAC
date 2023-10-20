@@ -76,8 +76,8 @@ impl SingleShipTemplate {
         let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode)
         else {
             Err(IsacInfo::PlayerNoBattleShip {
-                ign: player.ign.clone(),
-                ship_name: ship.name.clone(),
+                ign: player.ign,
+                ship_name: ship.name,
                 mode,
             })?
         };
