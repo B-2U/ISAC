@@ -28,6 +28,7 @@ pub enum ShipClass {
     CV,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, Deserialize_repr, Serialize, EnumIter, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum ShipTier {
@@ -93,14 +94,8 @@ impl Display for Ship {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct ShipStatsCollection(pub HashMap<ShipId, ShipModeStatsPair>);
-
-impl Default for ShipStatsCollection {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
 
 impl TryFrom<VortexShipResponse> for ShipStatsCollection {
     type Error = IsacError;
@@ -113,10 +108,10 @@ impl TryFrom<VortexShipResponse> for ShipStatsCollection {
             msg: "expected PlayerStats".to_owned(),
         })?;
         if player_stats.hidden_profile.is_some() || player_stats.statistics.is_none() {
-            return Err(IsacInfo::PlayerHidden {
+            Err(IsacInfo::PlayerHidden {
                 ign: player_stats.name.clone(),
             }
-            .into());
+            .into())
         } else {
             Ok(player_stats.statistics.take().unwrap()) // the if `statistics.is_none()` above already handle the None possibility
         }
@@ -127,7 +122,7 @@ impl ShipStatsCollection {
     /// merging the responses from vortex
     pub fn merge(mut self, mut other: Self) -> Self {
         for (ship_id, main_pair) in self.0.iter_mut() {
-            if let Some(sub_pair) = other.0.remove(&ship_id) {
+            if let Some(sub_pair) = other.0.remove(ship_id) {
                 main_pair.0.extend(sub_pair.0)
             }
         }
@@ -279,30 +274,36 @@ impl ShipStatsCollection {
         if battles == 0 {
             return None;
         };
-        use StatisticValueType::*;
-        let winrate = Winrate {
+        use StatisticValueType as S;
+        let winrate = S::Winrate {
             value: ttl_wins as f64 / battles as f64 * 100.0,
-        };
-        let dmg = OverallDmg {
+        }
+        .into();
+        let dmg = S::OverallDmg {
             value: ttl_dmg as f64 / battles as f64,
-        };
-        let frags = Frags {
+        }
+        .into();
+        let frags = S::Frags {
             value: ttl_frags as f64 / battles as f64,
-        };
-        let planes = Planes {
+        }
+        .into();
+        let planes = S::Planes {
             value: ttl_planes as f64 / battles as f64,
-        };
-        let exp: StatisticValueType<'_> = Exp {
+        }
+        .into();
+        let exp = S::Exp {
             value: ttl_exp as f64 / battles as f64,
-        };
-        let pr = Pr {
+        }
+        .into();
+        let pr = S::Pr {
             value: {
                 let n_wr = f64::max(0.0, ttl_wins as f64 / exp_ttl_wins - 0.7) / 0.3;
                 let n_dmg = f64::max(0.0, ttl_dmg as f64 / exp_ttl_dmg - 0.4) / 0.6;
                 let n_frags = f64::max(0.0, ttl_frags as f64 / exp_ttl_frags - 0.1) / 0.9;
                 Some(150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags)
             },
-        };
+        }
+        .into();
         fn rounded_div(a: u64, b: u64) -> u64 {
             (a as f64 / b as f64).round() as u64
         }
@@ -310,9 +311,18 @@ impl ShipStatsCollection {
         let scout = rounded_div(ttl_scout, battles);
         let hitrate = (hits as f64 / shots as f64 * 10000.0).round() / 100.0; // two decimal places
 
-        Some(Statistic::new(
-            battles, winrate, dmg, frags, planes, pr, exp, potential, scout, hitrate,
-        ))
+        Some(Statistic {
+            battles,
+            winrate,
+            dmg,
+            frags,
+            planes,
+            pr,
+            exp,
+            potential,
+            scout,
+            hitrate,
+        })
     }
 }
 
@@ -334,13 +344,8 @@ impl Display for ShipId {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(try_from = "JsonValue")]
+#[derive(Default)]
 pub struct ShipModeStatsPair(pub HashMap<Mode, ShipStats>);
-
-impl Default for ShipModeStatsPair {
-    fn default() -> Self {
-        Self(Default::default())
-    }
-}
 
 impl ShipModeStatsPair {
     /// a shorcut of `self.0.get
@@ -371,29 +376,30 @@ impl ShipModeStatsPair {
         } else {
             0.0
         };
-        use StatisticValueType as S;
         let pr = expected_js.read().data.get(&ship_id.0).map(|expected| {
             let n_wr = f64::max(0.0, winrate / expected.winrate - 0.7) / 0.3;
             let n_dmg = f64::max(0.0, dmg / expected.dmg - 0.4) / 0.6;
             let n_frags = f64::max(0.0, frags / expected.frags - 0.1) / 0.9;
             150.0 * n_wr + 700.0 * n_dmg + 300.0 * n_frags
         });
-        Some(Statistic::new(
+        use StatisticValueType as S;
+        Some(Statistic {
             battles,
-            S::Winrate { value: winrate },
-            S::ShipDmg {
+            winrate: S::Winrate { value: winrate }.into(),
+            dmg: S::ShipDmg {
                 expected_js,
                 value: dmg,
                 ship_id,
-            },
-            S::Frags { value: frags },
-            S::Planes { value: planes },
-            S::Pr { value: pr },
-            S::Exp { value: exp },
-            potential.round() as u64,
-            scout.round() as u64,
+            }
+            .into(),
+            frags: S::Frags { value: frags }.into(),
+            planes: S::Planes { value: planes }.into(),
+            pr: S::Pr { value: pr }.into(),
+            exp: S::Exp { value: exp }.into(),
+            potential: potential.round() as u64,
+            scout: scout.round() as u64,
             hitrate,
-        ))
+        })
     }
 }
 

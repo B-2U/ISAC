@@ -29,7 +29,7 @@ impl PartialClan {
         self.region.number_url(format!(
             "/clan/{},{}/",
             self.id,
-            self.name.replace(" ", "-")
+            self.name.replace(' ', "-")
         ))
     }
 
@@ -63,11 +63,15 @@ impl PartialClan {
                 msg: s.as_ref().into(),
             }
         }
-        let "ok" = json.get("status").and_then(|f|f.as_str()).unwrap() else {
+        let "ok" = json.get("status").and_then(|f| f.as_str()).unwrap() else {
             let err_msg = json.get("error").and_then(|f| f.as_str());
             match err_msg {
-                Some(err) => Err(IsacInfo::APIError { msg:err.to_string() })?,
-                None => Err(IsacInfo::GeneralError { msg: "parsing player's clan failed".to_string() })?
+                Some(err) => Err(IsacInfo::APIError {
+                    msg: err.to_string(),
+                })?,
+                None => Err(IsacInfo::GeneralError {
+                    msg: "parsing player's clan failed".to_string(),
+                })?,
             }
         };
         let sec_layer = json.get("data").ok_or(err("no data"))?;
@@ -234,6 +238,7 @@ impl ClanLeague {
     }
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Serialize, Deserialize_repr, Debug, Eq, PartialEq, Hash, Default)]
 #[repr(u8)]
 pub enum ClanDivision {

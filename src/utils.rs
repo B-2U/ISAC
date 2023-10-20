@@ -25,7 +25,7 @@ pub trait LoadSaveFromJson {
     {
         tokio::task::spawn_blocking(move || {
             let reader = std::io::BufReader::new(
-                std::fs::File::open(&Self::PATH)
+                std::fs::File::open(Self::PATH)
                     .unwrap_or_else(|_| panic!("Failed to open file: {}", Self::PATH)),
             );
             serde_json::from_reader(reader)
@@ -45,7 +45,7 @@ pub trait LoadSaveFromJson {
     where
         Self: DeserializeOwned + Serialize + Default,
     {
-        if let Ok(file) = std::fs::File::open(&Self::PATH) {
+        if let Ok(file) = std::fs::File::open(Self::PATH) {
             let reader = std::io::BufReader::new(file);
             serde_json::from_reader(reader).unwrap_or_else(|err| {
                 panic!(
@@ -98,7 +98,7 @@ pub trait LoadSaveFromJson {
         if let Some(parent_dir) = std::path::Path::new(Self::PATH).parent() {
             fs::create_dir_all(parent_dir).unwrap();
         }
-        let file = std::fs::File::create(&Self::PATH)
+        let file = std::fs::File::create(Self::PATH)
             .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", Self::PATH));
         serde_json::to_writer(file, &self).unwrap_or_else(|err| {
             panic!(

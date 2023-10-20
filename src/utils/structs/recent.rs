@@ -75,13 +75,13 @@ impl RecentPlayer {
 
     /// init new player file
     pub async fn init(player: &PartialPlayer) -> Self {
-        let data = Self {
+        
+        Self {
             player: *player,
             last_update_at: 0,
             last_request: RecentPlayerType::Normal(0),
             data: Default::default(),
-        };
-        data
+        }
     }
 
     /// save player data

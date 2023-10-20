@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    fmt::Write,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
@@ -44,7 +45,7 @@ pub async fn clan(
     #[description = "clan's tag or name"]
     #[autocomplete = "auto_complete::clan"]
     clan: String,
-    #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i64>,
+    #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i32>,
 ) -> Result<(), Error> {
     let auto_complete_clan: AutoCompleteClan =
         serde_json::from_str(&clan).map_err(|_| IsacError::Info(IsacInfo::AutoCompleteError))?;
@@ -58,7 +59,7 @@ pub async fn clan(
         let current_season_num = ctx.data().constant.read().clan_season;
         let season = match season.is_positive() {
             false => current_season_num,
-            true => season.abs() as u32,
+            true => season.unsigned_abs(),
         };
         func_clan_season(&ctx, partial_clan, season).await
     } else {
@@ -159,7 +160,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         // filter only the latest 4 seasons' best rating
         .filter(|f| {
             ((current_season_num - 3)..=current_season_num).contains(&f.season_number)
-                && f.is_best_season_rating == true
+                && f.is_best_season_rating
         })
         .sorted_by_key(|f| -(f.season_number as i32))
         .map(|f| f.into())
@@ -196,7 +197,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         .into_message()
         .await?;
     typing.stop();
-    view.interactions(&ctx, ctx.author().id, msg).await?;
+    view.interactions(ctx, ctx.author().id, msg).await?;
     Ok(())
 }
 
@@ -289,7 +290,7 @@ impl ClanView {
         mut msg: Message,
     ) -> Result<(), Error> {
         while let Some(interaction) = msg
-            .await_component_interactions(&ctx)
+            .await_component_interactions(ctx)
             .timeout(Duration::from_secs(60))
             .build()
             .next()
@@ -332,11 +333,11 @@ impl ClanView {
     }
 
     fn members_table(&self) -> String {
-        let members: String = self
+        let members = self
             .members
             .iter()
             .sorted_by_key(|m| m.ign.to_lowercase())
-            .map(|m| {
+            .fold(String::new(), |mut buf, m| {
                 let (winrate, dmg, battles) = if m.battles == 0 {
                     ("-".to_string(), "-".to_string(), "-".to_string())
                 } else {
@@ -347,9 +348,9 @@ impl ClanView {
                     )
                 };
 
-                format!("{:24} {:>6} {:>6} {:>6}\n", m.ign, winrate, dmg, battles)
-            })
-            .collect();
+                let _ = writeln!(buf, "{:24} {:>6} {:>6} {:>6}", m.ign, winrate, dmg, battles);
+                buf
+            });
         format!(
             "```{:24} {:>6} {:>6} {:>6}\n{:-<24} {:->6} {:->6} {:->6}\n{members}```",
             "ign", "WR", "DMG", "BTL", "", "", "", ""

@@ -20,34 +20,6 @@ pub struct Statistic {
     pub hitrate: f64,
 }
 
-impl Statistic {
-    pub fn new<T: Into<StatisticValue>>(
-        battles: u64,
-        winrate: T,
-        dmg: T,
-        frags: T,
-        planes: T,
-        pr: T,
-        exp: T,
-        potential: u64,
-        scout: u64,
-        hitrate: f64,
-    ) -> Self {
-        Self {
-            battles,
-            winrate: winrate.into(),
-            dmg: dmg.into(),
-            frags: frags.into(),
-            planes: planes.into(),
-            pr: pr.into(),
-            exp: exp.into(),
-            potential,
-            scout,
-            hitrate,
-        }
-    }
-}
-
 // QA value actually can be u64 or f64, better way than String?
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
@@ -111,7 +83,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
     fn from(value: StatisticValueType<'_>) -> StatisticValue {
         let (value, color) = match value {
             StatisticValueType::Winrate { value } => {
-                const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
                     vec![
                         (65.0, "#9d42f3"),
                         (60.0, "#d042f3"),
@@ -131,7 +103,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Frags { value } => {
-                const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
                     vec![
                         (1.44, "#d042f3"),
                         (1.2, "#02c9b3"),
@@ -149,7 +121,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Planes { value } => {
-                const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
                     vec![
                         (6.06, "#d042f3"),
                         (3.7, "#02c9b3"),
@@ -167,7 +139,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 (Self::_round_2(value).to_string(), color.to_string())
             }
             StatisticValueType::Pr { value } => {
-                const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
                     vec![
                         (2450, "#9d42f3"),
                         (2100, "#d042f3"),
@@ -191,7 +163,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 }
             }
             StatisticValueType::OverallDmg { value } => {
-                const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
                     vec![
                         (48500, "#d042f3"),
                         (38000, "#02c9b3"),
@@ -213,7 +185,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 value,
                 ship_id,
             } => {
-                const MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
                     vec![
                         (1.7, "#d042f3"),
                         (1.3, "#02c9b3"),
@@ -224,7 +196,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     ]
                 });
                 let color = if let Some(expected) = expected_js.read().data.get(&ship_id.0) {
-                    let normal_value = f64::max(0.0, value as f64 / expected.dmg - 0.4) / 0.6;
+                    let normal_value = f64::max(0.0, value / expected.dmg - 0.4) / 0.6;
                     MAP.iter()
                         .find(|(v, _)| &normal_value >= v)
                         .map(|(_, color)| *color)
@@ -236,7 +208,7 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                 (Self::_round_int(value).to_string(), color.to_string())
             }
             StatisticValueType::Exp { value } => {
-                const MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
                     vec![
                         (1500, "#9d42f3"),
                         (1350, "#d042f3"),

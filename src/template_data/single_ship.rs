@@ -61,6 +61,7 @@ impl SingleShipTemplate {
     }
     // QA 這種方式真的算正面嗎?
     /// a helper function to build up the structure, raise [`IsacInfo::PlayerNoBattleShip`] if the main_mode battle_counts is 0
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         ctx: &Context<'_>,
         ship: Ship,
@@ -72,7 +73,8 @@ impl SingleShipTemplate {
         clan: Option<PartialClan>,
         player: Player,
     ) -> Result<Self, IsacError> {
-        let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode) else {
+        let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode)
+        else {
             Err(IsacInfo::PlayerNoBattleShip {
                 ign: player.ign.clone(),
                 ship_name: ship.name.clone(),

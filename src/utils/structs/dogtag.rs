@@ -6,6 +6,8 @@ use serde_with::{serde_as, DisplayFromStr};
 
 use crate::utils::LoadSaveFromJson;
 
+static DOGTAGS: Lazy<HashMap<u64, DogtagData>> = Lazy::new(|| Dogtag::load_json_sync().into());
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Dogtag(pub HashMap<u64, DogtagData>);
 
@@ -14,12 +16,11 @@ impl LoadSaveFromJson for Dogtag {
 }
 
 impl Dogtag {
-    const DOGTAG: Lazy<HashMap<u64, DogtagData>> = Lazy::new(|| Dogtag::load_json_sync().into());
     pub fn get(input: u64) -> Option<String> {
         if input == 0 {
             None
         } else {
-            Self::DOGTAG
+            DOGTAGS
                 .get(&input)
                 .map(|f| f.icons.small.clone().unwrap_or_default())
         }
