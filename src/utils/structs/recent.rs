@@ -75,7 +75,6 @@ impl RecentPlayer {
 
     /// init new player file
     pub async fn init(player: &PartialPlayer) -> Self {
-        
         Self {
             player: *player,
             last_update_at: 0,
