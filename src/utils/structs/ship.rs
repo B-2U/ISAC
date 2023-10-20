@@ -470,14 +470,18 @@ pub struct VortexShipResponse {
 
 #[cfg(test)]
 mod test {
-    use std::fs;
-
     use super::{ShipStatsCollection, VortexShipResponse};
 
-    #[test]
-    fn ship_stats_collection_hidden_can_deserialize() {
-        let json = fs::read_to_string("test_res/vortex-ship-response-hidden.json").unwrap();
-        let res: Result<ShipStatsCollection, serde_json::Error> = serde_json::from_str(&json);
+    #[tokio::test]
+    async fn ship_stats_collection_hidden_can_deserialize() {
+        let client = reqwest::Client::new();
+        let res = client
+            .get("https://vortex.worldofwarships.asia/api/accounts/2008493987/ships/")
+            .send()
+            .await
+            .unwrap()
+            .json::<ShipStatsCollection>()
+            .await;
         match res {
             Ok(_) => panic!("hidden player shouldnt be Ok()"),
             Err(_err) => {
