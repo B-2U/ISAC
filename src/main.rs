@@ -81,7 +81,7 @@ async fn main() {
             mention_as_prefix: false,
             ..Default::default()
         },
-        /// The global error handler for all error cases that may occur
+        // The global error handler for all error cases that may occur
         on_error: |error| Box::pin(on_error(error)),
         skip_checks_for_owners: true,
         ..Default::default()
