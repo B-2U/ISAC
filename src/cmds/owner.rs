@@ -1,7 +1,7 @@
-use crate::dc_utils::{Args, ContextAddon};
+use crate::dc_utils::Args;
 use crate::utils::LoadSaveFromJson;
 use crate::{Context, Error};
-use poise::serenity_prelude::{ArgumentConvert, CacheHttp, Channel, ReactionType};
+use poise::serenity_prelude::{ArgumentConvert, Channel, ReactionType};
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn test(_ctx: Context<'_>, #[rest] _args: Args) -> Result<(), Error> {
@@ -21,7 +21,7 @@ pub async fn clan_season(ctx: Context<'_>, season: u32) -> Result<(), Error> {
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
-    let _cache = ctx.cache().unwrap();
+    let _cache = ctx.cache();
     ctx.reply(_cache.guilds().len().to_string()).await?;
     Ok(())
 }
