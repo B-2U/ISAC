@@ -146,7 +146,6 @@ pub async fn fetch_ship_leaderboard(
     region: &Region,
     ship: &Ship,
 ) -> Result<Vec<ShipLeaderboardPlayer>, IsacError> {
-    let t = Instant::now();
     let res_text = ctx
         .data()
         .client
@@ -155,7 +154,6 @@ pub async fn fetch_ship_leaderboard(
         .await?
         .text()
         .await?;
-    println!("fetch text: {:.2?}", t.elapsed());
     let html = Html::parse_document(&res_text);
     // Find the ranking table
     let table_selector = Selector::parse(".ranking-table").unwrap();
@@ -262,6 +260,5 @@ pub async fn fetch_ship_leaderboard(
 
         // Print the parsed player data
     }
-    println!("html parsing : {:.2?}", t.elapsed());
     Ok(leader_board)
 }
