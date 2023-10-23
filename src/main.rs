@@ -116,7 +116,6 @@ async fn main() {
             .expect("Could not register ctrl+c handler");
         shard_manager.lock().await.shutdown_all().await;
         // QA gracfully?
-        tokio::time::sleep(Duration::from_secs(3)).await;
     });
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
