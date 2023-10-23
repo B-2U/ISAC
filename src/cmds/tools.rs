@@ -174,26 +174,26 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         );
     }
     name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
-    let filtered_history: Vec<_> = name_history
-        .iter()
-        .enumerate()
-        .filter(|(index, record)| {
-            if let (Some(left), Some(right)) = (
-                name_history.get(index.wrapping_sub(1)),
-                name_history.get(index + 1),
-            ) {
-                record.1 != left.1 && record.1 != right.1
-            } else {
-                true
-            }
-        })
-        .map(|(_, history)| history)
-        .collect();
+    // let filtered_history: Vec<_> = name_history
+    //     .iter()
+    //     .enumerate()
+    //     .filter(|(index, record)| {
+    //         if let (Some(left), Some(right)) = (
+    //             name_history.get(index.wrapping_sub(1)),
+    //             name_history.get(index + 1),
+    //         ) {
+    //             record.1 != left.1 && record.1 != right.1
+    //         } else {
+    //             true
+    //         }
+    //     })
+    //     .map(|(_, history)| history)
+    //     .collect();
 
-    let output = filtered_history
+    let output = name_history
         .iter()
         .fold(String::new(), |mut buf, (date, ign, clan_tag)| {
-            let _ = writeln!(buf, "{ign} {clan_tag}, {}", date.format("%d.%m.%Y"));
+            let _ = writeln!(buf, "{ign} {clan_tag}, {}", date.format("%Y/%m/%d"));
             buf
         });
     let output = format!("```py\n{}\n```", output);
