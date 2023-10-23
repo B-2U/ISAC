@@ -15,7 +15,7 @@ use std::{
     env,
     ops::Deref,
     sync::{Arc, Mutex},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH},
 };
 use tracing::{debug, error};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
