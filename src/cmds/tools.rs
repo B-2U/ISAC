@@ -129,8 +129,14 @@ impl<'a> BonusView<'a> {
     }
 }
 
+#[poise::command(prefix_command, discard_spare_arguments)]
+pub async fn rename(ctx: Context<'_>) -> Result<(), Error> {
+    let _r = ctx.reply("`rename` is called `history now`").await;
+    Ok(())
+}
+
 #[poise::command(prefix_command)]
-pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let _typing = ctx.typing().await;
     let api = WowsApi::new(&ctx);
     let player = args.parse_user(&ctx).await?;
@@ -147,7 +153,7 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
     let record_clans_uid = _rename_parse_player(res_text)?;
 
     let mut name_history = vec![];
-    for clan_uid in record_clans_uid {
+    for (clan_uid, clan_tag) in record_clans_uid {
         let res = ctx
             .data()
             .client
@@ -160,7 +166,12 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
             .await
             .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
         let text = res.text().await.unwrap();
-        name_history.extend(_rename_parse_clan(text, &player).map_err(IsacError::UnknownError)?);
+        let transfers = _rename_parse_clan(text, &player).map_err(IsacError::UnknownError)?;
+        name_history.extend(
+            transfers
+                .into_iter()
+                .map(|(date, ign)| (date, ign, clan_tag.clone())),
+        );
     }
     name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
     let filtered_history: Vec<_> = name_history
@@ -181,8 +192,8 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
 
     let output = filtered_history
         .iter()
-        .fold(String::new(), |mut buf, (date, ign)| {
-            let _ = writeln!(buf, "{}, {}", ign, date.format("%d.%m.%Y"));
+        .fold(String::new(), |mut buf, (date, ign, clan_tag)| {
+            let _ = writeln!(buf, "{ign} {clan_tag}, {}", date.format("%d.%m.%Y"));
             buf
         });
     let output = format!("```py\n{}\n```", output);
@@ -200,7 +211,8 @@ pub async fn rename(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Erro
     Ok(())
 }
 
-fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, IsacError> {
+/// return clan's uid and tag, Vec<(uid, tag)>
+fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<(u64, String)>, IsacError> {
     let html = Html::parse_document(html_text.as_ref());
 
     let table_selector = Selector::parse(".table-styled").unwrap();
@@ -220,21 +232,27 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<u64>, IsacErro
     let a_selector = Selector::parse("a").unwrap();
     let cells = target_table.select(&cells_selector);
 
-    let clan_regex = Regex::new(r"/clan/(\d+),").unwrap();
+    let clan_uid_regex = Regex::new(r"/clan/(\d+),").unwrap();
     Ok(cells
         .filter_map(|cell| {
-            let _clan_href = cell
-                .select(&a_selector)
+            let selected = cell.select(&a_selector).next()?;
+            let clan_name = selected
+                .inner_html()
+                .split_whitespace()
                 .next()
-                .and_then(|f| f.value().attr("href"))?;
-            clan_regex
+                .unwrap_or("[]")
+                .to_string();
+            let _clan_href = selected.value().attr("href")?;
+            clan_uid_regex
                 .captures(_clan_href)?
                 .get(1)
                 .and_then(|uid| uid.as_str().parse::<u64>().ok())
+                .map(|i| (i, clan_name))
         })
         .collect())
 }
 
+/// parsing the clan transfer html, return Vec<(NaiveDate, ign)>
 fn _rename_parse_clan(
     html_text: impl AsRef<str>,
     player: &PartialPlayer,

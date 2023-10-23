@@ -63,6 +63,7 @@ async fn main() {
             owner::clan_season(),
             tools::roulette(),
             tools::rename(),
+            tools::history(),
             tools::map(),
             tools::code(),
             tools::uid(),
