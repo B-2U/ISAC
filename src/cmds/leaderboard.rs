@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    time::{Instant, SystemTime, UNIX_EPOCH},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use poise::serenity_prelude::AttachmentType;
