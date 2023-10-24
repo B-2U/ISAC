@@ -94,7 +94,7 @@ impl Args {
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
-                    linked_user.clan(&api).await?.ok_or(
+                    linked_user.clan(&api).await.ok_or(
                         IsacInfo::UserNoClan {
                             user_name: Some(user.name),
                         }
@@ -112,7 +112,7 @@ impl Args {
                     self.remove(0)?;
                     linked_user
                         .clan(&api)
-                        .await?
+                        .await
                         .ok_or(IsacInfo::UserNoClan { user_name: None }.into())
                 }
                 None => {

@@ -57,6 +57,7 @@ impl PartialClan {
         api.clan_members(self.region, self.id, mode, season).await
     }
 
+    // TODO: rework with serde
     pub fn parse(json: Value, region: Region) -> Result<Option<Self>, IsacError> {
         fn err(s: impl AsRef<str>) -> IsacInfo {
             IsacInfo::APIError {
