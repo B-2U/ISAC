@@ -66,9 +66,11 @@ impl PartialClan {
         let "ok" = json.get("status").and_then(|f| f.as_str()).unwrap() else {
             let err_msg = json.get("error").and_then(|f| f.as_str());
             match err_msg {
-                Some(err) => Err(IsacInfo::APIError {
-                    msg: err.to_string(),
-                })?,
+                // Some(err) => Err(IsacInfo::APIError {
+                //     msg: err.to_string(),
+                // })?,
+                // in some cases, player not in a clan API will return error not found
+                Some(_err) => return Ok(None),
                 None => Err(IsacInfo::GeneralError {
                     msg: "parsing player's clan failed".to_string(),
                 })?,
