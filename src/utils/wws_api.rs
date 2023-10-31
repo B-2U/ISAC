@@ -8,7 +8,7 @@ use strum::IntoEnumIterator;
 use crate::{
     utils::structs::{
         Clan, ClanDetail, ClanDetailRes, ClanMemberRes, ClanRes, Mode, PartialClan, Player, Region,
-        ShipId, ShipStatsCollection, VortexShipResponse,
+        ShipId, ShipStatsCollection, VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -179,7 +179,7 @@ impl<'a> WowsApi<'a> {
                         .get(url)
                         .send()
                         .await?
-                        .json::<VortexShipResponse>()
+                        .json::<VortexShipAPIRes>()
                         .await
                 }
             })

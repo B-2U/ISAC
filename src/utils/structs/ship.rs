@@ -97,10 +97,10 @@ impl Display for Ship {
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub struct ShipStatsCollection(pub HashMap<ShipId, ShipModeStatsPair>);
 
-impl TryFrom<VortexShipResponse> for ShipStatsCollection {
+impl TryFrom<VortexShipAPIRes> for ShipStatsCollection {
     type Error = IsacError;
 
-    fn try_from(mut value: VortexShipResponse) -> Result<Self, Self::Error> {
+    fn try_from(mut value: VortexShipAPIRes) -> Result<Self, Self::Error> {
         if let Some(err) = value.error {
             return Err(IsacInfo::APIError { msg: err }.into());
         };
@@ -462,7 +462,7 @@ pub struct PlayerStats {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct VortexShipResponse {
+pub struct VortexShipAPIRes {
     pub status: String,                     // known values: `ok`, `error`.
     pub error: Option<String>,              // error message.
     pub data: HashMap<String, PlayerStats>, // key is player UID. Don't care.
@@ -470,7 +470,7 @@ pub struct VortexShipResponse {
 
 #[cfg(test)]
 mod test {
-    use super::{ShipStatsCollection, VortexShipResponse};
+    use super::{ShipStatsCollection, VortexShipAPIRes};
 
     #[tokio::test]
     async fn ship_stats_collection_hidden_can_deserialize() {
@@ -500,7 +500,7 @@ mod test {
             .send()
             .await
             .unwrap()
-            .json::<VortexShipResponse>()
+            .json::<VortexShipAPIRes>()
             .await
             .unwrap();
     }
