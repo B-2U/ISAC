@@ -224,7 +224,7 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<(u64, String)>
         html.select(&transfer_s_selector)
             .nth(1)
             .unwrap_or(Err(IsacInfo::GeneralError {
-                msg: "No transfer history".to_string(),
+                msg: "Parsing failed".to_string(),
             })?);
     let tables = transfer_s.select(&table_selector).collect::<Vec<_>>();
     let target_table = match tables.len() {
