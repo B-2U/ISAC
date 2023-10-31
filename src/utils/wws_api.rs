@@ -7,8 +7,8 @@ use strum::IntoEnumIterator;
 
 use crate::{
     utils::structs::{
-        Clan, ClanDetail, ClanDetailRes, ClanMemberRes, ClanRes, Mode, PartialClan, Player, Region,
-        ShipId, ShipStatsCollection, VortexShipAPIRes,
+        Clan, ClanDetail, ClanDetailRes, ClanInfoAPIRes, ClanMemberRes, Mode, PartialClan, Player,
+        Region, ShipId, ShipStatsCollection, VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -204,7 +204,7 @@ impl<'a> WowsApi<'a> {
         let mut clan: Clan = self
             ._get(url)
             .await?
-            .json::<ClanRes>()
+            .json::<ClanInfoAPIRes>()
             .await
             .unwrap()
             .into();

@@ -116,12 +116,12 @@ impl PartialClan {
 
 // https://clans.worldofwarships.asia/api/clanbase/2000007634/claninfo/
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ClanRes {
+pub struct ClanInfoAPIRes {
     clanview: Clan,
 }
 
-impl From<ClanRes> for Clan {
-    fn from(value: ClanRes) -> Self {
+impl From<ClanInfoAPIRes> for Clan {
+    fn from(value: ClanInfoAPIRes) -> Self {
         value.clanview
     }
 }
