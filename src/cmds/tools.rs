@@ -132,7 +132,7 @@ impl<'a> BonusView<'a> {
 
 #[poise::command(prefix_command, discard_spare_arguments)]
 pub async fn rename(ctx: Context<'_>) -> Result<(), Error> {
-    let _r = ctx.reply("`rename` is called `history now`").await;
+    let _r = ctx.reply("`rename` is called `history` now").await;
     Ok(())
 }
 
