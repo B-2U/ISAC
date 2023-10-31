@@ -1,6 +1,7 @@
 use std::{borrow::Cow, fmt::Write, sync::Arc};
 
 use chrono::NaiveDate;
+use itertools::Itertools;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
@@ -249,6 +250,8 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<(u64, String)>
                 .and_then(|uid| uid.as_str().parse::<u64>().ok())
                 .map(|i| (i, clan_name))
         })
+        .sorted_unstable()
+        .dedup_by(|a, b| a.0 == b.0)
         .collect())
 }
 
