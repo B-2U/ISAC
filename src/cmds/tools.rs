@@ -193,7 +193,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
     let output = name_history
         .iter()
         .fold(String::new(), |mut buf, (date, ign, clan_tag)| {
-            let _ = writeln!(buf, "{ign} {clan_tag}, {}", date.format("%Y/%m/%d"));
+            let _ = writeln!(buf, "{ign} {clan_tag}, {}", date.format("%Y.%m.%d"));
             buf
         });
     let output = format!("```py\n{}\n```", output);
