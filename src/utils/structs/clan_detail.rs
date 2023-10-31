@@ -36,13 +36,13 @@ pub struct ClanDetail {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct ClanDetailRes {
+pub struct ClanDetailAPIRes {
     pub status: String,
     pub error: Option<String>,
     // meta: Meta,
     pub data: HashMap<u64, ClanDetail>, // only one in the map
 }
-impl ClanDetailRes {
+impl ClanDetailAPIRes {
     /// check the status is "ok" before getting the data
     pub fn data(self) -> Result<ClanDetail, IsacError> {
         if self.status.as_str() != "ok" {

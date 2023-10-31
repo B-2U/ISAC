@@ -11,7 +11,6 @@ use crate::{
 
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_repr::Deserialize_repr;
 use serde_with::{serde_as, DefaultOnError};
 
@@ -33,7 +32,7 @@ impl PartialClan {
         ))
     }
 
-    pub fn decimal_to_hex(input: u64) -> String {
+    pub fn decimal_to_hex(input: u32) -> String {
         format!("{:x}", input)
     }
     /// clan details from vortex, has all CB seasons data
@@ -53,65 +52,57 @@ impl PartialClan {
         api: &WowsApi<'_>,
         mode: Option<&str>,
         season: Option<u32>,
-    ) -> Result<ClanMemberRes, IsacError> {
+    ) -> Result<ClanMemberAPIRes, IsacError> {
         api.clan_members(self.region, self.id, mode, season).await
     }
+}
+// https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
+/// temp struct waiting for converted to PartialClan
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PlayerClanAPIRes {
+    pub status: String,
+    pub error: Option<String>,
+    data: Option<PlayerClanData>,
+}
 
-    // TODO: rework with serde
-    pub fn parse(json: Value, region: Region) -> Result<Option<Self>, IsacError> {
-        fn err(s: impl AsRef<str>) -> IsacInfo {
-            IsacInfo::APIError {
-                msg: s.as_ref().into(),
-            }
-        }
-        let "ok" = json.get("status").and_then(|f| f.as_str()).unwrap() else {
-            let err_msg = json.get("error").and_then(|f| f.as_str());
-            match err_msg {
-                // Some(err) => Err(IsacInfo::APIError {
-                //     msg: err.to_string(),
-                // })?,
-                // in some cases, player not in a clan API will return error not found
-                Some(_err) => return Ok(None),
-                None => Err(IsacInfo::GeneralError {
-                    msg: "parsing player's clan failed".to_string(),
-                })?,
-            }
+impl PlayerClanAPIRes {
+    pub fn into_partial_clan(self, region: Region) -> Result<PartialClan, IsacError> {
+        if let Some(err) = self.error {
+            Err(IsacInfo::APIError { msg: err })?;
         };
-        let sec_layer = json.get("data").ok_or(err("no data"))?;
-
-        let clan_id = sec_layer.get("clan_id").ok_or(err("no clan_id"))?;
-        // not in a clan
-        let clan_id = match clan_id.is_u64() {
-            true => clan_id.as_u64().ok_or(err("clan_id convert failed"))?,
-            false => return Ok(None),
+        let data = self.data.expect("should not happen");
+        if data.clan_id == 0 {
+            Err(IsacInfo::UserNoClan { user_name: None })?
         };
-
-        let third_layer = sec_layer.get("clan").unwrap();
-        let name = third_layer
-            .get("name")
-            .and_then(|f| f.as_str())
-            .ok_or(err("no name"))?;
-        let tag = third_layer
-            .get("tag")
-            .and_then(|f| f.as_str())
-            .ok_or(err("no tag"))?;
-        let color = third_layer
-            .get("color")
-            .and_then(|f| f.as_u64())
-            .ok_or(err("no color"))?;
-        // let members_count = third_layer
-        //     .get("members_count")
-        //     .and_then(|f| f.as_u64())
-        //     .unwrap();
-
-        Ok(Some(PartialClan {
-            tag: tag.to_string(),
-            color: Self::decimal_to_hex(color),
-            id: clan_id,
-            name: name.to_string(),
+        Ok(PartialClan {
+            tag: data.clan.tag,
+            color: PartialClan::decimal_to_hex(data.clan.color),
+            id: data.clan_id,
+            name: data.clan.name,
             region,
-        }))
+        })
     }
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug)]
+struct PlayerClanData {
+    #[serde_as(deserialize_as = "DefaultOnError")]
+    clan: PlayerClanDataClan,
+    #[serde_as(deserialize_as = "DefaultOnError")]
+    joined_at: String, // "2020-10-10T06:43:53.663284"
+    #[serde_as(deserialize_as = "DefaultOnError")]
+    role: String, // "recruitment_officer"
+    #[serde_as(deserialize_as = "DefaultOnError")]
+    clan_id: u64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+struct PlayerClanDataClan {
+    name: String,
+    tag: String,
+    color: u32,
+    members_count: u32,
 }
 
 // https://clans.worldofwarships.asia/api/clanbase/2000007634/claninfo/
@@ -254,7 +245,7 @@ pub enum ClanDivision {
 // https://clans.worldofwarships.asia/api/members/2000007634/?battle_type=pvp
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ClanMemberRes {
+pub struct ClanMemberAPIRes {
     pub status: String,
     pub error: Option<String>,
     #[serde(default)]

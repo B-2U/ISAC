@@ -7,8 +7,8 @@ use strum::IntoEnumIterator;
 
 use crate::{
     utils::structs::{
-        Clan, ClanDetail, ClanDetailRes, ClanInfoAPIRes, ClanMemberRes, Mode, PartialClan, Player,
-        Region, ShipId, ShipStatsCollection, VortexShipAPIRes,
+        Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode, PartialClan,
+        Player, PlayerClanAPIRes, Region, ShipId, ShipStatsCollection, VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -76,7 +76,7 @@ impl<'a> WowsApi<'a> {
         let res = self
             ._get(url)
             .await?
-            .json::<VortexPlayerSearchRes>()
+            .json::<VortexPlayerSearchAPIRes>()
             .await
             .unwrap();
 
@@ -115,11 +115,15 @@ impl<'a> WowsApi<'a> {
         let url = region
             .vortex_url(format!("/api/accounts/{player_uid}/clans/"))
             .unwrap();
-        // TODO: rework with serde test url: https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
-        let js_value = self._get(url).await.unwrap().json::<Value>().await.unwrap();
-        // in some cases,
+        let res = self
+            ._get(url)
+            .await
+            .unwrap()
+            .json::<PlayerClanAPIRes>()
+            .await
+            .unwrap();
         // API will return error not found if a player haven't ever joined a clan, so we unwrap_or(None) here
-        PartialClan::parse(js_value, *region).unwrap_or(None)
+        res.into_partial_clan(*region).ok()
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still
@@ -222,7 +226,7 @@ impl<'a> WowsApi<'a> {
         clan_id: u64,
         mode: Option<&str>,
         season: Option<u32>,
-    ) -> Result<ClanMemberRes, IsacError> {
+    ) -> Result<ClanMemberAPIRes, IsacError> {
         let url = region.clan_url(format!("/api/members/{clan_id}/"))?;
         let mut query = vec![("battle_type", mode.unwrap_or("pvp").to_string())];
         if let Some(season) = season {
@@ -235,7 +239,7 @@ impl<'a> WowsApi<'a> {
             .send()
             .await
             .map_err(Self::_err_wrap)?
-            .json::<ClanMemberRes>()
+            .json::<ClanMemberAPIRes>()
             .await
             .unwrap();
         Ok(clan)
@@ -254,14 +258,14 @@ impl<'a> WowsApi<'a> {
             ("clan_id", clan_id.to_string()),
             // ("extra", "members".to_string()),
         ];
-        let clan_res: ClanDetailRes = self
+        let clan_res: ClanDetailAPIRes = self
             .client
             .get(url)
             .query(&query)
             .send()
             .await
             .map_err(Self::_err_wrap)?
-            .json::<ClanDetailRes>()
+            .json::<ClanDetailAPIRes>()
             .await
             .unwrap();
         clan_res.data()
@@ -269,7 +273,7 @@ impl<'a> WowsApi<'a> {
 }
 
 #[derive(Deserialize, Debug)]
-struct VortexPlayerSearchRes {
+struct VortexPlayerSearchAPIRes {
     pub status: String,
     pub error: Option<String>,
     #[serde(default)]
@@ -291,10 +295,10 @@ impl Display for VortexPlayerSearch {
 }
 
 // QA better way than impl to a Vec<>?
-impl TryFrom<VortexPlayerSearchRes> for Vec<VortexPlayerSearch> {
+impl TryFrom<VortexPlayerSearchAPIRes> for Vec<VortexPlayerSearch> {
     type Error = IsacError;
 
-    fn try_from(res: VortexPlayerSearchRes) -> Result<Self, Self::Error> {
+    fn try_from(res: VortexPlayerSearchAPIRes) -> Result<Self, Self::Error> {
         if res.status.as_str() != "ok" {
             Err(IsacInfo::APIError {
                 msg: res.error.unwrap_or_default(),
