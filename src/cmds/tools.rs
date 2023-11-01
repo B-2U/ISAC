@@ -220,7 +220,6 @@ fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<(u64, String)>
     let transfer_s_selector = Selector::parse(".col.col-centered.col-sm-6").unwrap();
 
     // should be only 2 here,[ Important moments, Transfer ]
-    dbg!(html.select(&transfer_s_selector).nth(1).is_some());
     let transfer_s = html
         .select(&transfer_s_selector)
         .nth(1)
