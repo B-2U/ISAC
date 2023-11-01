@@ -151,10 +151,57 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         .await?
         .text()
         .await?;
-    let record_clans_uid = _rename_parse_player(res_text)?;
+    // all the clans the player have been in
+    let record_clans = {
+        let html = Html::parse_document(res_text.as_str());
+
+        let table_selector = Selector::parse(".table-styled").unwrap();
+        let transfer_s_selector = Selector::parse(".col.col-centered.col-sm-6").unwrap();
+        let cells_selector = Selector::parse("tr").unwrap();
+        let a_selector = Selector::parse("a").unwrap();
+        let clan_uid_regex = Regex::new(r"/clan/(\d+),").unwrap();
+
+        // should be only 2 here,[ Important moments, Transfer ]
+        let tables = html
+            .select(&transfer_s_selector)
+            .nth(1)
+            .ok_or(IsacInfo::GeneralError {
+                msg: "Parsing failed".to_string(),
+            })?
+            .select(&table_selector)
+            .collect::<Vec<_>>();
+        let target_table = match tables.len() {
+            1 => tables[0],
+            2 => tables[1],
+            n => Err(IsacInfo::GeneralError {
+                msg: format!("No transfer history, tables.len() = {n}"),
+            })?,
+        };
+        let cells = target_table.select(&cells_selector);
+
+        cells
+            .filter_map(|cell| {
+                let selected = cell.select(&a_selector).next()?;
+                let clan_name = selected
+                    .inner_html()
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or("[]")
+                    .to_string();
+                let _clan_href = selected.value().attr("href")?;
+                clan_uid_regex
+                    .captures(_clan_href)?
+                    .get(1)
+                    .and_then(|uid| uid.as_str().parse::<u64>().ok())
+                    .map(|i| (i, clan_name))
+            })
+            .sorted_unstable()
+            .dedup_by(|a, b| a.0 == b.0)
+            .collect::<Vec<(u64, String)>>()
+    };
 
     let mut name_history = vec![];
-    for (clan_uid, clan_tag) in record_clans_uid {
+    for (clan_uid, clan_tag) in record_clans {
         let res = ctx
             .data()
             .client
@@ -175,21 +222,6 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         );
     }
     name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
-    // let filtered_history: Vec<_> = name_history
-    //     .iter()
-    //     .enumerate()
-    //     .filter(|(index, record)| {
-    //         if let (Some(left), Some(right)) = (
-    //             name_history.get(index.wrapping_sub(1)),
-    //             name_history.get(index + 1),
-    //         ) {
-    //             record.1 != left.1 && record.1 != right.1
-    //         } else {
-    //             true
-    //         }
-    //     })
-    //     .map(|(_, history)| history)
-    //     .collect();
 
     let output = name_history
         .iter()
@@ -210,54 +242,6 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
             .await;
     }
     Ok(())
-}
-
-/// return clan's uid and tag, Vec<(uid, tag)>
-fn _rename_parse_player(html_text: impl AsRef<str>) -> Result<Vec<(u64, String)>, IsacError> {
-    let html = Html::parse_document(html_text.as_ref());
-
-    let table_selector = Selector::parse(".table-styled").unwrap();
-    let transfer_s_selector = Selector::parse(".col.col-centered.col-sm-6").unwrap();
-
-    // should be only 2 here,[ Important moments, Transfer ]
-    let transfer_s = html
-        .select(&transfer_s_selector)
-        .nth(1)
-        .ok_or(IsacInfo::GeneralError {
-            msg: "Parsing failed".to_string(),
-        })?;
-    let tables = transfer_s.select(&table_selector).collect::<Vec<_>>();
-    let target_table = match tables.len() {
-        1 => tables[0],
-        2 => tables[1],
-        _ => Err(IsacInfo::GeneralError {
-            msg: "No transfer history".to_string(),
-        })?,
-    };
-    let cells_selector = Selector::parse("tr").unwrap();
-    let a_selector = Selector::parse("a").unwrap();
-    let cells = target_table.select(&cells_selector);
-
-    let clan_uid_regex = Regex::new(r"/clan/(\d+),").unwrap();
-    Ok(cells
-        .filter_map(|cell| {
-            let selected = cell.select(&a_selector).next()?;
-            let clan_name = selected
-                .inner_html()
-                .split_whitespace()
-                .next()
-                .unwrap_or("[]")
-                .to_string();
-            let _clan_href = selected.value().attr("href")?;
-            clan_uid_regex
-                .captures(_clan_href)?
-                .get(1)
-                .and_then(|uid| uid.as_str().parse::<u64>().ok())
-                .map(|i| (i, clan_name))
-        })
-        .sorted_unstable()
-        .dedup_by(|a, b| a.0 == b.0)
-        .collect())
 }
 
 /// parsing the clan transfer html, return Vec<(NaiveDate, ign)>
