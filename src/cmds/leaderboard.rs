@@ -14,7 +14,7 @@ use crate::{
         structs::{
             Region, Ship, ShipId, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
         },
-        IsacError, IsacInfo, LoadSaveFromJson,
+        IsacError, IsacInfo,
     },
     Context, Data, Error,
 };
