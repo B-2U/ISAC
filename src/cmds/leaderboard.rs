@@ -46,7 +46,7 @@ pub async fn top(
     #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
     let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
-        Err(IsacInfo::AutoCompleteError)?
+        Err(IsacError::Info(IsacInfo::AutoCompleteError))?
     };
     let region = region.unwrap_or_default();
     func_top(ctx, region, ship).await
