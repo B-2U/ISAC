@@ -7,8 +7,9 @@ use strum::IntoEnumIterator;
 
 use crate::{
     utils::structs::{
-        Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode, PartialClan,
-        Player, PlayerClanAPIRes, Region, ShipId, ShipStatsCollection, VortexShipAPIRes,
+        api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode,
+        PartialClan, Player, PlayerClanAPIRes, Region, ShipId, ShipStatsCollection,
+        VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -274,8 +275,8 @@ impl<'a> WowsApi<'a> {
 
 #[derive(Deserialize, Debug)]
 struct VortexPlayerSearchAPIRes {
-    pub status: String,
-    pub error: Option<String>,
+    #[serde(flatten)]
+    pub status: api::Status,
     #[serde(default)]
     pub data: Vec<VortexPlayerSearch>,
 }
@@ -299,9 +300,9 @@ impl TryFrom<VortexPlayerSearchAPIRes> for Vec<VortexPlayerSearch> {
     type Error = IsacError;
 
     fn try_from(res: VortexPlayerSearchAPIRes) -> Result<Self, Self::Error> {
-        if res.status.as_str() != "ok" {
+        if !res.status.ok() {
             Err(IsacInfo::APIError {
-                msg: res.error.unwrap_or_default(),
+                msg: res.status.err_msg(),
             })?
         } else {
             Ok(res.data)

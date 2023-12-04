@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{IsacError, IsacInfo};
+use crate::utils::{structs::api, IsacError, IsacInfo};
 
 // #[derive(Debug, Deserialize, Serialize)]
 // pub struct ClanDetailMember {
@@ -37,17 +37,17 @@ pub struct ClanDetail {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ClanDetailAPIRes {
-    pub status: String,
-    pub error: Option<String>,
+    #[serde(flatten)]
+    status: api::Status,
     // meta: Meta,
     pub data: HashMap<u64, ClanDetail>, // only one in the map
 }
 impl ClanDetailAPIRes {
     /// check the status is "ok" before getting the data
     pub fn data(self) -> Result<ClanDetail, IsacError> {
-        if self.status.as_str() != "ok" {
+        if !self.status.ok() {
             Err(IsacInfo::APIError {
-                msg: self.error.unwrap_or("Unknown Error".to_string()),
+                msg: self.status.err_msg(),
             })?
         } else {
             Ok(self.data.into_values().next().unwrap())

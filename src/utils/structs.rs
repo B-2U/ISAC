@@ -46,3 +46,8 @@ pub use clan_detail::*;
 
 mod recent;
 pub use recent::*;
+
+mod clan_battles_season_stats;
+pub use clan_battles_season_stats::*;
+
+pub mod api;

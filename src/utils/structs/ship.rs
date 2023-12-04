@@ -8,7 +8,7 @@ use strum::{EnumIter, IntoEnumIterator};
 
 use crate::{
     utils::{
-        structs::{ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType},
+        structs::{api, ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType},
         IsacError, IsacInfo,
     },
     Context,
@@ -101,9 +101,12 @@ impl TryFrom<VortexShipAPIRes> for ShipStatsCollection {
     type Error = IsacError;
 
     fn try_from(mut value: VortexShipAPIRes) -> Result<Self, Self::Error> {
-        if let Some(err) = value.error {
-            return Err(IsacInfo::APIError { msg: err }.into());
-        };
+        if !value.status.ok() {
+            return Err(IsacInfo::APIError {
+                msg: value.status.err_msg(),
+            }
+            .into());
+        }
         let player_stats = value.data.values_mut().last().ok_or(IsacInfo::APIError {
             msg: "expected PlayerStats".to_owned(),
         })?;
@@ -463,8 +466,8 @@ pub struct PlayerStats {
 
 #[derive(Debug, Deserialize)]
 pub struct VortexShipAPIRes {
-    pub status: String,                     // known values: `ok`, `error`.
-    pub error: Option<String>,              // error message.
+    #[serde(flatten)]
+    pub status: api::Status,
     pub data: HashMap<String, PlayerStats>, // key is player UID. Don't care.
 }
 

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
     utils::{
-        structs::{ClanDetail, Region, StatisticValueType},
+        structs::{api, ClanDetail, Region, StatisticValueType},
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },
@@ -60,7 +60,8 @@ impl PartialClan {
 /// temp struct waiting for converted to PartialClan
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PlayerClanAPIRes {
-    pub status: String,
+    #[serde(flatten)]
+    pub status: api::Status,
     pub error: Option<String>,
     data: Option<PlayerClanData>,
 }
@@ -246,8 +247,8 @@ pub enum ClanDivision {
 #[serde_as]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ClanMemberAPIRes {
-    pub status: String,
-    pub error: Option<String>,
+    #[serde(flatten)]
+    pub status: api::Status,
     #[serde(default)]
     pub items: Vec<ClanMember>,
     #[serde_as(deserialize_as = "DefaultOnError")]
