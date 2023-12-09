@@ -294,7 +294,6 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
                 clan: clan.clone(),
                 user: player.clone(),
             };
-            println!("{overall_cw_data:?}");
             let img_2 = overall_cw_data.render(&ctx.data().client).await?;
             let _ok = msg
                 .edit(ctx, |m| {
