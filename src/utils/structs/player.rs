@@ -1,7 +1,8 @@
 use crate::{
     utils::{
         structs::{
-            Dogtag, PartialClan, Region, Ship, ShipId, ShipModeStatsPair, ShipStatsCollection,
+            Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipId, ShipModeStatsPair,
+            ShipStatsCollection,
         },
         wws_api::WowsApi,
         IsacError, IsacInfo, LoadSaveFromJson,
@@ -55,6 +56,13 @@ impl PartialPlayer {
             .0
             .remove(&ship.ship_id);
         Ok(ship_pair.map(|p| (ship.ship_id, p)))
+    }
+
+    pub async fn clan_battle_season_stats(
+        &self,
+        api: &WowsApi<'_>,
+    ) -> Result<PlayerClanBattle, IsacError> {
+        api.clan_battle_season_stats(self.region, self.uid).await
     }
 }
 

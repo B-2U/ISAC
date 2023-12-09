@@ -12,10 +12,7 @@ pub struct Status {
 impl Status {
     /// true if the status code is "ok"
     pub fn ok(&self) -> bool {
-        match self.status.as_str() {
-            "ok" => true,
-            _ => false,
-        }
+        matches!(self.status.as_str(), "ok")
     }
     /// return the error message, return "Unknown Error" if its None
     pub fn err_msg(self) -> String {

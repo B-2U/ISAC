@@ -32,6 +32,7 @@ pub async fn map(ctx: Context<'_>) -> Result<(), Error> {
 }
 
 async fn code_err_handler(err: FrameworkError<'_, Data, Error>) {
+    eprintln!("{err}");
     if let Some(ctx) = err.ctx() {
         let _r = ctx
             .reply("`.code <codes>`\ne.g. `.code TIANSUOHAO2 MONSTERSENPAI`")

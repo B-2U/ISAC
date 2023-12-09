@@ -1,0 +1,229 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        @font-face {
+            font-family: "Roboto";
+            src: url("./renderer/font/Roboto.ttf") format('truetype');
+        }
+
+        .main {
+            font-family: "Roboto";
+            position: relative;
+            box-sizing: border-box;
+            width: 1000px;
+            padding: 1rem;
+            display: grid;
+            justify-items: stretch;
+            gap: 0.5rem 0;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.8em;
+            color: white;
+            background-color: #343434;
+        }
+
+        .divider {
+            padding: 2px 0 0 0;
+            background-color: grey;
+        }
+
+        /* Global stats section */
+
+        .global-section {
+            display: grid;
+            justify-items: center;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+            font-size: 1.2em;
+        }
+
+        .z-index-container {
+            z-index: 2;
+        }
+
+        .background {
+            top: 16px;
+            left: 16px;
+            width: 968px;
+            height: 216px;
+            object-fit: cover;
+            position: absolute;
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
+                    rgb(0 0 0 / 0.5));
+        }
+
+        .user {
+            display: grid;
+            grid-template-columns: repeat(5, min-content);
+            gap: 0.2em;
+            justify-content: center;
+            align-items: center;
+            height: 152;
+            font-size: 1.3em;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .dogtag-container {
+            position: relative;
+            height: 80;
+            width: 80;
+        }
+
+        .dogtag-dogtag_bg {
+            z-index: -1;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .region-box {
+            background-color: rgba(200, 200, 200, 0.15);
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 0.5em;
+            align-content: center;
+            display: grid;
+            padding: 0.2em;
+        }
+
+        .global-title {
+            padding: 0.4rem 0;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .global-pr {
+            justify-self: stretch;
+            padding: 0.8rem 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            font-size: 1.1em;
+        }
+
+        .global-stats-table {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-around;
+            grid-template-columns: repeat(5, 1fr);
+            grid-auto-flow: row;
+        }
+
+
+        .global-stats-label {
+            padding-top: 0.8em;
+            padding-bottom: 0.4em;
+        }
+
+        .global-stats-data {
+            font-weight: bold;
+            padding: 0.4rem 0;
+        }
+
+        /* Division stats section */
+
+        .division-stats-section {
+            display: grid;
+            justify-content: stetch;
+        }
+
+        .division-stats-title {
+            justify-self: center;
+            padding: 0.4rem 0;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .per-ship-table {
+            position: relative;
+            display: grid;
+            justify-items: stretch;
+            grid-template-columns: 1fr;
+            grid-auto-flow: row;
+        }
+
+        .ship-storo {
+            font-weight: bold;
+        }
+
+        .ship-table-row {
+            justify-self: stretch;
+            display: grid;
+            justify-items: center;
+            justify-content: space-between;
+            padding: 0.4em 0 0.4em;
+            grid-template-columns: 1fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
+            font-size: 0.9em;
+        }
+
+        .ship-table-row:nth-child(2n) {
+            background-color: #404040;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="main">
+        <section class="global-section">
+            <img src={{user.pfp}} class="background" onerror="this.style.display='none'" />
+            <div class="z-index-container">
+                <div class="user">
+                    <div class="dogtag-container">
+                        <img src="{{user.dogtag}}" onerror="this.style.display='none'">
+                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
+                    </div>
+                    {{#clan}}
+                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    {{/clan}}
+                    <span class="user-id">{{user.ign}}</span>
+                    <span class="region-box">{{user.region}}</span>
+                </div>
+                <div class="global-title">Clan Battle</div>
+            </div>
+        </section>
+        <div class="divider"></div>
+        <section class="division-stats-section">
+            <div class="per-ship-table">
+                <div class="ship-table-row">
+                    <div class="per-ship-lbl empty">Season</div>
+                    <div class="per-ship-lbl battles-label">Battles</div>
+                    <div class="per-ship-lbl winrate-label">Win rate</div>
+                    <div class="per-ship-lbl avg-dmg-label">Dmg</div>
+                    <div class="per-ship-lbl avg-frags-label">Frags</div>
+                    <div class="per-ship-lbl avg-potential-label">Potential</div>
+                    <div class="per-ship-lbl avg-scout-label">Scout dmg</div>
+                </div>
+                {{#seasons}}
+                <div class="ship-table-row">
+                    <div class="per-ship-name ship-storo">{{season_id}}</div>
+                    <div class="per-ship-battles ship-storo">{{battles}}</div>
+                    <div class="per-ship-wr ship-storo" style="color: {{winrate.color}};">{{winrate.value}}%</div>
+                    <div class="per-ship-dmg ship-storo" style="color: {{dmg.color}};">{{dmg.value}}</div>
+                    <div class="per-ship-frags ship-storo" style="color: {{frags.color}};">{{frags.value}}</div>
+                    <div class="per-ship-potential ship-storo">{{potential}}</div>
+                    <div class="per-ship-scout ship-storo">{{scout}}</div>
+                </div>
+                {{/seasons}}
+                <!--  <div class="signature">[PANTS]B2U</div>  -->
+            </div>
+</body>
+
+</html>
+<script>
+    // round main height
+    window.addEventListener("load", () => {
+        let main = document.querySelector('.main');
+        let height = main.offsetHeight - 1;
+        main.style.height = height;
+    })
+</script>

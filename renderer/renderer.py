@@ -87,6 +87,13 @@ async def overall_tiers():
     return await return_png(await renderer.screenshot(html))
 
 
+@app.route("/overall_cw", methods=["POST"])
+async def overall_cw():
+    data = await request.get_json()
+    html = render_html(f"{TEMPLATE_PATH}/overall_cw.hbs", data)
+    return await return_png(await renderer.screenshot(html))
+
+
 @app.route("/clan_season", methods=["POST"])
 async def clan_season():
     data = await request.get_json()

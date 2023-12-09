@@ -8,8 +8,8 @@ use strum::IntoEnumIterator;
 use crate::{
     utils::structs::{
         api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode,
-        PartialClan, Player, PlayerClanAPIRes, Region, ShipId, ShipStatsCollection,
-        VortexShipAPIRes,
+        PartialClan, Player, PlayerClanAPIRes, PlayerClanBattle, PlayerClanBattleAPIRes, Region,
+        ShipId, ShipStatsCollection, VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -270,6 +270,31 @@ impl<'a> WowsApi<'a> {
             .await
             .unwrap();
         clan_res.data()
+    }
+
+    /// player's CB seasons stats from official api
+    pub async fn clan_battle_season_stats(
+        &self,
+        region: Region,
+        uid: u64,
+    ) -> Result<PlayerClanBattle, IsacError> {
+        let url = region.api_url("/wows/clans/seasonstats/")?;
+        let query = vec![
+            ("application_id", self.token.to_string()),
+            ("language", "en".to_string()),
+            ("account_id", uid.to_string()),
+        ];
+        let res: PlayerClanBattle = self
+            .client
+            .get(url)
+            .query(&query)
+            .send()
+            .await
+            .map_err(Self::_err_wrap)?
+            .json::<PlayerClanBattleAPIRes>()
+            .await?
+            .try_into()?;
+        Ok(res)
     }
 }
 

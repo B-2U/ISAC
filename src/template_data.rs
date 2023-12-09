@@ -15,6 +15,9 @@ pub use clan_season::*;
 mod recent;
 pub use recent::*;
 
+mod overall_cw;
+pub use overall_cw::*;
+
 use crate::utils::{IsacError, IsacInfo};
 
 #[async_trait]

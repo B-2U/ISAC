@@ -1,5 +1,7 @@
 use std::{borrow::Cow, collections::HashMap, time::Duration};
 
+use futures::StreamExt;
+use itertools::Itertools;
 use poise::serenity_prelude::{
     AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, User,
 };
@@ -7,11 +9,13 @@ use poise::serenity_prelude::{
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
     template_data::{
-        OverallTemplate, OverallTemplateClass, OverallTemplateDiv, OverallTemplateTier, Render,
-        SingleShipTemplate,
+        OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
+        OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
     utils::{
-        structs::{Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic},
+        structs::{
+            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic, StatisticValueType,
+        },
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },
@@ -206,11 +210,12 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         div,
         tier,
         class,
-        clan,
-        user: player,
+        clan: clan.clone(),
+        user: player.clone(),
     };
     let img = overall_data.render(&ctx.data().client).await?;
-    let mut view = WwsView::new(partial_player);
+
+    let mut view = WwsView::new(overall_data, partial_player);
     let mut msg = ctx
         .send(|b| {
             b.attachment(AttachmentType::Bytes {
@@ -224,52 +229,113 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         .into_message()
         .await?;
     typing.stop();
-    // waiting for by tier btn
-    if let Some(interaction) = msg
-        .await_component_interaction(ctx)
+
+    // waiting for interactions
+    while let Some(interaction) = msg
+        .await_component_interactions(ctx)
         .timeout(Duration::from_secs(60))
         .author_id(ctx.author().id)
+        .build()
+        .next()
         .await
     {
         let _typing = ctx.typing().await;
-        let img_2 = overall_data.render_tiers(&ctx.data().client).await?;
-        // disable button first
-        let _ok = interaction
-            .edit_original_message(ctx, |m| m.set_components(view.timout().build()))
-            .await;
-        let _ok = msg
-            .edit(ctx, |m| {
-                m.attachment(AttachmentType::Bytes {
-                    data: Cow::Borrowed(&img_2),
-                    filename: "image.png".to_string(),
+        let custom_id = interaction.data.custom_id.as_str();
+
+        if custom_id == "overall_tier" {
+            // disable button first
+            view.by_tier_btn.disabled(true);
+            let _ok = interaction
+                .edit_original_message(ctx, |m| m.set_components(view.build()))
+                .await;
+            // generate then send image
+            let img_2 = view.overall_data.render_tiers(&ctx.data().client).await?;
+            let _ok = msg
+                .edit(ctx, |m| {
+                    m.attachment(AttachmentType::Bytes {
+                        data: Cow::Borrowed(&img_2),
+                        filename: "image.png".to_string(),
+                    })
                 })
-                .set_components(view.timout().build())
-            })
-            .await;
-    } else {
-        // timeout disable button
-        let _ok = msg
-            .edit(ctx, |m| m.set_components(view.timout().build()))
-            .await;
+                .await;
+        } else if custom_id == "overall_cw" {
+            // disable button first
+            view.cw_btn.disabled(true);
+            let _ok = interaction
+                .edit_original_message(ctx, |m| m.set_components(view.build()))
+                .await;
+            let api = WowsApi::new(ctx);
+            let data_2 = view.player.clan_battle_season_stats(&api).await?;
+            let overall_cw_data = OverallCwTemplate {
+                seasons: data_2
+                    .seasons
+                    .into_iter()
+                    .filter(|s| s.season_id <= 200) // remove some other weird seasons
+                    .sorted_by(|a, b| b.season_id.cmp(&a.season_id))
+                    .map(|s| OverallCwTemplateSeason {
+                        season_id: s.season_id,
+                        winrate: StatisticValueType::Winrate {
+                            value: s.wins as f64 / s.battles as f64 * 100.0,
+                        }
+                        .into(),
+                        battles: s.battles,
+                        dmg: StatisticValueType::OverallDmg {
+                            value: s.damage_dealt as f64 / s.battles as f64,
+                        }
+                        .into(),
+                        frags: StatisticValueType::Frags {
+                            value: s.frags as f64 / s.battles as f64,
+                        }
+                        .into(),
+                        potential: s.art_agro / s.battles,
+                        scout: s.damage_scouting / s.battles,
+                    })
+                    .collect::<Vec<_>>(),
+                clan: clan.clone(),
+                user: player.clone(),
+            };
+            println!("{overall_cw_data:?}");
+            let img_2 = overall_cw_data.render(&ctx.data().client).await?;
+            let _ok = msg
+                .edit(ctx, |m| {
+                    m.attachment(AttachmentType::Bytes {
+                        data: Cow::Borrowed(&img_2),
+                        filename: "image.png".to_string(),
+                    })
+                })
+                .await;
+        }
     }
+    // timeout;
+    msg.edit(ctx, |m| m.set_components(view.timeout().build()))
+        .await?;
     Ok(())
 }
 
 struct WwsView {
+    pub overall_data: OverallTemplate,
     pub player: PartialPlayer,
     by_tier_btn: CreateButton,
+    cw_btn: CreateButton,
 }
 
 impl WwsView {
-    fn new(player: PartialPlayer) -> Self {
-        let btn = CreateButton::default()
+    fn new(overall_data: OverallTemplate, player: PartialPlayer) -> Self {
+        let by_tier_btn = CreateButton::default()
             .custom_id("overall_tier")
             .style(poise::serenity_prelude::ButtonStyle::Secondary)
             .label("stats by tier")
             .to_owned();
+        let cw_btn = CreateButton::default()
+            .custom_id("overall_cw")
+            .style(poise::serenity_prelude::ButtonStyle::Secondary)
+            .label("CB seasons")
+            .to_owned();
         Self {
+            overall_data,
             player,
-            by_tier_btn: btn,
+            by_tier_btn,
+            cw_btn,
         }
     }
 
@@ -277,6 +343,7 @@ impl WwsView {
         let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
         row.add_button(self.by_tier_btn.clone())
+            .add_button(self.cw_btn.clone())
             .create_button(|b| {
                 b.label("Official")
                     .url(self.player.profile_url().unwrap())
@@ -291,8 +358,9 @@ impl WwsView {
         view
     }
 
-    fn timout(&mut self) -> &Self {
+    fn timeout(&mut self) -> &Self {
         self.by_tier_btn.disabled(true);
+        self.cw_btn.disabled(true);
         self
     }
 }
