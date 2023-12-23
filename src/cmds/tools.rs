@@ -166,17 +166,17 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         let tables = html
             .select(&transfer_s_selector)
             .nth(1)
-            .ok_or(IsacInfo::GeneralError {
+            .ok_or(IsacError::Info(IsacInfo::GeneralError {
                 msg: "Parsing failed".to_string(),
-            })?
+            }))?
             .select(&table_selector)
             .collect::<Vec<_>>();
         let target_table = match tables.len() {
             1 => tables[0],
             2 => tables[1],
-            n => Err(IsacInfo::GeneralError {
+            n => Err(IsacError::Info(IsacInfo::GeneralError {
                 msg: format!("No transfer history, tables.len() = {n}"),
-            })?,
+            }))?,
         };
         let cells = target_table.select(&cells_selector);
 
