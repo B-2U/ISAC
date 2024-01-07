@@ -362,9 +362,7 @@ impl ShipModeStatsPair {
         expected_js: &Arc<RwLock<ExpectedJs>>,
         mode: Mode,
     ) -> Option<Statistic> {
-        let Some(stats) = self.get(&mode) else {
-            return None;
-        };
+        let stats = self.get(&mode)?;
         let battles = stats.battles_count;
 
         let winrate = stats.wins as f64 / battles as f64 * 100.0;
