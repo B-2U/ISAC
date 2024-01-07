@@ -16,7 +16,7 @@ use tokio::join;
 use crate::{
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
-        Args, ContextAddon, CreateReplyAddon, EasyEmbed, InteractionAddon,
+        Args, ContextAddon, CreateReplyAddon, EasyEmbed,
     },
     template_data::{
         ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
@@ -320,7 +320,9 @@ impl ClanView {
                     continue;
                 };
                 let _r = interaction
-                    .edit_original_message(ctx, |m| m.set_components(self.pressed().build()))
+                    .edit_original_message(ctx, |m| {
+                        m.interaction_response_data(|d| d.set_components(self.pressed().build()))
+                    })
                     .await;
                 let current_season_num = ctx.data().constant.read().clan_season;
                 func_clan_season(ctx, self.clan.clone(), current_season_num).await?

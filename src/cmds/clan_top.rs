@@ -8,11 +8,7 @@ use poise::serenity_prelude::{
 };
 use serde::Deserialize;
 
-use crate::{
-    dc_utils::{CreateReplyAddon, InteractionAddon},
-    utils::structs::Region,
-    Context, Error,
-};
+use crate::{dc_utils::CreateReplyAddon, utils::structs::Region, Context, Error};
 
 /// The Clan Battle leaderboard
 #[poise::command(slash_command)]
@@ -106,7 +102,11 @@ impl ClanTopView {
             }
             if let Ok(embed) = self.build_embed().await {
                 let _r = interaction
-                    .edit_original_message(ctx, |m| m.add_embed(embed).set_components(self.build()))
+                    .edit_original_message(ctx, |m| {
+                        m.interaction_response_data(|d| {
+                            d.add_embed(embed).set_components(self.build())
+                        })
+                    })
                     .await;
             }
         }

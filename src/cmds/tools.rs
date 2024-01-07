@@ -15,7 +15,7 @@ use regex::Regex;
 use scraper::{Element, Html, Selector};
 
 use crate::{
-    dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed, InteractionAddon},
+    dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed},
     utils::{
         structs::{PartialPlayer, Region, Ship},
         wws_api::WowsApi,
@@ -426,7 +426,9 @@ impl RouletteView {
                 _ => (),
             }
             interaction
-                .edit_original_message(ctx, |f| f.set_embed(self.embed_build()))
+                .edit_original_message(ctx, |m| {
+                    m.interaction_response_data(|d| d.set_embed(self.embed_build()))
+                })
                 .await?;
         }
         // timeout;

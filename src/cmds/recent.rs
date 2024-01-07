@@ -9,7 +9,7 @@ use poise::serenity_prelude::{
 };
 
 use crate::{
-    dc_utils::{auto_complete, Args, ContextAddon, InteractionAddon, UserAddon},
+    dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     template_data::{
         RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
     },
@@ -453,7 +453,9 @@ impl<'a> AskDay<'a> {
             .await
         {
             let _r = interaction
-                .edit_original_message(self.ctx, |m| m.set_components(CreateComponents::default()))
+                .edit_original_message(self.ctx, |m| {
+                    m.interaction_response_data(|d| d.set_components(CreateComponents::default()))
+                })
                 .await;
             Some(
                 interaction.data.values[0] // there should be one and only one value because of the min max limits

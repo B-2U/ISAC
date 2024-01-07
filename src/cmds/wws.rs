@@ -7,7 +7,7 @@ use poise::serenity_prelude::{
 };
 
 use crate::{
-    dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, InteractionAddon, UserAddon},
+    dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, UserAddon},
     template_data::{
         OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
@@ -246,7 +246,9 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
             // disable button first
             view.by_tier_btn.disabled(true);
             let _ok = interaction
-                .edit_original_message(ctx, |m| m.set_components(view.build()))
+                .edit_original_message(ctx, |m| {
+                    m.interaction_response_data(|d| d.set_components(view.build()))
+                })
                 .await;
             // generate then send image
             let img_2 = view.overall_data.render_tiers(&ctx.data().client).await?;
@@ -262,7 +264,9 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
             // disable button first
             view.cw_btn.disabled(true);
             let _ok = interaction
-                .edit_original_message(ctx, |m| m.set_components(view.build()))
+                .edit_original_message(ctx, |m| {
+                    m.interaction_response_data(|d| d.set_components(view.build()))
+                })
                 .await;
             let api = WowsApi::new(ctx);
             let data_2 = view.player.clan_battle_season_stats(&api).await?;
