@@ -360,33 +360,36 @@ impl ClanView {
     }
 
     fn build(&self) -> CreateComponents {
-        let (des, member, link) = {
-            let mut des = CreateButton::default();
-            des.label("Description")
-                .custom_id("clan_description")
-                .style(ButtonStyle::Secondary);
-            let mut member = CreateButton::default();
-            member
-                .label("Members")
-                .custom_id("clan_members")
-                .style(ButtonStyle::Secondary);
-            let mut link = CreateButton::default();
-            link.label("Stats & Numbers")
-                .url(self.clan.wows_number_url().unwrap())
-                .style(ButtonStyle::Link);
-            if self.timeout {
-                des.disabled(true);
-                member.disabled(true);
-                link.disabled(true);
-            }
-            (des, member, link)
-        };
         let mut view = CreateComponents::default();
         let mut row = CreateActionRow::default();
-        row.add_button(des)
+
+        let mut descrip = CreateButton::default();
+        descrip
+            .label("Description")
+            .custom_id("clan_description")
+            .style(ButtonStyle::Secondary);
+
+        let mut member = CreateButton::default();
+        member
+            .label("Members")
+            .custom_id("clan_members")
+            .style(ButtonStyle::Secondary);
+
+        let mut num_link = CreateButton::default();
+        num_link
+            .label("Stats & Numbers")
+            .url(self.clan.wows_number_url().unwrap())
+            .style(ButtonStyle::Link);
+
+        if self.timeout {
+            descrip.disabled(true);
+            member.disabled(true);
+        }
+
+        row.add_button(descrip)
             .add_button(member)
             .add_button(self.last_season_btn.clone())
-            .add_button(link);
+            .add_button(num_link);
         view.set_action_row(row);
         view
     }
