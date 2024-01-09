@@ -173,7 +173,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
             .collect::<Vec<_>>();
         let target_table = match tables.len() {
             0 => Err(IsacError::Info(IsacInfo::GeneralError {
-                msg: format!("No transfer history"),
+                msg: "No transfer history".to_string(),
             })),
             1 => Ok(tables[0]),
             2 => Ok(tables[1]),
