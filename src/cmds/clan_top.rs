@@ -8,7 +8,11 @@ use poise::serenity_prelude::{
 };
 use serde::Deserialize;
 
-use crate::{dc_utils::CreateReplyAddon, utils::structs::Region, Context, Error};
+use crate::{
+    dc_utils::CreateReplyAddon,
+    utils::{structs::Region, IsacError},
+    Context, Error,
+};
 
 /// The Clan Battle leaderboard
 #[poise::command(slash_command)]
@@ -135,7 +139,7 @@ impl ClanTopView {
             Region::Eu => "eu",
         }
     }
-    async fn build_embed(&self) -> Result<CreateEmbed, Error> {
+    async fn build_embed(&self) -> Result<CreateEmbed, IsacError> {
         let mut embed = CreateEmbed::default();
         embed
             .title(format!("{} {}", self.league_name(), self.division_name()))
