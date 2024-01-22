@@ -78,11 +78,12 @@ pub async fn clan_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(),
         // clan season
         let current_season_num = ctx.data().constant.read().clan_season;
         let season_num = {
-            let s = args.check(0)?.parse::<i32>().unwrap_or(-1);
-            match s.is_positive() {
-                false => current_season_num,
-                true => s as u32,
-            }
+            args.check(0)?
+                // for accepting input like `S22`, `s21`
+                .trim_matches(|c| c == 's' || c == 'S')
+                .parse::<u32>()
+                // if it is not a valid positive number, using the latest season as default
+                .unwrap_or(current_season_num)
         };
         func_clan_season(&ctx, partial_clan, season_num).await
     }
