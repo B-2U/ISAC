@@ -159,7 +159,7 @@ async fn func_recent(
         ctx,
         player.ign.clone(),
         mode,
-        specific_ship.as_ref().map(|s| s.name.clone()),
+        specific_ship.as_ref(), // borrow the ship to prevent clone()
         is_active,
     );
 
@@ -330,7 +330,7 @@ pub struct AskDay<'a> {
     pub mode: Mode,
     pub ask_msg: Option<Message>,
     pub is_active: bool,
-    pub ship_name: Option<String>, // ship name
+    pub ship: Option<&'a Ship>,
 }
 
 impl<'a> AskDay<'a> {
@@ -338,7 +338,7 @@ impl<'a> AskDay<'a> {
         ctx: &'a Context<'_>,
         ign: String,
         mode: Mode,
-        ship_name: Option<String>,
+        ship: Option<&'a Ship>,
         is_active: bool,
     ) -> Self {
         Self {
@@ -347,7 +347,7 @@ impl<'a> AskDay<'a> {
             mode,
             ask_msg: None,
             is_active,
-            ship_name,
+            ship,
         }
     }
     /// ask user to select a day, return None if user didn't response
@@ -391,10 +391,10 @@ impl<'a> AskDay<'a> {
             }
         };
         let msg_content = {
-            let specific_ship = self.ship_name.as_ref().map_or_else(
-                || "".to_string(),
-                |ship_name| format!(" in **{}**", ship_name),
-            );
+            let specific_ship = self
+                .ship
+                .as_ref()
+                .map_or_else(|| "".to_string(), |ship| format!(" in **{}**", ship.name));
             let mut content = format!(
                 "`{}` played 0 battle{specific_ship} in **{}** last **{}** day.",
                 self.ign,
