@@ -109,14 +109,14 @@ async fn main() {
         .await
         .unwrap();
     let shard_manager = Arc::clone(bot.shard_manager());
-    // QA how to gracefully shut down?
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Could not register ctrl+c handler");
+
+    // crtl_c catcher (it works for both win and unix)
+    ctrlc_async::set_async_handler(async move {
+        println!("ISAC shutting down...");
         shard_manager.lock().await.shutdown_all().await;
-        // QA gracfully?
-    });
+    })
+    .expect("Could not register ctrl+c handler");
+
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
     let patron = Arc::clone(&arc_data.patron);
