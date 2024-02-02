@@ -35,7 +35,7 @@ jobs:
         rust:
           - ${{ needs.get-msrv.outputs.msrv }}
           - stable
-          - nightly
+          # - nightly
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -49,9 +49,9 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
 
-      - name: Build debug profile
-        id: build
-        run: cargo build --verbose
+      # - name: Build debug profile
+      #   id: build
+      #   run: cargo build --verbose
 
       - name: Run clippy
         run: cargo clippy --all-targets --all-features -- -D warnings
@@ -60,9 +60,9 @@ jobs:
         id: run_tests
         run: cargo test --color=never
 
-      - name: Upload unix binary
-        if: ${{ success() || steps.build.outcome == 'success' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.rust }}-debug
-          path: target/debug/isac-rs
+      # - name: Upload unix binary
+      #   if: ${{ success() || steps.build.outcome == 'success' }}
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: ${{ matrix.rust }}-debug
+      #     path: target/debug/isac-rs

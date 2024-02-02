@@ -1,8 +1,9 @@
 name: cd
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: [ci]
+    types:
+      - completed
   workflow_dispatch:
 
 jobs:
