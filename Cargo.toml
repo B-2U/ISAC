@@ -9,7 +9,6 @@ rust-version = "1.73"
 [dependencies]
 bytes = "1.5.0"
 chrono = "0.4.31"
-ctrlc-async = { version = "3.2.2", features = ["termination"] }
 dotenv = "0.15.0"
 futures = "0.3.28"
 fuzzy-matcher = "0.3.7"
