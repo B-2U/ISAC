@@ -24,6 +24,7 @@ jobs:
           cargo build --release
       
       - name: rsync
+        if: ${{ steps.build.outcome == 'success' }}
         uses: contention/rsync-deployments@v2.0.0
         with:
           flags:
@@ -35,12 +36,12 @@ jobs:
           deploy_key: ${{ secrets.DEPLOY_SSH_KEY }}
         
 
-      # - name: Deploy to VPS
-      #   if: ${{ steps.build.outcome == 'success' }}
-      #   uses: appleboy/ssh-action@master
-      #   with:
-      #     host: ${{ secrets.DEPLOY_HOST }}
-      #     username: ${{ secrets.DEPLOY_USERNAME }}
-      #     key: ${{ secrets.DEPLOY_SSH_KEY }}
-      #     script: |
-      #       rsync target/release/isac-rs ${{ secrets.DEPLOY_PATH }}
+      - name: restart service
+        if: ${{ steps.build.outcome == 'success' }}
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            systemctl restart isac
