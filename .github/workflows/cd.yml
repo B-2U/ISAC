@@ -31,4 +31,6 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            sudo apt-get install -y exa
+            exa -lT
             rsync target/release/isac-rs ${{ secrets.DEPLOY_PATH }}
