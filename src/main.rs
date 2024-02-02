@@ -45,11 +45,12 @@ async fn main() {
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
     launch_renderer().await;
 
-    let (prefix, token) = if cfg!(windows) {
-        ("-", env::var("WIP_TOKEN").expect("Missing TOKEN"))
-    } else {
-        (".", env::var("TOKEN").expect("Missing TOKEN"))
-    };
+    let (prefix, token) =
+        if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
+            ("-", env::var("TOKEN").expect("Missing TOKEN"))
+        } else {
+            (".", env::var("WIP_TOKEN").expect("Missing TOKEN"))
+        };
 
     let options = poise::FrameworkOptions {
         owners: HashSet::from([UserId(930855839961591849)]),
@@ -109,14 +110,27 @@ async fn main() {
         .await
         .unwrap();
     let shard_manager = Arc::clone(bot.shard_manager());
-    // QA how to gracefully shut down?
+    // ctrl_c catcher for both Win and Unix
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
             .expect("Could not register ctrl+c handler");
+        println!("Ctrl C, ISAC shutting down...");
         shard_manager.lock().await.shutdown_all().await;
         // QA gracfully?
     });
+    // Unix SIGTERM catcher
+    if !cfg!(windows) {
+        let shard_manager2 = Arc::clone(bot.shard_manager());
+        tokio::spawn(async move {
+            let mut sig = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                .expect("Could not register SIGTERM handler");
+            sig.recv().await;
+            println!("SIGTERM, ISAC shutting down...");
+            shard_manager2.lock().await.shutdown_all().await;
+        });
+    }
+
     // update patreon
     let http = bot.client().cache_and_http.http.clone();
     let patron = Arc::clone(&arc_data.patron);
