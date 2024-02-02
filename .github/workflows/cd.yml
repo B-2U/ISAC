@@ -23,17 +23,24 @@ jobs:
         run: |
           cargo build --release
       
-      - name: debug
-        run: |
-          sudo apt-get install -y exa
-          exa -lT
-
-      - name: Deploy to VPS
-        if: ${{ steps.build.outcome == 'success' }}
-        uses: appleboy/ssh-action@master
+      - name: rsync
+        uses: contention/rsync-deployments@v2.0.0
         with:
+          flags:
+          excludes:
+          user: ${{ secrets.DEPLOY_USERNAME }}
           host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USERNAME }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            rsync target/release/isac-rs ${{ secrets.DEPLOY_PATH }}
+          localpath: target/release/isac-rs
+          remotepath: ${{ secrets.DEPLOY_PATH }}
+          deploy_key: ${{ secrets.DEPLOY_SSH_KEY }}
+        
+
+      # - name: Deploy to VPS
+      #   if: ${{ steps.build.outcome == 'success' }}
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.DEPLOY_HOST }}
+      #     username: ${{ secrets.DEPLOY_USERNAME }}
+      #     key: ${{ secrets.DEPLOY_SSH_KEY }}
+      #     script: |
+      #       rsync target/release/isac-rs ${{ secrets.DEPLOY_PATH }}
