@@ -134,6 +134,14 @@ async def startup():
     app.add_background_task(Renderer.launch)
 
 
+@app.after_serving
+async def shutdown():
+    print("clearing renderer")
+    await renderer.browser.close()
+    await renderer.playwright.stop()
+    print("renderer cleared")
+
+
 class Renderer:
     def __init__(self):
         self.playwright: AsyncPlaywright = None
