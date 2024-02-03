@@ -45,4 +45,4 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            systemctl restart isac
+            systemctl --user restart isac
