@@ -47,9 +47,9 @@ async fn main() {
 
     let (prefix, token) =
         if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
-            ("-", env::var("TOKEN").expect("Missing TOKEN"))
+            (".", env::var("TOKEN").expect("Missing TOKEN"))
         } else {
-            (".", env::var("WIP_TOKEN").expect("Missing TOKEN"))
+            ("-", env::var("WIP_TOKEN").expect("Missing TOKEN"))
         };
 
     let options = poise::FrameworkOptions {
