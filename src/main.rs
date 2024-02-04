@@ -118,9 +118,7 @@ async fn main() {
             .await
             .expect("Could not register ctrl+c handler");
         println!("Ctrl C, ISAC shutting down...");
-        if let Err(_) = tx2.send(()) {
-            return;
-        };
+        let _ = tx.send(());
         // QA gracfully?
     });
     // Unix SIGTERM catcher
@@ -131,9 +129,7 @@ async fn main() {
                 .expect("Could not register SIGTERM handler");
             sig.recv().await;
             println!("SIGTERM, ISAC shutting down...");
-            if let Err(_) = tx.send(()) {
-                return;
-            };
+            let _ = tx2.send(());
         });
     }
 
