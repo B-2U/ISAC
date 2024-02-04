@@ -120,7 +120,8 @@ async fn main() {
         // QA gracfully?
     });
     // Unix SIGTERM catcher
-    if !cfg!(windows) {
+    #[cfg(target_os = "unix")]
+    {
         let shard_manager2 = Arc::clone(bot.shard_manager());
         tokio::spawn(async move {
             let mut sig = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
