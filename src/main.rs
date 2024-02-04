@@ -152,7 +152,7 @@ async fn main() {
             error!("Client error: {:?}", why);
         }
     });
-    if let Err(_) = rx.recv() {
+    if rx.recv().is_err() {
         println!("All signal handlers hung up, shutting down...");
     }
     shard_manager.lock().await.shutdown_all().await;
