@@ -90,6 +90,7 @@ async fn main() {
     };
     let data = Data::default();
     let arc_data = data.clone();
+    let (tx, rx) = std::sync::mpsc::channel();
     let bot = poise::Framework::builder()
         .token(token)
         .setup(move |ctx, ready, framework| {
@@ -111,24 +112,28 @@ async fn main() {
         .unwrap();
     let shard_manager = Arc::clone(bot.shard_manager());
     // ctrl_c catcher for both Win and Unix
+    let tx2 = tx.clone();
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
             .expect("Could not register ctrl+c handler");
         println!("Ctrl C, ISAC shutting down...");
-        shard_manager.lock().await.shutdown_all().await;
+        if let Err(_) = tx2.send(()) {
+            return;
+        };
         // QA gracfully?
     });
     // Unix SIGTERM catcher
     #[cfg(target_os = "unix")]
     {
-        let shard_manager2 = Arc::clone(bot.shard_manager());
         tokio::spawn(async move {
             let mut sig = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
                 .expect("Could not register SIGTERM handler");
             sig.recv().await;
             println!("SIGTERM, ISAC shutting down...");
-            shard_manager2.lock().await.shutdown_all().await;
+            if let Err(_) = tx.send(()) {
+                return;
+            };
         });
     }
 
@@ -146,9 +151,19 @@ async fn main() {
     //     let mut data = bot.client().data.write().await;
     //     data.insert::<ReqClient>(reqwest::Client::new());
     // }
-    if let Err(why) = bot.start().await {
-        error!("Client error: {:?}", why);
+    tokio::spawn(async move {
+        if let Err(why) = bot.start().await {
+            error!("Client error: {:?}", why);
+        }
+    });
+    if let Err(_) = rx.recv() {
+        println!("All signal handlers hung up, shutting down...");
     }
+    shard_manager.lock().await.shutdown_all().await;
+    if let Ok(lb) = arc_data.leaderboard.lock() {
+        println!("Saving leaderboard.json");
+        lb.save_json_sync();
+    };
 }
 
 /// My custom Data, it already uses an [`Arc`] internally.
