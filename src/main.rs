@@ -43,7 +43,7 @@ async fn main() {
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
-    launch_renderer().await;
+    let renderer = launch_renderer().await;
 
     let (prefix, token) =
         if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
@@ -160,6 +160,10 @@ async fn main() {
         println!("Saving leaderboard.json");
         lb.save_json_sync();
     };
+    // close renderer
+    if let Some(renderer_pid) = renderer.id() {
+        unsafe { libc::kill(renderer_pid as i32, libc::SIGINT) };
+    }
     shard_manager.lock().await.shutdown_all().await;
 }
 

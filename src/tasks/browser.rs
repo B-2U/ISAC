@@ -12,11 +12,11 @@
 //         .expect("Failed to start subprocess");
 // }
 
-pub async fn launch_renderer() {
+pub async fn launch_renderer() -> tokio::process::Child {
     let python = if cfg!(windows) { "python" } else { "python3" };
     // Replace "path/to/executable" with the actual path to your executable
-    let _ = tokio::process::Command::new(python)
+    tokio::process::Command::new(python)
         .arg("./renderer/renderer.py")
         .spawn()
-        .expect("Failed to start subprocess");
+        .expect("Failed to start subprocess")
 }
