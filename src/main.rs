@@ -90,7 +90,7 @@ async fn main() {
     };
     let data = Data::default();
     let arc_data = data.clone();
-    let (tx, rx) = std::sync::mpsc::channel();
+    let (tx, rx) = std::sync::mpsc::channel::<()>();
     let bot = poise::Framework::builder()
         .token(token)
         .setup(move |ctx, ready, framework| {
@@ -122,7 +122,7 @@ async fn main() {
         // QA gracfully?
     });
     // Unix SIGTERM catcher
-    #[cfg(target_os = "unix")]
+    #[cfg(target_os = "linux")]
     {
         tokio::spawn(async move {
             let mut sig = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
@@ -155,11 +155,12 @@ async fn main() {
     if rx.recv().is_err() {
         println!("All signal handlers hung up, shutting down...");
     }
-    shard_manager.lock().await.shutdown_all().await;
+    // cleaning up
     if let Ok(lb) = arc_data.leaderboard.lock() {
         println!("Saving leaderboard.json");
         lb.save_json_sync();
     };
+    shard_manager.lock().await.shutdown_all().await;
 }
 
 /// My custom Data, it already uses an [`Arc`] internally.
