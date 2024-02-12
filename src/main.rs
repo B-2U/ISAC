@@ -43,7 +43,7 @@ async fn main() {
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
-    let renderer = launch_renderer().await;
+    let _renderer = launch_renderer().await; // it's used in linux specific code below
 
     let (prefix, token) =
         if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
@@ -161,7 +161,8 @@ async fn main() {
         lb.save_json_sync();
     };
     // close renderer
-    if let Some(renderer_pid) = renderer.id() {
+    #[cfg(target_os = "linux")]
+    if let Some(renderer_pid) = _renderer.id() {
         unsafe { libc::kill(renderer_pid as i32, libc::SIGINT) };
     }
     shard_manager.lock().await.shutdown_all().await;
