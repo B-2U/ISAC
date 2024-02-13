@@ -2,7 +2,6 @@ import io
 import json
 import os
 import time
-import math
 import pystache
 from quart import Quart, Response, send_file, request
 from contextlib import asynccontextmanager

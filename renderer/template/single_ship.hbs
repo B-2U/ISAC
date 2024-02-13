@@ -72,8 +72,13 @@
 
         .dogtag-container {
             position: relative;
-            height: 80;
-            width: 80;
+            height: 90;
+            width: 90;
+        }
+
+        .dogtag-dogtag {
+            height: 90px;
+            width: 90px;
         }
 
         .dogtag-dogtag_bg {
@@ -205,8 +210,8 @@
             <div class="z-index-container">
                 <div class="user">
                     <div class="dogtag-container">
-                        <img src="{{user.dogtag}}" onerror="this.style.display='none'">
-                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}">
+                        <img class="dogtag-dogtag" src="{{user.dogtag}}" onerror="this.style.display='none'">
+                        <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}" onerror=" this.style.display='none'">
                     </div>
                     {{#clan}}
                     <span style="color: {{clan.color}};">[{{clan.tag}}]</span>

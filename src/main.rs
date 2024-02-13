@@ -43,7 +43,6 @@ async fn main() {
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
-    let _renderer = launch_renderer().await; // it's used in linux specific code below
 
     let (prefix, token) =
         if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
@@ -147,6 +146,9 @@ async fn main() {
     //     let mut data = bot.client().data.write().await;
     //     data.insert::<ReqClient>(reqwest::Client::new());
     // }
+
+    let _renderer = launch_renderer().await; // it's used in linux specific code below
+
     tokio::spawn(async move {
         if let Err(why) = bot.start().await {
             error!("Client error: {:?}", why);
