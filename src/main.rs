@@ -48,7 +48,12 @@ async fn main() {
         if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
             (".", env::var("TOKEN").expect("Missing TOKEN"))
         } else {
-            ("-", env::var("WIP_TOKEN").expect("Missing TOKEN"))
+            println!(
+                "HOSTNAME: {:?} not matched the env HOSTNAME: {}, using test bot token",
+                hostname::get().unwrap(),
+                env::var("HOSTNAME").unwrap()
+            );
+            ("-", env::var("WIP_TOKEN").expect("Missing WIP_TOKEN"))
         };
 
     let options = poise::FrameworkOptions {
@@ -161,6 +166,7 @@ async fn main() {
     if let Ok(lb) = arc_data.leaderboard.lock() {
         println!("Saving leaderboard.json");
         lb.save_json_sync();
+        println!("Saved leaderboard.json");
     };
     // close renderer
     #[cfg(target_os = "linux")]
