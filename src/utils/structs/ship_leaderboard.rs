@@ -10,8 +10,18 @@ use crate::utils::{
     LoadSaveFromJson,
 };
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
+
+impl Default for ShipLeaderboard {
+    fn default() -> Self {
+        let mut lb = HashMap::new();
+        lb.insert(Region::Asia, HashMap::new());
+        lb.insert(Region::Na, HashMap::new());
+        lb.insert(Region::Eu, HashMap::new());
+        ShipLeaderboard(lb)
+    }
+}
 
 impl ShipLeaderboard {
     /// get the players on the ship's leaderboard
