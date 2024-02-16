@@ -12,8 +12,10 @@
 //         .expect("Failed to start subprocess");
 // }
 
+use std::env;
+
 pub async fn launch_renderer() -> tokio::process::Child {
-    let python = if cfg!(windows) { "python" } else { "python3" };
+    let python = env::var("PYTHON_PATH").unwrap_or("python".to_string());
     // Replace "path/to/executable" with the actual path to your executable
     tokio::process::Command::new(python)
         .arg("./renderer/renderer.py")
