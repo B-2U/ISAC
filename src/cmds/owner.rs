@@ -28,7 +28,7 @@ pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn users(ctx: Context<'_>) -> Result<(), Error> {
-    let len = ctx.data().link_js.read().0.len();
+    let len = ctx.data().link_js.read().await.0.len();
     let _a = ctx.reply(len.to_string()).await?;
     Ok(())
 }

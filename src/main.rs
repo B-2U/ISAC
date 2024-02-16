@@ -8,15 +8,15 @@ mod tasks;
 mod template_data;
 mod utils;
 
-use parking_lot::RwLock;
 use poise::serenity_prelude::{self as serenity, Activity, UserId};
 use std::{
     collections::HashSet,
     env,
     ops::Deref,
-    sync::{Arc, Mutex},
+    sync::Arc,
     time::{SystemTime, UNIX_EPOCH},
 };
+use tokio::sync::Mutex;
 use tracing::{debug, error};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
@@ -163,9 +163,10 @@ async fn main() {
         println!("All signal handlers hung up, shutting down...");
     }
     // cleaning up
-    if let Ok(lb) = arc_data.leaderboard.lock() {
+    {
+        let lb = arc_data.leaderboard.lock().await;
         println!("Saving leaderboard.json");
-        lb.save_json_sync();
+        lb.save_json().await;
         println!("Saved leaderboard.json");
     };
     // close renderer
@@ -193,14 +194,14 @@ impl Deref for Data {
 
 pub struct DataInner {
     client: reqwest::Client,
-    patron: Arc<RwLock<Patrons>>,
-    expected_js: Arc<RwLock<ExpectedJs>>,
-    ship_js: RwLock<ShipsPara>, // TODO make a command for update it
-    link_js: RwLock<Linked>,
+    patron: Arc<parking_lot::RwLock<Patrons>>,
+    expected_js: Arc<parking_lot::RwLock<ExpectedJs>>,
+    ship_js: parking_lot::RwLock<ShipsPara>, // TODO make a command for update it
+    constant: parking_lot::RwLock<LittleConstant>,
+    link_js: tokio::sync::RwLock<Linked>,
     wg_api_token: String,
-    guild_default: RwLock<GuildDefaultRegion>,
-    constant: RwLock<LittleConstant>,
-    pfp: RwLock<Pfp>,
+    guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
+    pfp: tokio::sync::RwLock<Pfp>,
     leaderboard: Mutex<ShipLeaderboard>,
 }
 
@@ -208,14 +209,14 @@ impl Default for DataInner {
     fn default() -> Self {
         DataInner {
             client: reqwest::Client::new(),
-            patron: Arc::new(RwLock::new(Patrons::default())),
-            expected_js: Arc::new(RwLock::new(ExpectedJs::load_json_sync())),
-            ship_js: RwLock::new(ShipsPara::load_json_sync()),
-            link_js: RwLock::new(Linked::load_json_sync()),
+            patron: Arc::new(parking_lot::RwLock::new(Patrons::default())),
+            expected_js: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json_sync())),
+            ship_js: parking_lot::RwLock::new(ShipsPara::load_json_sync()),
+            constant: parking_lot::RwLock::new(LittleConstant::load_json_sync()),
+            link_js: tokio::sync::RwLock::new(Linked::load_json_sync()),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
-            guild_default: RwLock::new(GuildDefaultRegion::load_json_sync()),
-            constant: RwLock::new(LittleConstant::load_json_sync()),
-            pfp: RwLock::new(Pfp::load_json_sync()),
+            guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json_sync()),
+            pfp: tokio::sync::RwLock::new(Pfp::load_json_sync()),
             leaderboard: Mutex::new(ShipLeaderboard::load_json_sync()),
         }
     }

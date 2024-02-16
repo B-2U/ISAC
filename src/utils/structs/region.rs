@@ -113,7 +113,7 @@ impl Region {
     /// otherwirse return [`Region::Asia`]
     pub async fn guild_default(ctx: &Context<'_>) -> Self {
         if let Some(guild_id) = ctx.guild_id() {
-            let guild_default_guard = ctx.data().guild_default.read();
+            let guild_default_guard = ctx.data().guild_default.read().await;
             match guild_default_guard.0.get(&guild_id) {
                 Some(guild_default) => *guild_default,
                 None => Self::Asia,

@@ -31,9 +31,9 @@ pub async fn link(
     let api = WowsApi::new(&ctx);
     let player = partial_player.get_player(&api).await?;
     {
-        let mut guard = ctx.data().link_js.write();
+        let mut guard = ctx.data().link_js.write().await;
         guard.0.insert(ctx.author().id, partial_player);
-        guard.save_json_sync();
+        guard.save_json().await;
     }
     let _r = ctx
         .reply(format!(
@@ -68,9 +68,9 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
         if let Ok(true) = is_admin {
             // block for RWlock
             {
-                let mut guard = ctx.data().guild_default.write();
+                let mut guard = ctx.data().guild_default.write().await;
                 guard.0.insert(guild_id, region);
-                guard.save_json_sync();
+                guard.save_json().await;
             }
             let _r = ctx
                 .reply(format!("Default region set to **{region}** successfully!"))
@@ -82,7 +82,7 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
         }
     } else {
         let guild_default = {
-            let guard = ctx.data().guild_default.read();
+            let guard = ctx.data().guild_default.read().await;
             guard
                 .0
                 .get(&ctx.guild_id().expect("it should be dealed aboved"))

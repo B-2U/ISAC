@@ -28,7 +28,7 @@ pub trait UserAddon: Sized {
 
     /// get the user's linked account if exist
     async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer> {
-        ctx.data().link_js.read().get(&ctx.author().id)
+        ctx.data().link_js.read().await.get(&ctx.author().id)
     }
 
     /// get permissions

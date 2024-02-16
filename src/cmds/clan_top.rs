@@ -24,8 +24,15 @@ pub async fn clan_top(
     season: Option<i64>,
     #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
-    let region =
-        region.unwrap_or_else(|| ctx.data().guild_default.read().get_default(ctx.guild_id()));
+    let region = match region {
+        Some(region) => region,
+        None => ctx
+            .data()
+            .guild_default
+            .read()
+            .await
+            .get_default(ctx.guild_id()),
+    };
     let season = {
         let season = season.unwrap_or(-1);
         match season.is_positive() {

@@ -58,7 +58,7 @@ pub async fn background(
         .await?;
     let url = msg.attachments[0].url.clone();
     {
-        let mut pfp_js = ctx.data().pfp.write();
+        let mut pfp_js = ctx.data().pfp.write().await;
         pfp_js
             .0
             .retain(|_, patron| patron.discord_id != ctx.author().id);
@@ -70,7 +70,7 @@ pub async fn background(
                 discord_id: ctx.author().id,
             },
         );
-        pfp_js.save_json_sync();
+        pfp_js.save_json().await;
     }
 
     func_wws(&ctx, player).await

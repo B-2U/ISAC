@@ -187,7 +187,7 @@ impl ShipStatsCollection {
     }
 
     /// consume Self and sort the given ships by their class
-    pub fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
+    pub async fn sort_class(self, ctx: &Context<'_>) -> HashMap<ShipClass, ShipStatsCollection> {
         let mut map: HashMap<ShipClass, ShipStatsCollection> = ShipClass::iter()
             .map(|class| (class, ShipStatsCollection::default()))
             .collect();
@@ -204,7 +204,7 @@ impl ShipStatsCollection {
         map
     }
     /// consume Self and sort the given ships by their class
-    pub fn sort_tier(self, ctx: &Context<'_>) -> HashMap<ShipTier, ShipStatsCollection> {
+    pub async fn sort_tier(self, ctx: &Context<'_>) -> HashMap<ShipTier, ShipStatsCollection> {
         let mut map: HashMap<ShipTier, ShipStatsCollection> = ShipTier::iter()
             .map(|class| (class, ShipStatsCollection::default()))
             .collect();

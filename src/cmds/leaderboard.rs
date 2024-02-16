@@ -59,14 +59,14 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         .data()
         .leaderboard
         .lock()
-        .expect("lb poisoned!")
+        .await
         .get_ship(&region, &ship.ship_id, true);
 
     let mut lb_players = match lb_players {
         Some(p) => p,
         None => {
             let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;
-            let mut lb_cache = ctx.data().leaderboard.lock().expect("lb poisoned!");
+            let mut lb_cache = ctx.data().leaderboard.lock().await;
 
             lb_cache.insert(
                 &region,

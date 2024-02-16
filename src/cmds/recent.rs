@@ -72,6 +72,7 @@ pub async fn recent(
         ctx.data()
             .link_js
             .read()
+            .await
             .get(&user.id)
             .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
                 user_name: Some(user.name.clone()),

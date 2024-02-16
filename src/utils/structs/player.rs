@@ -144,7 +144,7 @@ impl Player {
         let dogtag_bg = player_dogtag.get_background();
         let premium = data.patron.read().check_player(&uid);
         let pfp = if premium {
-            let pfp_js = data.pfp.read();
+            let pfp_js = data.pfp.read().await;
             pfp_js.get(&uid).unwrap_or_default().url
         } else {
             "".to_string()

@@ -31,7 +31,7 @@ impl Args {
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            match ctx.data().link_js.read().get(&user.id) {
+            match user.get_player(ctx).await {
                 Some(linked_user) => {
                     self.remove(0)?;
                     Ok(linked_user)
@@ -41,7 +41,7 @@ impl Args {
                 })?,
             }
         } else if first_arg == "me" {
-            match ctx.data().link_js.read().get(&ctx.author().id) {
+            match ctx.author().get_player(ctx).await {
                 Some(linked_user) => {
                     self.remove(0)?;
                     Ok(linked_user)
@@ -90,7 +90,7 @@ impl Args {
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            let linked_user = ctx.data().link_js.read().get(&user.id);
+            let linked_user = user.get_player(ctx).await;
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;
@@ -106,7 +106,7 @@ impl Args {
                 })?,
             }
         } else if first_arg == "me" {
-            let linked_user = ctx.data().link_js.read().get(&ctx.author().id);
+            let linked_user = ctx.author().get_player(ctx).await;
             match linked_user {
                 Some(linked_user) => {
                     self.remove(0)?;

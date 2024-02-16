@@ -66,6 +66,7 @@ pub async fn wws(
         ctx.data()
             .link_js
             .read()
+            .await
             .get(&user.id)
             .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
                 user_name: Some(user.name.clone()),
@@ -122,7 +123,7 @@ async fn func_ship(
         .data()
         .leaderboard
         .lock()
-        .expect("lb poisoned!")
+        .await
         .get_ship(&player.region, &ship.ship_id, false)
         .and_then(|players| {
             players
@@ -182,6 +183,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
     let class: OverallTemplateClass = ships
         .clone()
         .sort_class(ctx)
+        .await
         .into_iter()
         .map(|(class, ships)| {
             (
@@ -195,6 +197,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         .into();
     let tier: OverallTemplateTier = ships
         .sort_tier(ctx)
+        .await
         .into_iter()
         .map(|(class, ships)| {
             (
