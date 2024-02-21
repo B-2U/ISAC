@@ -10,23 +10,13 @@ use crate::utils::{
     LoadSaveFromJson,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
-
-impl Default for ShipLeaderboard {
-    fn default() -> Self {
-        let mut lb = HashMap::new();
-        lb.insert(Region::Asia, HashMap::new());
-        lb.insert(Region::Na, HashMap::new());
-        lb.insert(Region::Eu, HashMap::new());
-        ShipLeaderboard(lb)
-    }
-}
 
 impl ShipLeaderboard {
     /// get the players on the ship's leaderboard
     pub fn get_ship(
-        &self,
+        &mut self,
         region: &Region,
         ship_id: &ShipId,
         timeout_check: bool,
@@ -35,7 +25,9 @@ impl ShipLeaderboard {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
-        self.0[region]
+        self.0
+            .entry(*region)
+            .or_default()
             .get(ship_id)
             // if `timeout_check` is required && `last_updated_at` over 3600 sec, filter it
             .filter(|ship_cache| !timeout_check || now - ship_cache.last_updated_at <= 3600)

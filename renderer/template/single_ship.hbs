@@ -184,7 +184,7 @@
             justify-items: center;
             justify-content: space-between;
             padding: 8px 0 8px;
-            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
             font-size: 0.9em;
         }
 
@@ -281,7 +281,8 @@
             <div class="division-stats-table">
                 <div class="division-stats-row">
                     <div class="division-stats-label empty label-text"></div>
-                    <div class="division-stats-label battles-label label-text">Battles</div>
+                    <div class="division-stats-label battles-label label-text">BTL</div>
+                    <div class="division-stats-label bxp-label label-text">Bxp</div>
                     <div class="division-stats-label pr-label label-text">PR</div>
                     <div class="division-stats-label winrate-label label-text">Win rate</div>
                     <div class="division-stats-label avg-dmg-label label-text">Dmg</div>
@@ -291,6 +292,8 @@
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-solo label-text">Solo</div>
                     <div class="division-stats-data battles-data division-type-solo">{{pvp_solo.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-solo" style="color: {{pvp_solo.exp.color}};">
+                        {{pvp_solo.exp.value}}</div>
                     <div class="division-stats-data pr-data division-type-solo" style="color: {{pvp_solo.pr.color}};">
                         {{pvp_solo.pr.value}}</div>
                     <div class="division-stats-data winrate-data division-type-solo"
@@ -305,6 +308,8 @@
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-div2 label-text">Div 2</div>
                     <div class="division-stats-data battles-data division-type-div2">{{pvp_div2.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-solo" style="color: {{pvp_div2.exp.color}};">
+                        {{pvp_div2.exp.value}}</div>
                     <div class="division-stats-data pr-data division-type-div2" style="color: {{pvp_div2.pr.color}};">
                         {{pvp_div2.pr.value}}</div>
                     <div class="division-stats-data winrate-data division-type-div2"
@@ -319,6 +324,8 @@
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-div3 label-text">Div 3</div>
                     <div class="division-stats-data battles-data division-type-div3">{{pvp_div3.battles}}</div>
+                    <div class="division-stats-data exp-data division-type-solo" style="color: {{pvp_div3.exp.color}};">
+                        {{pvp_div3.exp.value}}</div>
                     <div class="division-stats-data pr-data division-type-div3" style="color: {{pvp_div3.pr.color}};">
                         {{pvp_div3.pr.value}}</div>
                     <div class="division-stats-data winrate-data division-type-div3"
