@@ -203,7 +203,7 @@ async fn func_clan_season(
 ) -> Result<(), Error> {
     let current_season_num = ctx.data().constant.read().clan_season;
     let season_num = match season_num {
-        n if n == 0 => current_season_num,
+        0 => current_season_num,
         n if n > 0 => n.unsigned_abs(),
         // negative index
         n if n < 0 && current_season_num.checked_add_signed(n).is_some() => {
