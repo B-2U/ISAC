@@ -56,11 +56,6 @@ pub async fn clan(
         .swap_remove(0);
 
     if let Some(season) = season {
-        let current_season_num = ctx.data().constant.read().clan_season;
-        let season = match season.is_positive() {
-            false => current_season_num,
-            true => season.unsigned_abs(),
-        };
         func_clan_season(&ctx, partial_clan, season).await
     } else {
         func_clan(&ctx, partial_clan).await
@@ -76,14 +71,13 @@ pub async fn clan_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(),
         func_clan(&ctx, partial_clan).await
     } else {
         // clan season
-        let current_season_num = ctx.data().constant.read().clan_season;
         let season_num = {
             args.check(0)?
                 // for accepting input like `S22`, `s21`
                 .trim_matches(|c| c == 's' || c == 'S')
-                .parse::<u32>()
+                .parse::<i32>()
                 // if it is not a valid positive number, using the latest season as default
-                .unwrap_or(current_season_num)
+                .unwrap_or(0)
         };
         func_clan_season(&ctx, partial_clan, season_num).await
     }
@@ -205,8 +199,19 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
 async fn func_clan_season(
     ctx: &Context<'_>,
     partial_clan: PartialClan,
-    season_num: u32,
+    season_num: i32,
 ) -> Result<(), Error> {
+    let current_season_num = ctx.data().constant.read().clan_season;
+    let season_num = match season_num {
+        n if n == 0 => current_season_num,
+        n if n > 0 => n.unsigned_abs(),
+        // negative index
+        n if n < 0 && current_season_num.checked_add_signed(n).is_some() => {
+            current_season_num - n.unsigned_abs()
+        }
+        _ => current_season_num,
+    };
+
     let api = WowsApi::new(ctx);
     let _typing = ctx.typing().await;
     // QA 下面ratings跟filtered_members魔改clan_members感覺不太好?
@@ -325,8 +330,7 @@ impl ClanView {
                         m.interaction_response_data(|d| d.set_components(self.pressed().build()))
                     })
                     .await;
-                let current_season_num = ctx.data().constant.read().clan_season;
-                func_clan_season(ctx, self.clan.clone(), current_season_num).await?
+                func_clan_season(ctx, self.clan.clone(), 0).await?
             }
         }
         // timeout;
