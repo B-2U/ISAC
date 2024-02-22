@@ -1,13 +1,9 @@
-use poise::{
-    async_trait,
-    serenity_prelude::{
-        ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User, UserParseError,
-    },
+use poise::serenity_prelude::{
+    ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User, UserParseError,
 };
 
 use crate::{utils::structs::PartialPlayer, Error};
 
-#[async_trait]
 pub trait UserAddon: Sized {
     /// will only convert by user_id or mention, but not username
     #[must_use]
@@ -24,7 +20,7 @@ pub trait UserAddon: Sized {
     /// get permissions
     async fn get_permissions(&self, ctx: &crate::Context<'_>) -> Result<Permissions, Error>;
 }
-#[async_trait]
+
 impl UserAddon for User {
     async fn convert_strict(
         ctx: &Context,

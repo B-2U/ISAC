@@ -7,7 +7,6 @@ use std::fs;
 
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
-use poise::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::io::AsyncWriteExt;
 use tracing::warn;
@@ -16,7 +15,7 @@ use tracing::warn;
 ///
 /// ## Panic
 /// panic when failing to load from the path
-#[async_trait]
+
 pub trait LoadSaveFromJson {
     const PATH: &'static str;
     async fn load_json() -> Self

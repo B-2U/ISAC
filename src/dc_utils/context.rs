@@ -1,15 +1,14 @@
 use std::sync::Arc;
 
 use crate::Context;
-use poise::{async_trait, serenity_prelude::Typing};
+use poise::serenity_prelude::Typing;
 
-#[async_trait]
 pub trait ContextAddon {
     async fn typing(&self) -> MyTyping;
 }
 
 /// a trait for `reply`
-#[async_trait]
+
 impl ContextAddon for Context<'_> {
     async fn typing(&self) -> MyTyping {
         match self {

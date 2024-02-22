@@ -1,5 +1,4 @@
 use bytes::Bytes;
-use poise::async_trait;
 use reqwest::Client;
 
 mod overall;
@@ -20,7 +19,6 @@ pub use overall_cw::*;
 
 use crate::utils::{IsacError, IsacInfo};
 
-#[async_trait]
 pub trait Render {
     const RENDER_URL: &'static str; // Associated constant for the URL
     async fn render(&self, client: &Client) -> Result<Bytes, IsacError>
