@@ -8,10 +8,24 @@ use poise::{
 use crate::{utils::structs::PartialPlayer, Error};
 
 #[async_trait]
-/// will only convert by user_id or mention, but not username
 pub trait UserAddon: Sized {
     /// will only convert by user_id or mention, but not username
     #[must_use]
+    async fn convert_strict(
+        ctx: &Context,
+        guild_id: Option<GuildId>,
+        channel_id: Option<ChannelId>,
+        s: &str,
+    ) -> Result<User, UserParseError>;
+
+    /// get the user's linked account if exist
+    async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer>;
+
+    /// get permissions
+    async fn get_permissions(&self, ctx: &crate::Context<'_>) -> Result<Permissions, Error>;
+}
+#[async_trait]
+impl UserAddon for User {
     async fn convert_strict(
         ctx: &Context,
         guild_id: Option<GuildId>,
@@ -28,7 +42,7 @@ pub trait UserAddon: Sized {
 
     /// get the user's linked account if exist
     async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer> {
-        ctx.data().link_js.read().await.get(&ctx.author().id)
+        ctx.data().link_js.read().await.get(&self.id)
     }
 
     /// get permissions
@@ -41,5 +55,3 @@ pub trait UserAddon: Sized {
             .map_err(|err| err.into())
     }
 }
-#[async_trait]
-impl UserAddon for User {}
