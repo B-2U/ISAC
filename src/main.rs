@@ -8,7 +8,7 @@ mod tasks;
 mod template_data;
 mod utils;
 
-use poise::serenity_prelude::{self as serenity, Activity, UserId};
+use poise::serenity_prelude::{self as serenity, Activity, UserId, Webhook};
 use std::{
     collections::HashSet,
     env,
@@ -146,11 +146,7 @@ async fn main() {
     let expected = Arc::clone(&arc_data.expected_js);
     tokio::spawn(async move { tasks::expected_updater(client, expected).await });
 
-    // this is how to use serenity's `data`
-    // {
-    //     let mut data = bot.client().data.write().await;
-    //     data.insert::<ReqClient>(reqwest::Client::new());
-    // }
+    let webhook_http = bot.client().cache_and_http.http.clone();
 
     let _renderer = launch_renderer().await; // it's used in linux specific code below
 
@@ -163,12 +159,22 @@ async fn main() {
         println!("All signal handlers hung up, shutting down...");
     }
     // cleaning up
-    {
-        let lb = arc_data.leaderboard.lock().await;
-        println!("Saving leaderboard.json");
-        lb.save_json().await;
-        println!("Saved leaderboard.json");
-    };
+
+    // send message to discord log channel
+    if let Ok(webhook_url) = env::var("ERR_WEB_HOOK") {
+        let web_hook = Webhook::from_url(&webhook_http, &webhook_url)
+            .await
+            .unwrap();
+        let _r = web_hook
+            .execute(webhook_http, false, |b| b.content("Bot shutting down..."))
+            .await;
+    }
+
+    let lb = arc_data.leaderboard.lock().await;
+    println!("Saving leaderboard.json");
+    lb.save_json().await;
+    println!("Saved leaderboard.json");
+
     // close renderer
     #[cfg(target_os = "linux")]
     if let Some(renderer_pid) = _renderer.id() {
