@@ -50,7 +50,7 @@ where
     D: serde::Deserializer<'de>,
 {
     let s: String = Deserialize::deserialize(deserializer)?;
-    Ok(format!("https://glossary-wows-global.gcdn.co/icons/{}", s))
+    Ok(format!("https://wows-gloss-icons.wgcdn.co/icons/{}", s))
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
