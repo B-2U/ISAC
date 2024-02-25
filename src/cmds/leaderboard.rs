@@ -82,11 +82,14 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         }
     };
     // color patrons
-    lb_players.iter_mut().take(15).for_each(|p| {
-        if ctx.data().patron.read().check_player(&p.uid) {
-            p.color = "#e85a6b".to_string();
-        }
-    });
+    {
+        let patrons_rg = ctx.data().patron.read();
+        lb_players.iter_mut().take(15).for_each(|p| {
+            if patrons_rg.check_player(&p.uid) {
+                p.color = "#e85a6b".to_string();
+            }
+        })
+    };
 
     // if user is in the leaderboard, set color and swap its index if needed
     let truncate_len = if let Some((p_index, p)) =
