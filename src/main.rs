@@ -38,23 +38,24 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
 async fn main() {
+    let is_deployment =
+        hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str();
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
 
-    let (prefix, token) =
-        if hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str() {
-            (".", env::var("TOKEN").expect("Missing TOKEN"))
-        } else {
-            println!(
-                "HOSTNAME: {:?} not matched the env HOSTNAME: {}, using test bot token",
-                hostname::get().unwrap(),
-                env::var("HOSTNAME").unwrap()
-            );
-            ("-", env::var("WIP_TOKEN").expect("Missing WIP_TOKEN"))
-        };
+    let (prefix, token) = if is_deployment {
+        (".", env::var("TOKEN").expect("Missing TOKEN"))
+    } else {
+        println!(
+            "HOSTNAME: {:?} not matched the env HOSTNAME: {}, using test bot token",
+            hostname::get().unwrap(),
+            env::var("HOSTNAME").unwrap()
+        );
+        ("-", env::var("WIP_TOKEN").expect("Missing WIP_TOKEN"))
+    };
 
     let options = poise::FrameworkOptions {
         owners: HashSet::from([UserId(930855839961591849)]),
@@ -161,8 +162,8 @@ async fn main() {
     // cleaning up
 
     // send message to discord log channel
-    if let Ok(webhook_url) = env::var("ERR_WEB_HOOK") {
-        let web_hook = Webhook::from_url(&webhook_http, &webhook_url)
+    if is_deployment {
+        let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
             .await
             .unwrap();
         let _r = web_hook
