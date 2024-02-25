@@ -38,13 +38,13 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
 async fn main() {
-    let is_deployment =
-        hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str();
     tracing_subscriber::registry()
         .with(fmt::layer())
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
+    let is_deployment =
+        hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str();
 
     let (prefix, token) = if is_deployment {
         (".", env::var("TOKEN").expect("Missing TOKEN"))
