@@ -169,7 +169,7 @@ async fn func_recent(
     let (exact_day, mut stats) = loop {
         if target_day > max_day {
             Err(IsacError::Info(IsacInfo::NeedPremium {
-                msg: format!("**{target_day}** is illegal, min: **1** max:**{max_day}**"),
+                msg: format!("**{target_day}** is illegal, min: **1** max: **{max_day}**"),
             }))?
         }
         let target_time = now - target_day * 86400;
