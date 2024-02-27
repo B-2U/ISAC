@@ -10,6 +10,7 @@ use poise::{
     self,
     serenity_prelude::{Attachment, AttachmentType, ChannelId},
 };
+use tokio::io::AsyncWriteExt;
 
 /// Patreon feature, upload your custom profile background
 #[poise::command(slash_command)]
@@ -22,16 +23,19 @@ pub async fn background(
             msg: "".to_string(),
         }))?
     }
-    if !file
-        .content_type
-        .as_ref()
-        .map(|s| s.contains("image"))
-        .unwrap_or_default()
-    {
-        Err(IsacError::Info(IsacInfo::GeneralError {
-            msg: "It's not a image!".to_string(),
-        }))?
-    }
+    let file_type = match &file.content_type {
+        Some(content_type) if content_type.contains("image") => content_type
+            .split('/')
+            .nth(1)
+            .ok_or(IsacError::Info(IsacInfo::GeneralError {
+                msg: "failed to get image type!".to_string(),
+            }))
+            .map(|s| s.to_string()),
+        _ => Err(IsacError::Info(IsacInfo::GeneralError {
+            msg: "It's not an image!".to_string(),
+        })),
+    }?;
+
     let player = ctx
         .author()
         .get_player(&ctx)
@@ -40,12 +44,22 @@ pub async fn background(
     let _typing = ctx.typing().await;
     // # isac-pfbg
     let img_byte = file.download().await?;
+
+    let file_path = format!("./user_data/pfp/{}.{}", ctx.author().id, file_type);
+    let mut fs = tokio::fs::File::create(&file_path)
+        .await
+        .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", file_path));
+
+    if let Err(err) = fs.write_all(&img_byte).await {
+        panic!("Failed to write JSON to file: {:?}. Err: {err}", file_path);
+    }
+
     let att: AttachmentType<'_> = AttachmentType::Bytes {
         data: Cow::Borrowed(&img_byte),
         filename: file.filename,
     };
     let channel = ChannelId(1141973121352618074);
-    let msg = channel
+    let _msg = channel
         .send_message(ctx, |b| {
             b.add_file(att).content(format!(
                 "{}, width: {} height: {}, size: {} KB",
@@ -56,7 +70,6 @@ pub async fn background(
             ))
         })
         .await?;
-    let url = msg.attachments[0].url.clone();
     {
         let mut pfp_js = ctx.data().pfp.write().await;
         pfp_js
@@ -65,7 +78,7 @@ pub async fn background(
         pfp_js.0.insert(
             player.uid,
             PfpData {
-                url,
+                url: file_path,
                 name: ctx.author().name.clone(),
                 discord_id: ctx.author().id,
             },
