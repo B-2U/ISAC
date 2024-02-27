@@ -54,6 +54,25 @@ pub async fn background(
         panic!("Failed to write JSON to file: {:?}. Err: {err}", file_path);
     }
 
+    {
+        let mut pfp_js = ctx.data().pfp.write().await;
+        pfp_js
+            .0
+            .retain(|_, patron| patron.discord_id != ctx.author().id);
+        pfp_js.0.insert(
+            player.uid,
+            PfpData {
+                url: file_path,
+                name: ctx.author().name.clone(),
+                discord_id: ctx.author().id,
+            },
+        );
+        pfp_js.save_json().await;
+    }
+    // showing preview
+    func_wws(&ctx, player).await?;
+
+    // sending log
     let att: AttachmentType<'_> = AttachmentType::Bytes {
         data: Cow::Borrowed(&img_byte),
         filename: file.filename,
@@ -70,21 +89,5 @@ pub async fn background(
             ))
         })
         .await?;
-    {
-        let mut pfp_js = ctx.data().pfp.write().await;
-        pfp_js
-            .0
-            .retain(|_, patron| patron.discord_id != ctx.author().id);
-        pfp_js.0.insert(
-            player.uid,
-            PfpData {
-                url: file_path,
-                name: ctx.author().name.clone(),
-                discord_id: ctx.author().id,
-            },
-        );
-        pfp_js.save_json().await;
-    }
-
-    func_wws(&ctx, player).await
+    Ok(())
 }
