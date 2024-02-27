@@ -213,7 +213,7 @@ pub struct PfpData {
 
 impl Default for PfpData {
     fn default() -> Self {
-        const DEFAULT_PFBG: &str = "https://cdn.discordapp.com/attachments/483227767685775360/1117119650052972665/image.png";
+        const DEFAULT_PFBG: &str = "./user_data/pfp/patreon_default.png";
         Self {
             url: DEFAULT_PFBG.to_string(),
             name: "".to_string(),
