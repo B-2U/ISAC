@@ -5,8 +5,8 @@ import json
 def main():
     for region in ["asia", "eu", "na"]:
         files = os.listdir(f"./players/{region}/")
-        # with open("../user_data/pfp.json", "r") as f:
-        #     pfp_js = json.load(f)
+        # with open("../user_data/banner.json", "r") as f:
+        #     banner_js = json.load(f)
         if files == None:
             return
         for file in files:

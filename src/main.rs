@@ -25,8 +25,8 @@ use crate::{
     utils::{
         error_handler::{isac_err_handler, isac_err_logging, isac_get_help},
         structs::{
-            ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, Pfp, ShipLeaderboard,
-            ShipsPara,
+            Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons,
+            ShipLeaderboard, ShipsPara,
         },
         IsacError, IsacHelp, LoadSaveFromJson,
     },
@@ -208,7 +208,7 @@ pub struct DataInner {
     link_js: tokio::sync::RwLock<Linked>,
     wg_api_token: String,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
-    pfp: tokio::sync::RwLock<Pfp>,
+    banner: tokio::sync::RwLock<Banner>,
     leaderboard: Mutex<ShipLeaderboard>,
 }
 
@@ -223,7 +223,7 @@ impl Default for DataInner {
             link_js: tokio::sync::RwLock::new(Linked::load_json_sync()),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json_sync()),
-            pfp: tokio::sync::RwLock::new(Pfp::load_json_sync()),
+            banner: tokio::sync::RwLock::new(Banner::load_json_sync()),
             leaderboard: Mutex::new(ShipLeaderboard::load_json_sync()),
         }
     }

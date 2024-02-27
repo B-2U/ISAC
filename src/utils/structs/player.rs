@@ -77,7 +77,7 @@ pub struct Player {
     pub dogtag: String,    // might be emblem or dogtag
     pub dogtag_bg: String, // the dotag background, should be optional
     pub premium: bool,
-    pub pfp: String,
+    pub banner: String,
 }
 
 // QA 到底怎麼讓 Player 繼承 PartialPlayer 的方法?
@@ -143,9 +143,9 @@ impl Player {
         let dogtag = player_dogtag.get_symbol();
         let dogtag_bg = player_dogtag.get_background();
         let premium = data.patron.read().check_player(&uid);
-        let pfp = if premium {
-            let pfp_js = data.pfp.read().await;
-            pfp_js.get(&uid).unwrap_or_default().url
+        let banner = if premium {
+            let banner_js = data.banner.read().await;
+            banner_js.get(&uid).unwrap_or_default().url
         } else {
             "".to_string()
         };
@@ -159,7 +159,7 @@ impl Player {
             dogtag,
             dogtag_bg,
             premium,
-            pfp,
+            banner,
         })
     }
 }
@@ -185,37 +185,37 @@ impl PlayerDogTag {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct Pfp(pub HashMap<u64, PfpData>);
+pub struct Banner(pub HashMap<u64, BannerData>);
 
-impl LoadSaveFromJson for Pfp {
-    const PATH: &'static str = "./user_data/pfp.json";
+impl LoadSaveFromJson for Banner {
+    const PATH: &'static str = "./user_data/banner.json";
 }
 
-impl From<Pfp> for HashMap<u64, PfpData> {
-    fn from(value: Pfp) -> Self {
+impl From<Banner> for HashMap<u64, BannerData> {
+    fn from(value: Banner) -> Self {
         value.0
     }
 }
 
-impl Pfp {
+impl Banner {
     /// a shortcut to self.0.get(), and auto clone
-    pub fn get(&self, uid: &u64) -> Option<PfpData> {
+    pub fn get(&self, uid: &u64) -> Option<BannerData> {
         self.0.get(uid).cloned()
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PfpData {
+pub struct BannerData {
     pub url: String,
     pub name: String, // user name, its just for checking
     pub discord_id: UserId,
 }
 
-impl Default for PfpData {
+impl Default for BannerData {
     fn default() -> Self {
-        const DEFAULT_PFBG: &str = "./user_data/pfp/patreon_default.png";
+        const DEFAULT_BANNER: &str = "./user_data/banner/patreon_default.png";
         Self {
-            url: DEFAULT_PFBG.to_string(),
+            url: DEFAULT_BANNER.to_string(),
             name: "".to_string(),
             discord_id: UserId(0),
         }

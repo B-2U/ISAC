@@ -3,14 +3,14 @@ use std::borrow::Cow;
 use crate::{
     cmds::wws::func_wws,
     dc_utils::{ContextAddon, UserAddon},
-    utils::{structs::PfpData, IsacError, IsacInfo, LoadSaveFromJson},
+    utils::{structs::BannerData, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Error,
 };
 use poise::{
     self,
     serenity_prelude::{Attachment, AttachmentType, ChannelId},
 };
-use tokio::io::AsyncWriteExt;
+use tokio::{fs, io::AsyncWriteExt};
 
 /// Patreon feature, upload your custom profile background
 #[poise::command(slash_command)]
@@ -42,32 +42,40 @@ pub async fn background(
         .await
         .ok_or(IsacError::Info(IsacInfo::UserNotLinked { user_name: None }))?;
     let _typing = ctx.typing().await;
-    // # isac-pfbg
+    // download banner
     let img_byte = file.download().await?;
+    let file_path = format!("./user_data/banner/{}.{}", ctx.author().id, file_type);
 
-    let file_path = format!("./user_data/pfp/{}.{}", ctx.author().id, file_type);
+    {
+        let mut banner_js = ctx.data().banner.write().await;
+        let keys_to_remove = banner_js
+            .0
+            .iter()
+            .filter(|(_, value)| value.discord_id == ctx.author().id)
+            .map(|(&key, _)| key)
+            .collect::<Vec<_>>();
+        for key in keys_to_remove {
+            if let Some(v) = banner_js.0.remove(&key) {
+                let _r = fs::remove_file(v.url).await;
+            }
+        }
+        banner_js.0.insert(
+            player.uid,
+            BannerData {
+                url: file_path.clone(),
+                name: ctx.author().name.clone(),
+                discord_id: ctx.author().id,
+            },
+        );
+        banner_js.save_json().await;
+    }
+    // save the new banner
     let mut fs = tokio::fs::File::create(&file_path)
         .await
         .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", file_path));
 
     if let Err(err) = fs.write_all(&img_byte).await {
-        panic!("Failed to write JSON to file: {:?}. Err: {err}", file_path);
-    }
-
-    {
-        let mut pfp_js = ctx.data().pfp.write().await;
-        pfp_js
-            .0
-            .retain(|_, patron| patron.discord_id != ctx.author().id);
-        pfp_js.0.insert(
-            player.uid,
-            PfpData {
-                url: file_path,
-                name: ctx.author().name.clone(),
-                discord_id: ctx.author().id,
-            },
-        );
-        pfp_js.save_json().await;
+        panic!("Failed to write IMAGE to file: {:?}. Err: {err}", file_path);
     }
     // showing preview
     func_wws(&ctx, player).await?;
