@@ -1,15 +1,15 @@
 use futures::future::try_join_all;
 use reqwest::{Client, IntoUrl, Response, Url};
 use serde::Deserialize;
-use serde_json::Value;
 use std::fmt::Display;
 use strum::IntoEnumIterator;
 
 use crate::{
     utils::structs::{
         api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode,
-        PartialClan, Player, PlayerClanAPIRes, PlayerClanBattle, PlayerClanBattleAPIRes, Region,
-        ShipId, ShipStatsCollection, VortexShipAPIRes,
+        PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
+        PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, VortexPlayer,
+        VortexPlayerAPIRes, VortexShipAPIRes,
     },
     Context, Data,
 };
@@ -51,9 +51,46 @@ impl<'a> WowsApi<'a> {
     ) -> Result<Player, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{uid}"))?;
 
-        let res = self._get(url).await?.json::<Value>().await.unwrap();
+        let res: VortexPlayer = self
+            ._get(url)
+            .await?
+            .json::<VortexPlayerAPIRes>()
+            .await?
+            .try_into()?;
 
-        Player::parse(self.data, region, res).await
+        if res.hidden_profile {
+            return Err(IsacInfo::PlayerHidden { ign: res.name }.into());
+        }
+        // leveling_points will increase in any mode in any ship (including test ships)
+        // use it to determine PlayerNoBattle or not
+        if res
+            .statistics
+            .get("basic")
+            .and_then(|d| d.get("leveling_points").and_then(|lv| lv.as_u64()))
+            .unwrap_or_default()
+            == 0
+        {
+            return Err(IsacInfo::PlayerNoBattle { ign: res.name }.into());
+        }
+        let karma = res
+            .statistics
+            .get("basic")
+            .and_then(|v| v.get("karma").and_then(|v2| v2.as_u64()))
+            .unwrap_or_default();
+        let banner = self.data.banner.read().await.get(&uid).map(|r| r.url);
+        Ok(Player {
+            partial_player: PartialPlayer { region, uid },
+            uid,
+            ign: res.name,
+            region,
+            karma,
+            dogtag: res.dog_tag.get_symbol(),
+            dogtag_bg: res.dog_tag.get_background(),
+            premium: banner.is_some(),
+            banner: banner.unwrap_or_default(),
+        })
+
+        // Player::parse(self.data, region, res).await
     }
     /// searching player with ign
     pub async fn players(

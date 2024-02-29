@@ -1,19 +1,16 @@
-use crate::{
-    utils::{
-        structs::{
-            Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipId, ShipModeStatsPair,
-            ShipStatsCollection,
-        },
-        wws_api::WowsApi,
-        IsacError, IsacInfo, LoadSaveFromJson,
+use crate::utils::{
+    structs::{
+        api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipId, ShipModeStatsPair,
+        ShipStatsCollection,
     },
-    Data,
+    wws_api::WowsApi,
+    IsacError, IsacInfo, LoadSaveFromJson,
 };
 
 use poise::serenity_prelude::UserId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_with::{serde_as, DefaultOnError};
 
 use std::{collections::HashMap, ops::Deref};
 
@@ -88,79 +85,47 @@ impl Deref for Player {
         &self.partial_player
     }
 }
-// TODO fix this shit code, use serde_with?
-impl Player {
-    /// parsing player from returned json
-    pub async fn parse(data: &Data, region: Region, input: Value) -> Result<Player, IsacError> {
-        let first_layer = input.as_object().unwrap();
-        let "ok" = first_layer.get("status").and_then(|f| f.as_str()).unwrap() else {
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VortexPlayerAPIRes {
+    #[serde(flatten)]
+    status: api::Status,
+    pub data: HashMap<String, VortexPlayer>, // key is player UID. Don't care.
+}
+
+#[serde_as]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VortexPlayer {
+    pub name: String, // player ign
+    #[serde(default)]
+    pub hidden_profile: bool, // true if hidden, false when not present
+
+    /*
+    If hidden_profile == true, all these rest fields won't present
+    */
+    #[serde_as(deserialize_as = "DefaultOnError")]
+    #[serde(default)]
+    pub dog_tag: PlayerDogTag,
+    #[serde(default)]
+    pub statistics: HashMap<String, serde_json::Value>, // we only use whether it's empty or not to check NoBattle
+    #[serde(default)]
+    pub created_at: f64, // useless
+    #[serde(default)]
+    pub activated_at: f64, // useless
+    #[serde(default)]
+    pub visibility_settings: serde_json::Value, // useless
+}
+
+impl TryFrom<VortexPlayerAPIRes> for VortexPlayer {
+    type Error = IsacError;
+
+    fn try_from(value: VortexPlayerAPIRes) -> Result<Self, Self::Error> {
+        if !value.status.ok() {
             Err(IsacInfo::APIError {
-                msg: first_layer
-                    .get("error")
-                    .and_then(|f| f.as_str())
-                    .unwrap()
-                    .to_string(),
+                msg: value.status.err_msg(),
             })?
         };
-        let (uid, sec_layer) = first_layer
-            .get("data")
-            .and_then(|f| f.as_object())
-            .unwrap()
-            .iter()
-            .last()
-            .unwrap();
-        let uid = uid.parse::<u64>().unwrap();
-
-        let ign = sec_layer
-            .get("name")
-            .unwrap()
-            .as_str()
-            .unwrap_or("Invalid Player")
-            .to_string();
-        if sec_layer.get("hidden_profile").is_some() {
-            Err(IsacInfo::PlayerHidden { ign: ign.clone() })?
-        }
-        let statistics = sec_layer
-            .get("statistics")
-            .and_then(|f| f.as_object())
-            .unwrap();
-
-        let karma = if statistics.is_empty() {
-            Err(IsacInfo::PlayerNoBattle { ign: ign.clone() })?
-        } else {
-            statistics
-                .get("basic")
-                .unwrap()
-                .get("karma")
-                .unwrap()
-                .as_u64()
-                .unwrap_or_default()
-        };
-
-        let player_dogtag: PlayerDogTag =
-            serde_json::from_value(sec_layer.get("dog_tag").unwrap().clone()).unwrap_or_default();
-
-        let dogtag = player_dogtag.get_symbol();
-        let dogtag_bg = player_dogtag.get_background();
-        let premium = data.patron.read().check_player(&uid);
-        let banner = if premium {
-            let banner_js = data.banner.read().await;
-            banner_js.get(&uid).unwrap_or_default().url
-        } else {
-            "".to_string()
-        };
-
-        Ok(Player {
-            partial_player: PartialPlayer { region, uid },
-            uid,
-            ign,
-            region,
-            karma,
-            dogtag,
-            dogtag_bg,
-            premium,
-            banner,
-        })
+        Ok(value.data.into_iter().next().unwrap().1)
     }
 }
 
@@ -175,11 +140,11 @@ pub struct PlayerDogTag {
 
 impl PlayerDogTag {
     /// get the symbol icon url, return empty string if not found
-    fn get_symbol(&self) -> String {
+    pub fn get_symbol(&self) -> String {
         Dogtag::get(self.symbol_id).unwrap_or_default()
     }
     /// get the background icon url, return empty string if not found
-    fn get_background(&self) -> String {
+    pub fn get_background(&self) -> String {
         Dogtag::get(self.background_id).unwrap_or_default()
     }
 }
