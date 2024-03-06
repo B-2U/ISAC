@@ -1,14 +1,14 @@
-
-DB
 .env
 recent_DB/players/*
 user_data/*
 web_src/*
 **/*.hbs.json
 temp/
-webdriver/*
-test_res/
 .vscode
+
+# poetry
+
+poetry.lock
 
 # Added by cargo
 
