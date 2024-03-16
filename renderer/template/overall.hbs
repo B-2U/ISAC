@@ -53,10 +53,10 @@
             height: 216px;
             object-fit: cover;
             position: absolute;
-            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.5),
-                    rgb(0 0 0 / 0.5));
-            mask-image: linear-gradient(rgb(0 0 0 / 0.5),
-                    rgb(0 0 0 / 0.5));
+            -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.8),
+                    rgb(0 0 0 / 0.8));
+            mask-image: linear-gradient(rgb(0 0 0 / 0.8),
+                    rgb(0 0 0 / 0.8));
         }
 
         .user {
@@ -357,9 +357,9 @@
                         <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}" onerror=" this.style.display='none'">
                     </div>
                     {{#clan}}
-                    <span style="color: {{clan.color}};">[{{clan.tag}}]</span>
+                    <span style="color: {{clan.color}}; font-weight: bold;">[{{clan.tag}}]</span>
                     {{/clan}}
-                    <span class="user-id">{{user.ign}}
+                    <span class="user-id" style="font-weight: bold;">{{user.ign}}
                         <sup style="color:#AAAAAA;font-size:25px;">{{user.karma}}</sup>
                     </span>
                     <span class="region-box">{{user.region}}</span>
