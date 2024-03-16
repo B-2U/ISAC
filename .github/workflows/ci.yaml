@@ -2,6 +2,8 @@ name: ci
 on:
   pull_request:
   push:
+    paths:
+      - 'src/**'
     branches:
       - master
   workflow_dispatch:
