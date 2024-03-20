@@ -12,7 +12,7 @@ use poise::{
 };
 use rand::seq::SliceRandom;
 use regex::Regex;
-use scraper::{Element, Html, Selector};
+use scraper::{Element, ElementRef, Html, Selector};
 
 use crate::{
     dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed},
@@ -156,21 +156,24 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
     let record_clans = {
         let html = Html::parse_document(res_text.as_str());
 
+        let transfer_header_selector = Selector::parse(".section-header").unwrap();
         let table_selector = Selector::parse(".table-styled").unwrap();
-        let transfer_s_selector = Selector::parse(".col.col-centered.col-sm-6").unwrap();
         let cells_selector = Selector::parse("tr").unwrap();
         let a_selector = Selector::parse("a").unwrap();
         let clan_uid_regex = Regex::new(r"/clan/(\d+),").unwrap();
 
-        // should be only 2 here,[ Important moments, Transfer ]
-        let tables = html
-            .select(&transfer_s_selector)
-            .nth(1)
+        let transfer_header = html
+            .select(&transfer_header_selector)
+            // find the `Transfers` title header
+            .filter(|h| h.text().next().unwrap_or("") == "Transfers")
+            .next()
+            // get header's parent
+            .and_then(|e| e.parent().and_then(|n| ElementRef::wrap(n)))
             .ok_or(IsacError::Info(IsacInfo::GeneralError {
                 msg: "Parsing failed".to_string(),
-            }))?
-            .select(&table_selector)
-            .collect::<Vec<_>>();
+            }))?;
+        // find tables in it
+        let tables = transfer_header.select(&table_selector).collect::<Vec<_>>();
         let target_table = match tables.len() {
             0 => Err(IsacError::Info(IsacInfo::GeneralError {
                 msg: "No transfer history".to_string(),
