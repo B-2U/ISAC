@@ -165,10 +165,9 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         let transfer_header = html
             .select(&transfer_header_selector)
             // find the `Transfers` title header
-            .filter(|h| h.text().next().unwrap_or("") == "Transfers")
-            .next()
+            .find(|h| h.text().next().unwrap_or("") == "Transfers")
             // get header's parent
-            .and_then(|e| e.parent().and_then(|n| ElementRef::wrap(n)))
+            .and_then(|e| e.parent().and_then(ElementRef::wrap))
             .ok_or(IsacError::Info(IsacInfo::GeneralError {
                 msg: "Parsing failed".to_string(),
             }))?;
