@@ -11,9 +11,7 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     template_data::{LeaderboardTemplate, Render},
     utils::{
-        structs::{
-            Region, Ship, ShipId, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
-        },
+        structs::{Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue},
         IsacError, IsacInfo,
     },
     Context, Data, Error,
@@ -42,12 +40,15 @@ pub async fn top(
     #[description = "warship's name"]
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
-    ship_id: u64,
+    ship_name: String,
     #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
-    let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
-        Err(IsacError::Info(IsacInfo::AutoCompleteError))?
-    };
+    let ship = ctx
+        .data()
+        .ship_js
+        .read()
+        .search_name(&ship_name, 1)?
+        .first();
     let region = region.unwrap_or_default();
     func_top(ctx, region, ship).await
 }

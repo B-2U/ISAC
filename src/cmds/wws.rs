@@ -13,9 +13,7 @@ use crate::{
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
     utils::{
-        structs::{
-            Mode, PartialPlayer, Ship, ShipClass, ShipId, ShipTier, Statistic, StatisticValueType,
-        },
+        structs::{Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic, StatisticValueType},
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },
@@ -37,7 +35,7 @@ pub async fn wws(
     #[description = "specific warship, default: account's overall stats"]
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
-    ship_id: Option<u64>,
+    ship_name: Option<String>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
     player: Option<String>, // the String is a Serialized PartialPlayer struct
@@ -73,11 +71,14 @@ pub async fn wws(
             }))?
     };
 
-    if let Some(ship_id) = ship_id {
+    if let Some(ship_name) = ship_name {
         // wws ship
-        let Some(ship) = ShipId(ship_id).get_ship(&ctx.data().ship_js) else {
-            Err(IsacError::Info(IsacInfo::AutoCompleteError))?
-        };
+        let ship = ctx
+            .data()
+            .ship_js
+            .read()
+            .search_name(&ship_name, 1)?
+            .first();
         let battle_type = battle_type.unwrap_or_default();
         func_ship(&ctx, partial_player, ship, battle_type).await?;
     } else {

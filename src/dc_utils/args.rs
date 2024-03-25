@@ -184,7 +184,7 @@ impl Args {
     async fn _pick<T: std::fmt::Display>(
         &self,
         ctx: &Context<'_>,
-        candidates: &Vec<T>,
+        candidates: &[T],
     ) -> Result<usize, IsacError> {
         let view = PickView::new(candidates, ctx.author());
         let inter_msg = ctx
@@ -247,14 +247,14 @@ impl From<Args> for Vec<String> {
 }
 
 struct PickView<'a, T> {
-    candidates: &'a Vec<T>,
+    candidates: &'a [T],
     user: &'a User,
     emoji: [&'static str; 4],
     x_emoji: &'static str,
 }
 
 impl<'a, T: std::fmt::Display> PickView<'a, T> {
-    fn new(candidates: &'a Vec<T>, user: &'a User) -> Self {
+    fn new(candidates: &'a [T], user: &'a User) -> Self {
         Self {
             candidates,
             user,

@@ -11,7 +11,7 @@ use crate::{
 pub async fn ship(
     ctx: Context<'_>,
     input: &str,
-) -> impl Iterator<Item = poise::AutocompleteChoice<u64>> {
+) -> impl Iterator<Item = poise::AutocompleteChoice<String>> {
     ctx.data()
         .ship_js
         .read()
@@ -19,8 +19,8 @@ pub async fn ship(
         .unwrap_or_default()
         .into_iter()
         .map(|ship| poise::AutocompleteChoice {
-            name: ship.name,
-            value: ship.ship_id.0,
+            name: ship.name.clone(),
+            value: ship.name,
         })
 }
 

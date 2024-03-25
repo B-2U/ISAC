@@ -49,7 +49,7 @@ pub async fn recent(
     #[description = "specific warship, default: all ships' recent"]
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
-    ship_id: Option<u64>,
+    ship_name: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
     let partial_player = if let Some(player) =
@@ -79,13 +79,14 @@ pub async fn recent(
             }))?
     };
     // keep None as None, and raise Err if ship_id is Some(), but no matched ship found
-    let ship = ship_id
-        .map(
-            |ship_id| match ShipId(ship_id).get_ship(&ctx.data().ship_js) {
-                Some(ship) => Ok(ship),
-                None => Err(IsacError::Info(IsacInfo::AutoCompleteError)),
-            },
-        )
+    let ship = ship_name
+        .map(|ship_name| {
+            ctx.data()
+                .ship_js
+                .read()
+                .search_name(&ship_name, 1)
+                .map(|v| v.first())
+        })
         .transpose()?;
 
     func_recent(

@@ -1,4 +1,7 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    ops::{Deref, DerefMut},
+};
 
 use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
 use itertools::Itertools;
@@ -27,15 +30,23 @@ impl ShipsPara {
     /// the combination of `normal_search()` and `fuzzy_search()`,
     ///
     /// use `normal_search()` at first, and do fuzzy search if no ship matched
-    pub fn search_name(&self, input: &str, len_limit: usize) -> Result<Vec<Ship>, IsacError> {
+    ///
+    /// It's guranteed to have at least one ship in the Vec<Ship>
+    pub fn search_name(
+        &self,
+        input: &str,
+        len_limit: usize,
+    ) -> Result<ShipSearchCandidates, IsacError> {
         if input.is_empty() {
-            return Ok(vec![]);
+            return Err(IsacError::UnknownError(
+                "search_name input is empty str".into(),
+            ));
         }
         if let Some(candidates) = self.normal_search_name(input, len_limit) {
-            return Ok(candidates);
+            return Ok(ShipSearchCandidates::new(candidates));
         };
         if let Some(candidates) = self.fuzzy_search_name(input, len_limit) {
-            return Ok(candidates);
+            return Ok(ShipSearchCandidates::new(candidates));
         };
         Err(IsacInfo::ShipNotFound {
             ship_name: input.to_string(),
@@ -90,5 +101,44 @@ impl ShipsPara {
 impl From<ShipsPara> for HashMap<ShipId, Ship> {
     fn from(value: ShipsPara) -> Self {
         value.0
+    }
+}
+
+/// A shell of `Vec<Ship>` that gurantee 1 `Ship` in it
+#[derive(Default)]
+pub struct ShipSearchCandidates {
+    inner: Vec<Ship>,
+}
+
+impl ShipSearchCandidates {
+    pub fn new(candidates: Vec<Ship>) -> Self {
+        Self { inner: candidates }
+    }
+    /// consume itself and return the first `Ship` inside, it's guranteed
+    pub fn first(self) -> Ship {
+        self.inner.into_iter().next().unwrap()
+    }
+}
+
+impl Deref for ShipSearchCandidates {
+    type Target = Vec<Ship>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
+impl DerefMut for ShipSearchCandidates {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
+    }
+}
+
+impl IntoIterator for ShipSearchCandidates {
+    type Item = Ship;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
     }
 }
