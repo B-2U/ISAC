@@ -33,7 +33,13 @@ impl<'a> WowsApi<'a> {
 
     /// a shortcut for `client.get()`, wrapped reqwest error into [`IsacInfo::APIError`]
     async fn _get(&self, url: impl IntoUrl) -> Result<Response, IsacError> {
-        self.client.get(url).send().await.map_err(Self::_err_wrap)
+        let res = self.client.get(url).send().await.map_err(Self::_err_wrap)?;
+        res.error_for_status().map_err(|err| {
+            IsacInfo::APIError {
+                msg: err.status().unwrap_or_default().to_string(),
+            }
+            .into()
+        })
     }
     /// easily wrapped [`reqwest::Error`] with [`IsacInfo::APIError`]
     fn _err_wrap(err: reqwest::Error) -> IsacError {
