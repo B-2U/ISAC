@@ -161,7 +161,9 @@ impl<'a> WowsApi<'a> {
             .unwrap();
         let res = self
             ._get(url)
-            .await?
+            .await
+            // return None if clan API is fucked
+            .ok()?
             .json::<PlayerClanAPIRes>()
             .await
             .unwrap();
