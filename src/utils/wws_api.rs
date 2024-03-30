@@ -161,8 +161,7 @@ impl<'a> WowsApi<'a> {
             .unwrap();
         let res = self
             ._get(url)
-            .await
-            .unwrap()
+            .await?
             .json::<PlayerClanAPIRes>()
             .await
             .unwrap();
