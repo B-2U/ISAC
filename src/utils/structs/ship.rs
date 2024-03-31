@@ -471,6 +471,8 @@ pub struct VortexShipAPIRes {
 
 #[cfg(test)]
 mod test {
+    use tracing::error;
+
     use super::{ShipStatsCollection, VortexShipAPIRes};
 
     #[tokio::test]
@@ -486,7 +488,7 @@ mod test {
         match res {
             Ok(_) => panic!("hidden player shouldnt be Ok()"),
             Err(_err) => {
-                println!("{}", _err);
+                error!("{}", _err);
             }
         }
     }

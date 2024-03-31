@@ -17,7 +17,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use tokio::sync::Mutex;
-use tracing::{debug, error};
+use tracing::{debug, error, info, warn};
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
 use crate::{
@@ -43,17 +43,16 @@ async fn main() {
         .with(EnvFilter::from_env("LOGGER"))
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
-    let is_deployment =
-        hostname::get().unwrap() == env::var("HOSTNAME").expect("Missing HOSTNAME").as_str();
+
+    let is_deployment = &env::var("IS_DEPLOY")
+        .expect("Missing IS_DEPLOY")
+        .to_lowercase()
+        == "true";
 
     let (prefix, token) = if is_deployment {
         (".", env::var("TOKEN").expect("Missing TOKEN"))
     } else {
-        println!(
-            "HOSTNAME: {:?} not matched the env HOSTNAME: {}, using test bot token",
-            hostname::get().unwrap(),
-            env::var("HOSTNAME").unwrap()
-        );
+        warn!("IS_DEPLOY = false, using test bot token");
         ("-", env::var("WIP_TOKEN").expect("Missing WIP_TOKEN"))
     };
 
@@ -100,7 +99,7 @@ async fn main() {
         .token(token)
         .setup(move |ctx, ready, framework| {
             Box::pin(async move {
-                println!("Logged in as {}", ready.user.name);
+                info!("Logged in as {}", ready.user.name);
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 ctx.set_activity(Activity::listening(".help")).await;
                 Ok(data)
@@ -122,7 +121,7 @@ async fn main() {
         tokio::signal::ctrl_c()
             .await
             .expect("Could not register ctrl+c handler");
-        println!("Ctrl C, ISAC shutting down...");
+        info!("Ctrl C, ISAC shutting down...");
         let _ = tx2.send(());
         // QA gracfully?
     });
@@ -133,7 +132,7 @@ async fn main() {
             let mut sig = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
                 .expect("Could not register SIGTERM handler");
             sig.recv().await;
-            println!("SIGTERM, ISAC shutting down...");
+            info!("SIGTERM, ISAC shutting down...");
             let _ = tx.send(());
         });
     }
@@ -157,7 +156,7 @@ async fn main() {
         }
     });
     if rx.recv().is_err() {
-        println!("All signal handlers hung up, shutting down...");
+        error!("All signal handlers hung up, shutting down...");
     }
     // cleaning up
 
@@ -172,9 +171,9 @@ async fn main() {
     }
 
     let lb = arc_data.leaderboard.lock().await;
-    println!("Saving leaderboard.json");
+    info!("Saving leaderboard.json");
     lb.save_json().await;
-    println!("Saved leaderboard.json");
+    info!("Saved leaderboard.json");
 
     // close renderer
     #[cfg(target_os = "linux")]
