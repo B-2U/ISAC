@@ -3,6 +3,8 @@ import json
 import os
 import time
 import pystache
+import asyncio
+import hypercorn
 from quart import Quart, Response, send_file, request
 from contextlib import asynccontextmanager
 
@@ -234,4 +236,7 @@ renderer = None
 html_renderer = pystache.Renderer()
 
 if __name__ == "__main__":
-    app.run(port=3000, debug=True)
+    config = hypercorn.config.Config()
+    config.bind = ["localhost:3000"]
+    config.loglevel = "WARNING"
+    asyncio.run(hypercorn.asyncio.serve(app, config))
