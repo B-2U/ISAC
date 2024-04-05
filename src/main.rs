@@ -44,15 +44,15 @@ async fn main() {
         .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
 
-    let is_deployment = &env::var("IS_DEPLOY")
-        .expect("Missing IS_DEPLOY")
+    let is_product = &env::var("IS_PRODUCT")
+        .expect("Missing IS_PRODUCT")
         .to_lowercase()
         == "true";
 
-    let (prefix, token) = if is_deployment {
+    let (prefix, token) = if is_product {
         (".", env::var("TOKEN").expect("Missing TOKEN"))
     } else {
-        warn!("IS_DEPLOY = false, using test bot token");
+        warn!("IS_PRODUCT = false, using test bot token");
         ("-", env::var("WIP_TOKEN").expect("Missing WIP_TOKEN"))
     };
 
@@ -161,7 +161,7 @@ async fn main() {
     // cleaning up
 
     // send message to discord log channel
-    if is_deployment {
+    if is_product {
         let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
             .await
             .unwrap();
