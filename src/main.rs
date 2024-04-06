@@ -18,7 +18,7 @@ use std::{
 };
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, warn};
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
     tasks::launch_renderer,
@@ -38,11 +38,11 @@ type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
-        .with(fmt::layer())
-        .with(EnvFilter::from_env("LOGGER"))
-        .init();
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
+    tracing_subscriber::FmtSubscriber::builder()
+        .with_env_filter(EnvFilter::from_env("LOGGER"))
+        .finish()
+        .init();
 
     let is_product = &env::var("IS_PRODUCT")
         .expect("Missing IS_PRODUCT")
