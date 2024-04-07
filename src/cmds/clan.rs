@@ -340,28 +340,13 @@ impl ClanView {
     }
 
     fn members_table(&self) -> String {
-        let members = self
-            .members
+        self.members
             .iter()
             .sorted_by_key(|m| m.ign.to_lowercase())
             .fold(String::new(), |mut buf, m| {
-                let (winrate, dmg, battles) = if m.battles == 0 {
-                    ("-".to_string(), "-".to_string(), "-".to_string())
-                } else {
-                    (
-                        format!("{:.2}%", m.winrate),
-                        format!("{:.0}", m.dmg),
-                        format!("{}", m.battles),
-                    )
-                };
-
-                let _ = writeln!(buf, "{:24} {:>6} {:>6} {:>6}", m.ign, winrate, dmg, battles);
+                let _ = writeln!(buf, "{}", m.ign);
                 buf
-            });
-        format!(
-            "```{:24} {:>6} {:>6} {:>6}\n{:-<24} {:->6} {:->6} {:->6}\n{members}```",
-            "ign", "WR", "DMG", "BTL", "", "", "", ""
-        )
+            })
     }
 
     fn build(&self) -> CreateComponents {
