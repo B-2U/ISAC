@@ -340,13 +340,16 @@ impl ClanView {
     }
 
     fn members_table(&self) -> String {
-        self.members
-            .iter()
-            .sorted_by_key(|m| m.ign.to_lowercase())
-            .fold(String::new(), |mut buf, m| {
-                let _ = writeln!(buf, "{}", m.ign);
-                buf
-            })
+        format!(
+            "```\n{}\n```",
+            self.members
+                .iter()
+                .sorted_by_key(|m| m.ign.to_lowercase())
+                .fold(String::new(), |mut buf, m| {
+                    let _ = writeln!(buf, "{}", m.ign);
+                    buf
+                })
+        )
     }
 
     fn build(&self) -> CreateComponents {
