@@ -55,7 +55,7 @@ impl ShipsPara {
 
     /// literal matching
     pub fn normal_search_name(&self, input: &str, len_limit: usize) -> Option<Vec<Ship>> {
-        let input = input.to_lowercase();
+        let input = unidecode(input.to_lowercase());
         let candidates: Vec<_> = self
             .0
             .values()
@@ -84,7 +84,7 @@ impl ShipsPara {
             .filter(|ship| ship.is_available())
             .filter_map(|ship| {
                 matcher
-                    .fuzzy_match(&unidecode(&ship.name), input)
+                    .fuzzy_match(&unidecode(&ship.name), unidecode(input))
                     .map(|score| (score, ship))
             })
             .sorted_by(|a, b| Ord::cmp(&b.0, &a.0))
