@@ -15,7 +15,7 @@ use crate::{
     },
     utils::{
         structs::{
-            Mode, PartialPlayer, Player, RecentPlayer, RecentPlayerType, Ship, ShipId,
+            Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType, Ship, ShipId,
             ShipModeStatsPair, ShipStatsCollection,
         },
         wws_api::WowsApi,
@@ -286,28 +286,30 @@ async fn func_recent(
 async fn load_player(
     player: &Player,
     curren_ships: &ShipStatsCollection,
-    // QA 打包成一個struct會比較好嗎? (下面RecentPlayerLoadResult)， 但還是得攤開，而且攤開可以利用unused強迫處理
-) -> (bool, bool, RecentPlayer) {
+    // QA 打包成一個struct會比較好嗎? (下面PlayerSnapshotsLoadResult)， 但還是得攤開，而且攤開可以利用unused強迫處理
+) -> (bool, bool, PlayerSnapshots) {
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
 
     let last_request = if player.premium {
-        RecentPlayerType::Premium
+        PlayerSnapshotsType::Premium
     } else {
-        RecentPlayerType::Normal(now)
+        PlayerSnapshotsType::Normal(now)
     };
     let (is_new, mut player_data) =
-        if let Some(player_data) = RecentPlayer::load(&player.partial_player).await {
+        if let Some(player_data) = PlayerSnapshots::load(&player.partial_player).await {
             (false, player_data)
         } else {
-            let player_data = RecentPlayer::init(&player.partial_player).await;
+            let player_data = PlayerSnapshots::init(&player.partial_player).await;
             (true, player_data)
         };
     let is_active = match player_data.last_request {
-        RecentPlayerType::Premium => true,
-        RecentPlayerType::Normal(timestamp) => now - timestamp < RECENT_LAST_REQUEST_LIMIT * 86400,
+        PlayerSnapshotsType::Premium => true,
+        PlayerSnapshotsType::Normal(timestamp) => {
+            now - timestamp < RECENT_LAST_REQUEST_LIMIT * 86400
+        }
     };
     // update the last_requst timestamp
     player_data.last_request = last_request;
@@ -320,10 +322,10 @@ async fn load_player(
     (is_new, is_active, player_data)
 }
 
-// pub struct RecentPlayerLoadResult {
+// pub struct PlayerSnapshotsLoadResult {
 //     pub is_new: bool,    // if its just init
 //     pub is_active: bool, // if ISAC is still tracking
-//     pub data: RecentPlayer,
+//     pub data: PlayerSnapshots,
 // }
 
 pub struct AskDay<'a> {
