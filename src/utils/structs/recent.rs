@@ -53,11 +53,7 @@ impl RecentPlayer {
     }
     /// load the player's recent data, return None if he is not inside
     pub async fn load(player: &PartialPlayer) -> Option<Self> {
-        let path = format!(
-            "./recent_DB/players/{}/{}.json",
-            player.region.lower(),
-            player.uid
-        );
+        let path = Self::get_path(&player);
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: RecentPlayer = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);
@@ -85,7 +81,7 @@ impl RecentPlayer {
 
     /// save player data
     pub async fn save(&self) {
-        let path = self.get_path();
+        let path = Self::get_path(&self.player);
 
         let mut file = tokio::fs::File::create(&path)
             .await
@@ -102,11 +98,11 @@ impl RecentPlayer {
     }
 
     /// get player's file path
-    fn get_path(&self) -> String {
+    fn get_path(player: &PartialPlayer) -> String {
         format!(
             "./recent_DB/players/{}/{}.json",
-            self.player.region.lower(),
-            self.player.uid
+            player.region.lower(),
+            player.uid
         )
     }
 }
