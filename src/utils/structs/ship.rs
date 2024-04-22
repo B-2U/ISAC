@@ -28,6 +28,26 @@ pub enum ShipClass {
     CV,
 }
 
+impl ShipClass {
+    /// convert tag to ship class, None if no matched
+    ///
+    /// Destroyer => [`ShipClass::DD`]
+    /// Cruiser => [`ShipClass::CA`]
+    /// Battleship => [`ShipClass::BB`]
+    /// AirCarrier => [`ShipClass::CV`]
+    /// Submarine => [`ShipClass::SS`]
+    pub fn from_tag(input: impl AsRef<str>) -> Option<Self> {
+        match input.as_ref() {
+            "Destroyer" => Some(Self::DD),
+            "Cruiser" => Some(Self::CA),
+            "Battleship" => Some(Self::BB),
+            "AirCarrier" => Some(Self::CV),
+            "Submarine" => Some(Self::SS),
+            _ => None,
+        }
+    }
+}
+
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, Deserialize_repr, Serialize, EnumIter, PartialEq, Eq, Hash)]
 #[repr(u8)]
