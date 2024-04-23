@@ -37,7 +37,7 @@ impl PlayerSnapshots {
     }
     /// load the player's recent data, return None if he is not inside
     pub async fn load(player: &PartialPlayer) -> Option<Self> {
-        let path = Self::get_path(&player);
+        let path = Self::get_path(player);
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: PlayerSnapshots = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);

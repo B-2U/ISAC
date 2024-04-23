@@ -144,7 +144,7 @@ impl TryFrom<VortexVehicleAPIRes> for ShipsPara {
                     let class = v
                         .tags
                         .iter()
-                        .find_map(|tag| ShipClass::from_tag(tag))
+                        .find_map(ShipClass::from_tag)
                         .expect("missing ship class tag");
                     let ship = Ship {
                         ship_id: k,
