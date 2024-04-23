@@ -4,6 +4,8 @@ on:
     workflows: ["ci"]
     types:
       - completed
+    branches: 
+      - master
   workflow_dispatch:
 
 jobs:
