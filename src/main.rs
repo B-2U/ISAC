@@ -94,6 +94,7 @@ async fn main() {
         ..Default::default()
     };
     let data = Data::default();
+    println!("HELLO");
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
     let bot = poise::Framework::builder()
