@@ -231,6 +231,7 @@ impl Default for DataInner {
 
 async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     match error {
+        poise::FrameworkError::NotAnOwner { ctx: _ } => {}
         poise::FrameworkError::CooldownHit {
             remaining_cooldown,
             ctx,
