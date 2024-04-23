@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use unidecode::unidecode;
 
 use crate::utils::{
-    structs::{Ship, ShipId},
+    structs::{api, Ship, ShipClass, ShipId, ShipTier},
     IsacError, IsacInfo, LoadSaveFromJson,
 };
 
@@ -102,6 +102,89 @@ impl From<ShipsPara> for HashMap<ShipId, Ship> {
     fn from(value: ShipsPara) -> Self {
         value.0
     }
+}
+impl From<HashMap<ShipId, Ship>> for ShipsPara {
+    fn from(value: HashMap<ShipId, Ship>) -> Self {
+        Self(value)
+    }
+}
+
+/// Intermediate layer for `ShipsPara`
+#[derive(Debug, Deserialize, Serialize)]
+pub struct VortexVehicleAPIRes {
+    #[serde(flatten)]
+    status: api::Status,
+    data: HashMap<ShipId, VehicleInfo>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct VehicleInfo {
+    level: ShipTier,
+    /// e.g. PWSD990_Smalland
+    name: String,
+    icons: VehicleIcons,
+    tags: Vec<String>,
+    nation: String,
+    localization: VehicleLocalization,
+}
+
+impl TryFrom<VortexVehicleAPIRes> for ShipsPara {
+    type Error = IsacError;
+
+    fn try_from(res: VortexVehicleAPIRes) -> Result<Self, Self::Error> {
+        if !res.status.ok() {
+            Err(IsacInfo::APIError {
+                msg: res.status.err_msg(),
+            })?
+        } else {
+            let output = res
+                .data
+                .into_iter()
+                .map(|(k, mut v)| {
+                    let class = v
+                        .tags
+                        .iter()
+                        .find_map(ShipClass::from_tag)
+                        .expect("missing ship class tag");
+                    let ship = Ship {
+                        ship_id: k,
+                        tier: v.level,
+                        tier_roman: v.level.into(),
+                        class,
+                        name: v.localization.mark.remove("en").expect("missing en"),
+                        short_name: v.localization.shortmark.remove("en").expect("missing en"),
+                        nation: v.nation,
+                        icon: v.icons.small,
+                    };
+                    (k, ship)
+                })
+                .collect::<HashMap<ShipId, Ship>>()
+                .into();
+            Ok(output)
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct VehicleIcons {
+    local_contour: String,       //"gui/ship_bars/PWSD990_h_bg.png",
+    contour_alive: String, //"vehicle/contour_alive/PWSD990_fb13534c0a2cea819b86d12a5da3cc6d955c115a177d0a28b640f653f9a4c3f7.png",
+    medium: String, // "vehicle/medium/PWSD990_fb063a0b67bd1b296291c4a2d40311e65b93a4d69eeb62ad087668e32855d143.png",
+    default: String, // "vehicle/small/PWSD990_6bb01eb076aca5179a1e3c8cbedd32490e77834cea155f7ab5db407378b23155.png",
+    local_small: String, // "gui/ship_previews/PWSD990.png",
+    contour_dead: String, // "vehicle/contour_dead/PWSD990_88949cd0601738e5c003da52c3b6fe85a37078723c15da3422d173e717f85c7d.png",
+    large: String, // "vehicle/large/PWSD990_292ebab2e5a4e947697be86077329f45f66ee12952ccf05b6efb643c9e6d85d4.png",
+    local_contour_dead: String, // "gui/ship_dead_icons/PWSD990.png",
+    local_contour_alive: String, // "gui/ship_icons/PWSD990.png",
+    small: String, // "vehicle/small/PWSD990_6bb01eb076aca5179a1e3c8cbedd32490e77834cea155f7ab5db407378b23155.png",
+    contour: String, // "vehicle/contour/PWSD990_dc42e96bb81a5b83cdbe09b8862dab242085cdb2592195b6bccc7dabd5bdf329.png"
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct VehicleLocalization {
+    mark: HashMap<String, String>,
+    shortmark: HashMap<String, String>,
+    description: HashMap<String, String>,
 }
 
 /// A shell of `Vec<Ship>` that gurantee 1 `Ship` in it

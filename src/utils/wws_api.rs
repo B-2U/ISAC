@@ -8,8 +8,8 @@ use crate::{
     utils::structs::{
         api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode,
         PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
-        PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, VortexPlayer,
-        VortexPlayerAPIRes, VortexShipAPIRes,
+        PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara, VortexPlayer,
+        VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
     },
     Context, Data,
 };
@@ -339,6 +339,15 @@ impl<'a> WowsApi<'a> {
             .await?
             .try_into()?;
         Ok(res)
+    }
+
+    pub async fn encyclopedia_vehicles(&self) -> Result<ShipsPara, IsacError> {
+        self._get("https://vortex.worldofwarships.com/api/encyclopedia/en/vehicles/")
+            .await?
+            .json::<VortexVehicleAPIRes>()
+            .await
+            .unwrap()
+            .try_into()
     }
 }
 
