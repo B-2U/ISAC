@@ -149,6 +149,7 @@ impl TryFrom<VortexVehicleAPIRes> for ShipsPara {
                     let ship = Ship {
                         ship_id: k,
                         tier: v.level,
+                        tier_roman: v.level.into(),
                         class,
                         name: v.localization.mark.remove("en").expect("missing en"),
                         short_name: v.localization.shortmark.remove("en").expect("missing en"),

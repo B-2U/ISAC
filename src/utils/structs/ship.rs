@@ -3,8 +3,8 @@ use std::{collections::HashMap, fmt::Display, sync::Arc};
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use serde_repr::Deserialize_repr;
-use strum::{EnumIter, IntoEnumIterator};
+use serde_repr::{Deserialize_repr, Serialize_repr};
+use strum::{Display, EnumIter, IntoEnumIterator};
 
 use crate::{
     utils::{
@@ -49,7 +49,9 @@ impl ShipClass {
 }
 
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug, Clone, Copy, Deserialize_repr, Serialize, EnumIter, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, Copy, Deserialize_repr, Serialize_repr, EnumIter, PartialEq, Eq, Hash, Display,
+)]
 #[repr(u8)]
 pub enum ShipTier {
     I = 1,
@@ -65,6 +67,42 @@ pub enum ShipTier {
     XI = 11,
 }
 
+impl From<ShipTier> for ShipTierRoman {
+    fn from(value: ShipTier) -> Self {
+        match value {
+            ShipTier::I => Self::I,
+            ShipTier::II => Self::II,
+            ShipTier::III => Self::III,
+            ShipTier::IV => Self::IV,
+            ShipTier::V => Self::V,
+            ShipTier::VI => Self::VI,
+            ShipTier::VII => Self::VII,
+            ShipTier::VIII => Self::VIII,
+            ShipTier::IX => Self::IX,
+            ShipTier::X => Self::X,
+            ShipTier::XI => Self::XI,
+        }
+    }
+}
+
+/// Should use [`ShipTier`] most of the time, this enum is for display for user
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+pub enum ShipTierRoman {
+    I,
+    II,
+    III,
+    IV,
+    V,
+    VI,
+    VII,
+    VIII,
+    IX,
+    X,
+    #[serde(rename = "★")]
+    XI,
+}
+
 fn add_glossary_url_prefix<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -73,10 +111,11 @@ where
     Ok(format!("https://wows-gloss-icons.wgcdn.co/icons/{}", s))
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ship {
     pub ship_id: ShipId,
     pub tier: ShipTier,
+    pub tier_roman: ShipTierRoman,
     pub class: ShipClass,
     pub name: String,
     pub short_name: String,
@@ -90,6 +129,7 @@ impl Default for Ship {
         Self {
             ship_id: ShipId(0),
             tier: ShipTier::X,
+            tier_roman: ShipTierRoman::X,
             class: ShipClass::DD,
             name: "Unknown Ship".to_string(),
             short_name: "Unknown Ship".to_string(),

@@ -1,4 +1,4 @@
-use crate::dc_utils::Args;
+use crate::dc_utils::{Args, ContextAddon};
 use crate::utils::wws_api::WowsApi;
 use crate::utils::LoadSaveFromJson;
 use crate::{Context, Error};
@@ -22,11 +22,16 @@ pub async fn clan_season(ctx: Context<'_>, season: u32) -> Result<(), Error> {
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn update_src(ctx: Context<'_>) -> Result<(), Error> {
+    let _typing = ctx.typing().await;
     let api = WowsApi::new(&ctx);
     if let Ok(res) = api.encyclopedia_vehicles().await {
         res.save_json().await;
         *ctx.data().ship_js.write() = res;
     }
+    let res = api.encyclopedia_vehicles().await?;
+    res.save_json().await;
+    *ctx.data().ship_js.write() = res;
+    ctx.reply("Updated").await?;
     Ok(())
 }
 
