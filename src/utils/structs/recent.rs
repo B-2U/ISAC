@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
@@ -38,6 +38,7 @@ impl PlayerSnapshots {
     /// load the player's recent data, return None if he is not inside
     pub async fn load(player: &PartialPlayer) -> Option<Self> {
         let path = Self::get_path(player);
+        // std::fs::File::open() is as fast as path.exists()
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: PlayerSnapshots = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);
@@ -82,12 +83,11 @@ impl PlayerSnapshots {
     }
 
     /// get player's file path
-    fn get_path(player: &PartialPlayer) -> String {
-        format!(
-            "./recent_DB/players/{}/{}.json",
-            player.region.lower(),
-            player.uid
-        )
+    fn get_path(player: &PartialPlayer) -> PathBuf {
+        let mut path = PathBuf::from("./recent_DB/players/");
+        path.push(player.region.lower());
+        path.push(format!("{}.json", player.uid));
+        path
     }
 }
 
