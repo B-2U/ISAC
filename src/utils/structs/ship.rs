@@ -182,6 +182,11 @@ impl TryFrom<VortexShipAPIRes> for ShipStatsCollection {
 }
 
 impl ShipStatsCollection {
+    /// consume self and return a give ship stats
+    pub fn get_ship(mut self, ship_id: &ShipId) -> Option<ShipModeStatsPair> {
+        self.0.remove(ship_id)
+    }
+
     /// merging the responses from vortex
     pub fn merge(mut self, mut other: Self) -> Self {
         for (ship_id, main_pair) in self.0.iter_mut() {
@@ -419,7 +424,7 @@ impl ShipModeStatsPair {
     pub fn to_statistic(
         &self,
         ship_id: &ShipId,
-        expected_js: &Arc<RwLock<ExpectedJs>>,
+        expected_js: &RwLock<ExpectedJs>,
         mode: Mode,
     ) -> Option<Statistic> {
         let stats = self.get(&mode)?;

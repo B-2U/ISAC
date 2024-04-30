@@ -1,8 +1,5 @@
 name: cd
 on:
-  push:
-    branches:
-      - master
   workflow_run:
     workflows: ["ci"]
     types:
@@ -51,4 +48,5 @@ jobs:
           username: ${{ secrets.DEPLOY_USERNAME }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
+            git pull # sync templates
             systemctl --user restart isac
