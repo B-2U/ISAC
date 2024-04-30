@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::Render;
-use crate::utils::structs::{Clan, Player, Ship, Statistic};
+use crate::utils::structs::{Player, Ship, Statistic};
 
 #[derive(Debug, Serialize, Clone)]
 pub struct ServerTopTemplate {

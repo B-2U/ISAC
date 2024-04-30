@@ -66,7 +66,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
     )
     .await
     .into_iter()
-    .filter_map(|p| p)
+    .flatten()
     .collect::<Vec<_>>();
 
     let p_players_len = p_players.len(); // just for debugging
@@ -109,7 +109,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
         .collect::<Vec<_>>()
         .await
         .into_iter()
-        .filter_map(|s| s)
+        .flatten()
         .sorted_by(|a, b| b.1.pr.value.total_cmp(&a.1.pr.value))
         // multiple users link to same ign
         .dedup_by(|a, b| a.0.uid == b.0.uid)
@@ -139,7 +139,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
     // turn PartialPlayer to Player
     let mut lb_players = join_all(lb_players.into_iter().map(|(i, p, s)| async move {
         // if he's cached but hidden after that
-        let p = p.get_player(&api_ref).await.unwrap_or_default();
+        let p = p.get_player(api_ref).await.unwrap_or_default();
         let clan_tag = p
             .clan(&api)
             .await
