@@ -117,7 +117,7 @@ async fn func_ship(
     let api = WowsApi::new(ctx);
     let player = partial_player.get_player(&api).await?;
     let clan = player.clan(&api).await;
-    let (ship_id, ship_stats) = player.single_ship(&api, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
+    let ship_stats = player.single_ship(&api, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
 
     // getting player rank in the leaderboard
     let ranking = ctx
@@ -138,7 +138,6 @@ async fn func_ship(
         ship,
         ranking,
         mode.render_name().to_string(),
-        ship_id,
         ship_stats,
         mode,
         clan,

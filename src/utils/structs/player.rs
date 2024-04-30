@@ -1,10 +1,13 @@
-use crate::utils::{
-    structs::{
-        api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipId, ShipModeStatsPair,
-        ShipStatsCollection,
+use crate::{
+    utils::{
+        structs::{
+            api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
+            ShipStatsCollection,
+        },
+        wws_api::WowsApi,
+        IsacError, IsacInfo, LoadSaveFromJson,
     },
-    wws_api::WowsApi,
-    IsacError, IsacInfo, LoadSaveFromJson,
+    Context,
 };
 
 use poise::serenity_prelude::UserId;
@@ -14,12 +17,17 @@ use serde_with::{serde_as, DefaultOnError};
 
 use std::{collections::HashMap, ops::Deref};
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
 pub struct PartialPlayer {
     pub region: Region,
     pub uid: u64,
 }
 impl PartialPlayer {
+    /// check if the players is premium
+    pub async fn is_premium(&self, ctx: &Context<'_>) -> bool {
+        ctx.data().banner.read().await.get(&self.uid).is_some()
+    }
+
     /// turn partial player into [`Player`]
     pub async fn get_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
         api.player_personal_data(self.region, self.uid).await
@@ -46,13 +54,12 @@ impl PartialPlayer {
         &self,
         api: &WowsApi<'_>,
         ship: &Ship,
-    ) -> Result<Option<(ShipId, ShipModeStatsPair)>, IsacError> {
+    ) -> Result<Option<ShipModeStatsPair>, IsacError> {
         let ship_pair = api
             .statistics_of_player_ships(self.region, self.uid, Some(ship.ship_id))
             .await?
-            .0
-            .remove(&ship.ship_id);
-        Ok(ship_pair.map(|p| (ship.ship_id, p)))
+            .get_ship(&ship.ship_id);
+        Ok(ship_pair)
     }
 
     pub async fn clan_battle_season_stats(
@@ -75,6 +82,22 @@ pub struct Player {
     pub dogtag_bg: String, // the dotag background, should be optional
     pub premium: bool,
     pub banner: String,
+}
+
+impl Default for Player {
+    fn default() -> Self {
+        Self {
+            partial_player: Default::default(),
+            uid: Default::default(),
+            ign: "Unknown_Player".to_string(),
+            region: Default::default(),
+            karma: Default::default(),
+            dogtag: Default::default(),
+            dogtag_bg: Default::default(),
+            premium: Default::default(),
+            banner: Default::default(),
+        }
+    }
 }
 
 // QA 到底怎麼讓 Player 繼承 PartialPlayer 的方法?

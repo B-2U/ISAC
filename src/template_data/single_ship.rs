@@ -7,7 +7,7 @@ use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 use super::Render;
 use crate::{
     utils::{
-        structs::{Mode, PartialClan, Player, Ship, ShipId, ShipModeStatsPair, Statistic},
+        structs::{Mode, PartialClan, Player, Ship, ShipModeStatsPair, Statistic},
         IsacError, IsacInfo,
     },
     Context,
@@ -67,13 +67,12 @@ impl SingleShipTemplate {
         ship: Ship,
         ranking: Option<u64>,
         suffix: String,
-        ship_id: ShipId,
         ship_stats: ShipModeStatsPair,
         mode: Mode,
         clan: Option<PartialClan>,
         player: Player,
     ) -> Result<Self, IsacError> {
-        let Some(main_mode) = ship_stats.to_statistic(&ship_id, &ctx.data().expected_js, mode)
+        let Some(main_mode) = ship_stats.to_statistic(&ship.ship_id, &ctx.data().expected_js, mode)
         else {
             Err(IsacInfo::PlayerNoBattleShip {
                 ign: player.ign,
@@ -86,13 +85,13 @@ impl SingleShipTemplate {
         } else {
             Some(SingleShipTemplateSub::new(
                 ship_stats
-                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Solo)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Solo)
                     .unwrap_or_default(),
                 ship_stats
-                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div2)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Div2)
                     .unwrap_or_default(),
                 ship_stats
-                    .to_statistic(&ship_id, &ctx.data().expected_js, Mode::Div3)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Div3)
                     .unwrap_or_default(),
             ))
         };

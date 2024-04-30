@@ -195,7 +195,9 @@ pub async fn fetch_ship_leaderboard(
             .unwrap()
             .chars()
             .filter(|c| !c.is_whitespace() && *c != '%')
-            .collect::<String>();
+            .collect::<String>()
+            .parse::<f64>()
+            .unwrap_or(0.0);
         StatisticValue {
             value: winrate,
             color,

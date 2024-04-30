@@ -16,10 +16,11 @@ use crate::{
 
 use super::{IsacError, IsacInfo};
 
+#[derive(Clone, Copy)]
 pub struct WowsApi<'a> {
     pub client: &'a Client,
     token: &'a str,
-    data: &'a Data,
+    ctx_data: &'a Data,
 }
 
 impl<'a> WowsApi<'a> {
@@ -27,7 +28,7 @@ impl<'a> WowsApi<'a> {
         Self {
             client: &ctx.data().client,
             token: &ctx.data().wg_api_token,
-            data: ctx.data(),
+            ctx_data: ctx.data(),
         }
     }
 
@@ -83,7 +84,7 @@ impl<'a> WowsApi<'a> {
             .get("basic")
             .and_then(|v| v.get("karma").and_then(|v2| v2.as_u64()))
             .unwrap_or_default();
-        let banner = self.data.banner.read().await.get(&uid).map(|r| r.url);
+        let banner = self.ctx_data.banner.read().await.get(&uid).map(|r| r.url);
         Ok(Player {
             partial_player: PartialPlayer { region, uid },
             uid,
