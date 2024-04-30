@@ -1,4 +1,8 @@
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    path::PathBuf,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
@@ -27,6 +31,11 @@ impl PlayerSnapshots {
         }
     }
 
+    /// get the latest snapshot, it should always be Some()
+    pub fn latest_snapshot(&self) -> Option<ShipStatsCollection> {
+        self.data.last_key_value().map(|(_, v)| v.clone())
+    }
+
     /// return the timestamp keys which earlier than the given one, this is for making choices for user
     pub fn available_dates(&self, timestamp: &u64) -> Vec<u64> {
         self.data
@@ -35,9 +44,24 @@ impl PlayerSnapshots {
             .map(|(&date, _)| date)
             .collect()
     }
+
+    /// update the Self.last_request to now
+    pub fn update_last_request(&mut self, is_premium: bool) {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        self.last_request = if is_premium {
+            PlayerSnapshotsType::Premium
+        } else {
+            PlayerSnapshotsType::Normal(now)
+        };
+    }
+
     /// load the player's recent data, return None if he is not inside
-    pub async fn load(player: &PartialPlayer) -> Option<Self> {
-        let path = Self::get_path(player);
+    pub async fn load(player: PartialPlayer) -> Option<Self> {
+        let path = Self::get_path(&player);
+        // std::fs::File::open() is as fast as path.exists()
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: PlayerSnapshots = tokio::task::spawn_blocking(move || {
                 let reader = std::io::BufReader::new(file);
@@ -46,17 +70,27 @@ impl PlayerSnapshots {
             .await
             .unwrap()
             .unwrap_or_else(|err| panic!("Failed to deserialize file: {:?}\n Err: {err}", path,));
-            data.player = *player;
+            data.player = player;
             Some(data)
         } else {
             None
         }
     }
 
+    /// add the given record into the snapshot, and update the `last_updated_at`
+    pub fn insert(&mut self, ships: ShipStatsCollection) {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        self.data.insert(now, ships);
+        self.last_update_at = now;
+    }
+
     /// init new player file
-    pub async fn init(player: &PartialPlayer) -> Self {
+    pub async fn init(player: PartialPlayer) -> Self {
         Self {
-            player: *player,
+            player,
             last_update_at: 0,
             last_request: PlayerSnapshotsType::Normal(0),
             data: Default::default(),
@@ -82,12 +116,11 @@ impl PlayerSnapshots {
     }
 
     /// get player's file path
-    fn get_path(player: &PartialPlayer) -> String {
-        format!(
-            "./recent_DB/players/{}/{}.json",
-            player.region.lower(),
-            player.uid
-        )
+    fn get_path(player: &PartialPlayer) -> PathBuf {
+        let mut path = PathBuf::from("./recent_DB/players/");
+        path.push(player.region.lower());
+        path.push(format!("{}.json", player.uid));
+        path
     }
 }
 

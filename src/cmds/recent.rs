@@ -167,7 +167,7 @@ async fn func_recent(
 
     typing1.stop();
     // getting the stats diff compared with history
-    let (exact_day, mut stats) = loop {
+    let (exact_day, stats) = loop {
         if target_day > max_day {
             Err(IsacError::Info(IsacInfo::NeedPremium {
                 msg: format!("**{target_day}** is illegal, min: **1** max: **{max_day}**"),
@@ -213,9 +213,8 @@ async fn func_recent(
     // QA 這個超大的if else感覺好糟...
     let img = if let Some(ship) = specific_ship.as_ref() {
         // recent ship
-        let (ship_id, ship_stats) = stats
-            .0
-            .remove_entry(&ship.ship_id)
+        let ship_stats = stats
+            .get_ship(&ship.ship_id)
             .expect("it should not be None");
 
         let data = SingleShipTemplate::new(
@@ -223,7 +222,6 @@ async fn func_recent(
             ship.clone(),
             None,
             format!("({} days) {}", exact_day, mode.render_name()),
-            ship_id,
             ship_stats,
             mode,
             clan,
@@ -293,16 +291,11 @@ async fn load_player(
         .unwrap()
         .as_secs();
 
-    let last_request = if player.premium {
-        PlayerSnapshotsType::Premium
-    } else {
-        PlayerSnapshotsType::Normal(now)
-    };
     let (is_new, mut player_data) =
-        if let Some(player_data) = PlayerSnapshots::load(&player.partial_player).await {
+        if let Some(player_data) = PlayerSnapshots::load(player.partial_player).await {
             (false, player_data)
         } else {
-            let player_data = PlayerSnapshots::init(&player.partial_player).await;
+            let player_data = PlayerSnapshots::init(player.partial_player).await;
             (true, player_data)
         };
     let is_active = match player_data.last_request {
@@ -312,10 +305,10 @@ async fn load_player(
         }
     };
     // update the last_requst timestamp
-    player_data.last_request = last_request;
+    player_data.update_last_request(player.premium);
     // put in current_ships if needed
     if now - player_data.last_update_at > 86400 {
-        player_data.data.insert(now, curren_ships.clone());
+        player_data.insert(curren_ships.clone());
     }
     player_data.save().await;
 

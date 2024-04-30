@@ -76,6 +76,7 @@ async fn main() {
             clan::clan_hybrid(),
             clan_top::clan_top(),
             recent::recent_hybrid(),
+            server_top::server_top_hybrid(),
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),

@@ -43,12 +43,24 @@ app = Quart(__name__)
 #     return value
 
 
+def no_fract_float_to_int(value):
+    if isinstance(value, dict):
+        return {k: no_fract_float_to_int(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [no_fract_float_to_int(item) for item in value]
+    if isinstance(value, float):
+        if value.is_integer():
+            return int(value)
+
+    return value
+
+
 def render_html(template_path: str, data: dict) -> str:
     if os.name != "posix":
         # json for debug
         with open(f"{template_path}.json", "w", encoding="UTF-8") as f:
             json.dump(data, f, indent=2)
-    # data = format_big_num_with_commas(data)
+    data = no_fract_float_to_int(data)
     return html_renderer.render_path(template_path, data)
 
 
@@ -120,6 +132,13 @@ async def recent():
 async def leaderboard():
     data = await request.get_json()
     html = render_html(f"{TEMPLATE_PATH}/leaderboard.hbs", data)
+    return await return_png(await renderer.screenshot(html))
+
+
+@app.route("/server_top", methods=["POST"])
+async def server_top():
+    data = await request.get_json()
+    html = render_html(f"{TEMPLATE_PATH}/server_top.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
 
