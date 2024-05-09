@@ -29,7 +29,7 @@ impl PartialPlayer {
     }
 
     /// turn partial player into [`Player`]
-    pub async fn get_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
+    pub async fn full_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
         api.player_personal_data(self.region, self.uid).await
     }
     /// the link of player's wow-number page

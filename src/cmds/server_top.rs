@@ -139,7 +139,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
     // turn PartialPlayer to Player
     let mut lb_players = join_all(lb_players.into_iter().map(|(i, p, s)| async move {
         // if he's cached but hidden after that
-        let p = p.get_player(api_ref).await.unwrap_or_default();
+        let p = p.full_player(api_ref).await.unwrap_or_default();
         let clan_tag = p
             .clan(&api)
             .await

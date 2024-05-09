@@ -143,7 +143,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
     let api = WowsApi::new(&ctx);
     let player = args.parse_user(&ctx).await?;
     // this is just for rasing error when player profile is hidden
-    let _ = player.get_player(&api).await?;
+    let _ = player.full_player(&api).await?;
     let res_text = ctx
         .data()
         .client

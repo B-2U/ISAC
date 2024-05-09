@@ -29,7 +29,7 @@ pub async fn link(
         Err(IsacError::Info(IsacInfo::AutoCompleteError))?
     };
     let api = WowsApi::new(&ctx);
-    let player = partial_player.get_player(&api).await?;
+    let player = partial_player.full_player(&api).await?;
     {
         let mut guard = ctx.data().link_js.write().await;
         guard.0.insert(ctx.author().id, partial_player);
