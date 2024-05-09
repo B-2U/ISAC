@@ -12,6 +12,7 @@ use crate::{
     template_data::{LeaderboardTemplate, Render},
     utils::{
         structs::{Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue},
+        wws_api::WowsApi,
         IsacError, IsacInfo,
     },
     Context, Data, Error,
@@ -82,36 +83,98 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
             lb_players
         }
     };
+    let api = WowsApi::new(&ctx);
+    // if user linked and not hidden
+    let user_rank = if let Some(user_p) = match ctx.author().get_player(&ctx).await {
+        Some(user_pp) => user_pp.full_player(&api).await.ok(),
+        None => None,
+    } {
+        if let Some((p_index, p)) = lb_players
+            .iter()
+            .enumerate()
+            .find(|(_, p)| p.uid == user_p.uid)
+        {
+            Some((p_index, p))
+        }
+        // user not in the leaderboard, try to fetch his stats
+        else if let Some(stats) = user_p
+            .single_ship(&api, &ship)
+            .await?
+            .and_then(|user_ship| {
+                user_ship.to_statistic(
+                    &ship.ship_id,
+                    ctx.data().expected_js.as_ref(),
+                    crate::utils::structs::Mode::Pvp,
+                )
+            })
+        {
+            let user_ship = ShipLeaderboardPlayer {
+                color: "#fff".to_string(),
+                rank: 0,
+                clan: user_p
+                    .clan(&api)
+                    .await
+                    .map(|c| format!("[{}]", c.tag))
+                    .unwrap_or_default(),
+                ign: user_p.ign.clone(),
+                uid: user_p.uid,
+                battles: stats.battles,
+                pr: stats.pr,
+                winrate: stats.winrate,
+                frags: stats.frags,
+                dmg: stats.dmg,
+                planes: stats.planes,
+            };
+            // if user in top 100, push him in, sort and rank
+            if user_ship.pr.value > lb_players.last().unwrap().pr.value {
+                lb_players.push(user_ship);
+                lb_players.sort_by(|a, b| b.pr.value.partial_cmp(&a.pr.value).unwrap());
+                lb_players
+                    .iter_mut()
+                    .enumerate()
+                    .for_each(|(index, p)| p.rank = (index + 1) as u64);
+                lb_players
+                    .iter()
+                    .enumerate()
+                    .find(|(_, p)| p.uid == user_p.uid)
+            } else {
+                // pr < 100th
+                None
+            }
+        } else {
+            // not stats in the ship
+            None
+        }
+    } else {
+        // not linked
+        None
+    };
+    let truncate_len = match user_rank {
+        Some((index, _)) => {
+            // color user
+            lb_players[index].color = "#ffcc66".to_string();
+            match index >= 15 {
+                true => {
+                    lb_players.swap(15, index);
+                    16 // user in top 100
+                }
+                false => 15, // user in top 15
+            }
+        }
+        None => 15, // user not in leaderboard
+    };
+
+    lb_players.truncate(truncate_len);
+
     // color patrons
     {
         let patrons_rg = ctx.data().patron.read();
-        lb_players.iter_mut().take(15).for_each(|p| {
+        lb_players.iter_mut().for_each(|p| {
             if patrons_rg.check_player(&p.uid) {
                 p.color = "#e85a6b".to_string();
             }
         })
     };
-
-    // if user is in the leaderboard, set color and swap its index if needed
-    let truncate_len = if let Some((p_index, p)) =
-        ctx.author().get_player(&ctx).await.and_then(|player| {
-            lb_players
-                .iter_mut()
-                .enumerate()
-                .find(|(_, p)| p.uid == player.uid)
-        }) {
-        p.color = "#ffcc66".to_string();
-        if p_index >= 15 {
-            lb_players.swap(15, p_index);
-            16 // user in top 100
-        } else {
-            15 // user in top 15
-        }
-    } else {
-        15 // user not in leaderboard
-    };
-    lb_players.truncate(truncate_len);
-
     let ship_id = ship.ship_id;
     let data = LeaderboardTemplate {
         ship,
