@@ -8,7 +8,7 @@ pub trait CreateReplyAddon {
 
     fn set_embed(&mut self, embed: CreateEmbed) -> &mut Self;
 
-    fn set_embeds(&mut self, embeds: Vec<CreateEmbed>) -> &mut Self;
+    // fn set_embeds(&mut self, embeds: Vec<CreateEmbed>) -> &mut Self;
 }
 
 impl CreateReplyAddon for CreateReply<'_> {
@@ -22,8 +22,8 @@ impl CreateReplyAddon for CreateReply<'_> {
         self
     }
 
-    fn set_embeds(&mut self, embeds: Vec<CreateEmbed>) -> &mut Self {
-        self.embeds = embeds;
-        self
-    }
+    // fn set_embeds(&mut self, embeds: Vec<CreateEmbed>) -> &mut Self {
+    //     self.embeds = embeds;
+    //     self
+    // }
 }
