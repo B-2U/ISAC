@@ -84,40 +84,41 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         }
     };
     let api = WowsApi::new(&ctx);
-    // if user linked and not hidden
-    let user_rank = if let Some(user_p) = match ctx.author().get_player(&ctx).await {
-        Some(user_pp) => user_pp.full_player(&api).await.ok(),
+    // if author linked and not hidden
+    let author_rank = if let Some(author_p) = match ctx.author().get_player(&ctx).await {
+        Some(author_pp) => author_pp.full_player(&api).await.ok(),
         None => None,
     } {
         if let Some((p_index, p)) = lb_players
             .iter()
             .enumerate()
-            .find(|(_, p)| p.uid == user_p.uid)
+            .find(|(_, p)| p.uid == author_p.uid)
         {
             Some((p_index, p))
         }
-        // user not in the leaderboard, try to fetch his stats
-        else if let Some(stats) = user_p
-            .single_ship(&api, &ship)
-            .await?
-            .and_then(|user_ship| {
-                user_ship.to_statistic(
-                    &ship.ship_id,
-                    ctx.data().expected_js.as_ref(),
-                    crate::utils::structs::Mode::Pvp,
-                )
-            })
+        // author not in the leaderboard, try to fetch his stats
+        else if let Some(stats) =
+            author_p
+                .single_ship(&api, &ship)
+                .await?
+                .and_then(|author_ship| {
+                    author_ship.to_statistic(
+                        &ship.ship_id,
+                        ctx.data().expected_js.as_ref(),
+                        crate::utils::structs::Mode::Pvp,
+                    )
+                })
         {
-            let user_ship = ShipLeaderboardPlayer {
+            let author_ship = ShipLeaderboardPlayer {
                 color: "#fff".to_string(),
                 rank: 0,
-                clan: user_p
+                clan: author_p
                     .clan(&api)
                     .await
                     .map(|c| format!("[{}]", c.tag))
                     .unwrap_or_default(),
-                ign: user_p.ign.clone(),
-                uid: user_p.uid,
+                ign: author_p.ign.clone(),
+                uid: author_p.uid,
                 battles: stats.battles,
                 pr: stats.pr,
                 winrate: stats.winrate,
@@ -125,9 +126,9 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                 dmg: stats.dmg,
                 planes: stats.planes,
             };
-            // if user in top 100, push him in, sort and rank
-            if user_ship.pr.value > lb_players.last().unwrap().pr.value {
-                lb_players.push(user_ship);
+            // if author in top 100, push him in, sort and rank
+            if author_ship.pr.value > lb_players.last().unwrap().pr.value {
+                lb_players.push(author_ship);
                 lb_players.sort_by(|a, b| b.pr.value.partial_cmp(&a.pr.value).unwrap());
                 lb_players
                     .iter_mut()
@@ -136,7 +137,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                 lb_players
                     .iter()
                     .enumerate()
-                    .find(|(_, p)| p.uid == user_p.uid)
+                    .find(|(_, p)| p.uid == author_p.uid)
             } else {
                 // pr < 100th
                 None
@@ -149,19 +150,19 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         // not linked
         None
     };
-    let truncate_len = match user_rank {
+    let truncate_len = match author_rank {
         Some((index, _)) => {
-            // color user
+            // color author
             lb_players[index].color = "#ffcc66".to_string();
             match index >= 15 {
                 true => {
                     lb_players.swap(15, index);
-                    16 // user in top 100
+                    16 // author in top 100
                 }
-                false => 15, // user in top 15
+                false => 15, // author in top 15
             }
         }
-        None => 15, // user not in leaderboard
+        None => 15, // author not in leaderboard
     };
 
     lb_players.truncate(truncate_len);
