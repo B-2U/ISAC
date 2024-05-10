@@ -10,7 +10,10 @@ use serde::Deserialize;
 
 use crate::{
     dc_utils::CreateReplyAddon,
-    utils::{structs::Region, IsacError},
+    utils::{
+        structs::{ClanTag, Region},
+        IsacError,
+    },
     Context, Error,
 };
 
@@ -221,7 +224,7 @@ impl ClanTopView {
 #[derive(Debug, Deserialize)]
 struct ClanTopLadderClan {
     last_battle_at: String, //timestamp like "2023-07-13 13:39:41+00:00"
-    tag: String,
+    tag: ClanTag,
     division_rating: u32,
     battles_count: u32,
 }

@@ -115,7 +115,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                 clan: author_p
                     .clan(&api)
                     .await
-                    .map(|c| format!("[{}]", c.tag))
+                    .map(|c| c.tag.with_brackets())
                     .unwrap_or_default(),
                 ign: author_p.ign.clone(),
                 uid: author_p.uid,

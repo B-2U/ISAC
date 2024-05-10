@@ -6,7 +6,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     utils::structs::{
-        api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, Mode,
+        api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, ClanTag, Mode,
         PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
         PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara, VortexPlayer,
         VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
@@ -398,7 +398,7 @@ struct ClanSearchRes {
 #[derive(Debug, Deserialize, Default)]
 struct ClanSearchResClan {
     id: u64,
-    tag: String,
+    tag: ClanTag,
     hex_color: String,
     name: String,
 }

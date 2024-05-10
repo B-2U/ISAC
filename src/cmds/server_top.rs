@@ -143,7 +143,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
         let clan_tag = p
             .clan(&api)
             .await
-            .map(|c| format!("[{}]", c.tag))
+            .map(|c| c.tag.with_brackets())
             .unwrap_or_default();
         ServerTopPlayer {
             color: "#fff".to_string(),

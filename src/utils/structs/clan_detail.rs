@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{structs::api, IsacError, IsacInfo};
+use crate::utils::{
+    structs::{api, ClanTag},
+    IsacError, IsacInfo,
+};
 
 // #[derive(Debug, Deserialize, Serialize)]
 // pub struct ClanDetailMember {
@@ -20,7 +23,7 @@ pub struct ClanDetail {
     pub name: String,
     pub creator_name: String,
     pub created_at: u64,
-    pub tag: String,
+    pub tag: ClanTag,
     pub updated_at: u64,
     pub leader_name: String,
     pub members_ids: Vec<u64>,
@@ -30,7 +33,7 @@ pub struct ClanDetail {
     pub old_name: Option<String>,
     pub is_clan_disbanded: bool,
     pub renamed_at: Option<u64>,
-    pub old_tag: Option<String>,
+    pub old_tag: Option<ClanTag>,
     pub leader_id: u64,
     pub description: String,
 }

@@ -1,7 +1,9 @@
 use serde::Serialize;
 
 use super::Render;
-use crate::utils::structs::{ClanDivision, ClanLeague, ClanMember, PartialClan, StatisticValue};
+use crate::utils::structs::{
+    ClanDivision, ClanLeague, ClanMember, ClanTag, PartialClan, StatisticValue,
+};
 
 #[derive(Debug, Serialize)]
 pub struct ClanTemplate {
@@ -45,7 +47,7 @@ pub struct ClanTemplateSeasonValue {
 
 #[derive(Debug, Serialize)]
 pub struct ClanTemplateRename {
-    pub tag: String,
+    pub tag: ClanTag,
     pub name: String,
     pub time: String,
 }

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display, ops::Deref};
 
 use crate::{
     template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
@@ -16,11 +16,17 @@ use serde_with::{serde_as, DefaultOnError};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct PartialClan {
-    pub tag: String,   // e.g. PANTS, do not include [ ]
+    pub tag: ClanTag,  // e.g. PANTS, do not include [ ]
     pub color: String, // hex color string
     pub id: u64,
     pub name: String,
     pub region: Region,
+}
+
+impl Display for PartialClan {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.tag)
+    }
 }
 
 impl PartialClan {
@@ -54,6 +60,36 @@ impl PartialClan {
         season: Option<u32>,
     ) -> Result<ClanMemberAPIRes, IsacError> {
         api.clan_members(self.region, self.id, mode, season).await
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct ClanTag(String);
+
+impl From<&str> for ClanTag {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl Deref for ClanTag {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl Display for ClanTag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl ClanTag {
+    /// Example: [PANTS]
+    pub fn with_brackets(&self) -> String {
+        format!("[{}]", self.0)
     }
 }
 // https://vortex.worldofwarships.asia/api/accounts/2025455227/clans/
@@ -101,7 +137,7 @@ struct PlayerClanData {
 #[derive(Serialize, Deserialize, Debug, Default)]
 struct PlayerClanDataClan {
     name: String,
-    tag: String,
+    tag: ClanTag,
     color: u32,
     members_count: u32,
 }
@@ -130,7 +166,7 @@ pub struct Clan {
 pub struct ClanInfo {
     pub members_count: u32,
     pub max_members_count: u32,
-    pub tag: String, // e.g. PANTS, do not include [ ]
+    pub tag: ClanTag, // e.g. PANTS, do not include [ ]
     pub id: u64,
     pub description: String,
     pub color: String, // hex color string

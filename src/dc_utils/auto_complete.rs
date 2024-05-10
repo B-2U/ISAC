@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     utils::{
-        structs::{PartialClan, PartialPlayer, Region},
+        structs::{ClanTag, PartialClan, PartialPlayer, Region},
         wws_api::WowsApi,
     },
     Context,
@@ -105,21 +105,21 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoic
             (
                 "Example: VOR",
                 AutoCompleteClan {
-                    tag: "VOR".to_string(),
+                    tag: ClanTag::from("VOR"),
                     region: Region::Asia,
                 },
             ),
             (
                 "Example: EU RAIN",
                 AutoCompleteClan {
-                    tag: "RAIN".to_string(),
+                    tag: ClanTag::from("RAIN"),
                     region: Region::Eu,
                 },
             ),
             (
                 "Example: NA RESIN",
                 AutoCompleteClan {
-                    tag: "RESIN".to_string(),
+                    tag: ClanTag::from("RESIN"),
                     region: Region::Na,
                 },
             ),
@@ -138,7 +138,7 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoic
         .map(|clan| {
             let auto_complete_clan: AutoCompleteClan = clan.clone().into();
             poise::AutocompleteChoice {
-                name: format!("[{}] {} ({})", clan.tag, clan.name, clan.region),
+                name: format!("[{}] {} ({})", clan, clan.name, clan.region),
                 value: serde_json::to_string(&auto_complete_clan).unwrap(),
             }
         })
@@ -148,7 +148,7 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoic
 /// a temp struct for passing autocomplete result back due to the value size limit (100), can be removed if there's a better way lik command data()
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AutoCompleteClan {
-    pub tag: String,
+    pub tag: ClanTag,
     pub region: Region,
 }
 

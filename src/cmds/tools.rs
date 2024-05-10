@@ -515,7 +515,7 @@ pub async fn clanuid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(),
         .await?
         .swap_remove(0);
     let _r = ctx
-        .reply(format!("`{}`'s UID: **{}**", clan.tag, clan.id))
+        .reply(format!("`{}`'s UID: **{}**", clan, clan.id))
         .await;
     Ok(())
 }
