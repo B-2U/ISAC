@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::structs::{ExpectedJs, ShipId};
+use crate::utils::structs::{color::ColorStats, ExpectedJs, ShipId};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Statistic {
@@ -21,7 +21,7 @@ pub struct Statistic {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct StatisticValue {
     pub value: f64,
-    pub color: String, // hex color code in string
+    pub color: ColorStats,
 }
 
 impl StatisticValue {
@@ -44,7 +44,7 @@ impl Default for StatisticValue {
     fn default() -> Self {
         Self {
             value: 0.0,
-            color: "#999999".to_string(),
+            color: ColorStats::Grey,
         }
     }
 }
@@ -79,72 +79,72 @@ impl From<StatisticValueType<'_>> for StatisticValue {
     fn from(value: StatisticValueType<'_>) -> StatisticValue {
         let (value, color) = match value {
             StatisticValueType::Winrate { value } => {
-                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (65.0, "#9d42f3"),
-                        (60.0, "#d042f3"),
-                        (56.0, "#02c9b3"),
-                        (54.0, "#318000"),
-                        (52.0, "#44b300"),
-                        (49.0, "#ffc71f"),
-                        (47.0, "#fe7903"),
-                        (-1.0, "#fe0e00"),
+                        (65.0, ColorStats::SuperUnicum),
+                        (60.0, ColorStats::Unicum),
+                        (56.0, ColorStats::Great),
+                        (54.0, ColorStats::VeryGood),
+                        (52.0, ColorStats::Good),
+                        (49.0, ColorStats::Average),
+                        (47.0, ColorStats::BelowAverage),
+                        (-1.0, ColorStats::Bad),
                     ]
                 });
                 let color = MAP
                     .iter()
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (Self::_round_2(value), color.to_string())
+                    .unwrap_or(ColorStats::White);
+                (Self::_round_2(value), color)
             }
             StatisticValueType::Frags { value } => {
-                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (1.44, "#d042f3"),
-                        (1.2, "#02c9b3"),
-                        (0.9, "#44b300"),
-                        (0.73, "#ffc71f"),
-                        (0.51, "#fe7903"),
-                        (-1.0, "#fe0e00"),
+                        (1.44, ColorStats::Unicum),
+                        (1.2, ColorStats::Great),
+                        (0.9, ColorStats::Good),
+                        (0.73, ColorStats::Average),
+                        (0.51, ColorStats::BelowAverage),
+                        (-1.0, ColorStats::Bad),
                     ]
                 });
                 let color = MAP
                     .iter()
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (Self::_round_2(value), color.to_string())
+                    .unwrap_or(ColorStats::White);
+                (Self::_round_2(value), color)
             }
             StatisticValueType::Planes { value } => {
-                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (6.06, "#d042f3"),
-                        (3.7, "#02c9b3"),
-                        (1.8, "#44b300"),
-                        (0.97, "#ffc71f"),
-                        (0.22, "#fe7903"),
-                        (-1.0, "#fe0e00"),
+                        (6.06, ColorStats::Unicum),
+                        (3.7, ColorStats::Great),
+                        (1.8, ColorStats::Good),
+                        (0.97, ColorStats::Average),
+                        (0.22, ColorStats::BelowAverage),
+                        (-1.0, ColorStats::Bad),
                     ]
                 });
                 let color = MAP
                     .iter()
                     .find(|(v, _)| &value >= v)
                     .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (Self::_round_2(value), color.to_string())
+                    .unwrap_or(ColorStats::White);
+                (Self::_round_2(value), color)
             }
             StatisticValueType::Pr { value } => {
-                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (2450, "#9d42f3"),
-                        (2100, "#d042f3"),
-                        (1750, "#02c9b3"),
-                        (1550, "#318000"),
-                        (1350, "#44b300"),
-                        (1100, "#ffc71f"),
-                        (750, "#fe7903"),
-                        (-1, "#fe0e00"),
+                        (2450, ColorStats::SuperUnicum),
+                        (2100, ColorStats::Unicum),
+                        (1750, ColorStats::Great),
+                        (1550, ColorStats::VeryGood),
+                        (1350, ColorStats::Good),
+                        (1100, ColorStats::Average),
+                        (750, ColorStats::BelowAverage),
+                        (-1, ColorStats::Bad),
                     ]
                 });
                 if let Some(value) = value {
@@ -152,43 +152,43 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                         .iter()
                         .find(|(v, _)| &(value as i64) >= v)
                         .map(|(_, color)| *color)
-                        .unwrap_or("#fff");
-                    (value.round(), color.to_string())
+                        .unwrap_or(ColorStats::White);
+                    (value.round(), color)
                 } else {
-                    (0.0, "#999999".to_string())
+                    (0.0, ColorStats::Grey)
                 }
             }
             StatisticValueType::OverallDmg { value } => {
-                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (48500, "#d042f3"),
-                        (38000, "#02c9b3"),
-                        (28500, "#44b300"),
-                        (23000, "#ffc71f"),
-                        (16000, "#fe7903"),
-                        (-1, "#fe0e00"),
+                        (48500, ColorStats::Unicum),
+                        (38000, ColorStats::Great),
+                        (28500, ColorStats::Good),
+                        (23000, ColorStats::Average),
+                        (16000, ColorStats::BelowAverage),
+                        (-1, ColorStats::Bad),
                     ]
                 });
                 let color = MAP
                     .iter()
                     .find(|(v, _)| &(value as i64) >= v)
                     .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (value.round(), color.to_string())
+                    .unwrap_or(ColorStats::White);
+                (value.round(), color)
             }
             StatisticValueType::ShipDmg {
                 expected_js,
                 value,
                 ship_id,
             } => {
-                static MAP: Lazy<Vec<(f64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(f64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (1.7, "#d042f3"),
-                        (1.3, "#02c9b3"),
-                        (0.9, "#44b300"),
-                        (0.65, "#ffc71f"),
-                        (0.35, "#fe7903"),
-                        (-1.0, "#fe0e00"),
+                        (1.7, ColorStats::Unicum),
+                        (1.3, ColorStats::Great),
+                        (0.9, ColorStats::Good),
+                        (0.65, ColorStats::Average),
+                        (0.35, ColorStats::BelowAverage),
+                        (-1.0, ColorStats::Bad),
                     ]
                 });
                 let color = if let Some(expected) = expected_js.read().data.get(&ship_id.0) {
@@ -196,32 +196,32 @@ impl From<StatisticValueType<'_>> for StatisticValue {
                     MAP.iter()
                         .find(|(v, _)| &normal_value >= v)
                         .map(|(_, color)| *color)
-                        .unwrap_or("#fff")
+                        .unwrap_or(ColorStats::White)
                 } else {
-                    "999999" // ship doesn't have expected value yet
+                    ColorStats::Grey // ship doesn't have expected value yet
                 };
 
-                (value.round(), color.to_string())
+                (value.round(), color)
             }
             StatisticValueType::Exp { value } => {
-                static MAP: Lazy<Vec<(i64, &str)>> = Lazy::new(|| {
+                static MAP: Lazy<Vec<(i64, ColorStats)>> = Lazy::new(|| {
                     vec![
-                        (1500, "#9d42f3"),
-                        (1350, "#d042f3"),
-                        (1200, "#02c9b3"),
-                        (1050, "#318000"),
-                        (900, "#44b300"),
-                        (750, "#ffc71f"),
-                        (600, "#fe7903"),
-                        (-1, "#fe0e00"),
+                        (1500, ColorStats::SuperUnicum),
+                        (1350, ColorStats::Unicum),
+                        (1200, ColorStats::Great),
+                        (1050, ColorStats::VeryGood),
+                        (900, ColorStats::Good),
+                        (750, ColorStats::Average),
+                        (600, ColorStats::BelowAverage),
+                        (-1, ColorStats::Bad),
                     ]
                 });
                 let color = MAP
                     .iter()
                     .find(|(v, _)| &(value as i64) >= v)
                     .map(|(_, color)| *color)
-                    .unwrap_or("#fff");
-                (value.round(), color.to_string())
+                    .unwrap_or(ColorStats::White);
+                (value.round(), color)
             }
         };
         StatisticValue { value, color }

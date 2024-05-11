@@ -1,5 +1,6 @@
 use std::{
     borrow::Cow,
+    str::FromStr,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -11,7 +12,10 @@ use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     template_data::{LeaderboardTemplate, Render},
     utils::{
-        structs::{Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue},
+        structs::{
+            color::ColorStats, Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip,
+            StatisticValue,
+        },
         wws_api::WowsApi,
         IsacError, IsacInfo,
     },
@@ -245,14 +249,13 @@ pub async fn fetch_ship_leaderboard(
 
     let get_color_value = |element: ElementRef<'_>| -> StatisticValue {
         let span = element.select(&span_selector).next().unwrap();
-        let color = color_re
+        let color = ColorStats::from_str(dbg!(color_re
             .captures(span.value().attr("style").unwrap())
             .unwrap()
             .get(0)
             .unwrap()
-            .as_str()
-            .to_string();
-        // let color = if color == "#A00DC5" { "#9d42f3" } else { color }.to_string();
+            .as_str()))
+        .unwrap();
         let winrate = span
             .text()
             .next()

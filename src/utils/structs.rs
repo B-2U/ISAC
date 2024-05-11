@@ -51,3 +51,4 @@ mod clan_battles_season_stats;
 pub use clan_battles_season_stats::*;
 
 pub mod api;
+pub mod color;
