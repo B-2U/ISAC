@@ -69,7 +69,7 @@ async fn main() {
             tools::uid(),
             tools::clanuid(),
             wws::wws_hybrid(),
-            leaderboard::top_hybrid(),
+            top::top_hybrid(),
             setting::link_hybrid(),
             setting::wows_region(),
             patreon::background(),
