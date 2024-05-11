@@ -56,10 +56,7 @@ impl Args {
             let player_id = self.check(0)?;
 
             let api = WowsApi::new(ctx);
-            let candidates = match api.players(&region, player_id, 4).await {
-                Ok(result) => result,
-                Err(err) => Err(err)?,
-            };
+            let candidates = api.players(&region, player_id, 4).await?;
             let player = match candidates.len() {
                 0 => Err(IsacInfo::PlayerIgnNotFound {
                     ign: player_id.to_string(),
