@@ -1,6 +1,5 @@
 use std::{
     borrow::Cow,
-    str::FromStr,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -249,13 +248,14 @@ pub async fn fetch_ship_leaderboard(
 
     let get_color_value = |element: ElementRef<'_>| -> StatisticValue {
         let span = element.select(&span_selector).next().unwrap();
-        let color = ColorStats::from_str(dbg!(color_re
+        let color: ColorStats = color_re
             .captures(span.value().attr("style").unwrap())
             .unwrap()
             .get(0)
             .unwrap()
-            .as_str()))
-        .unwrap();
+            .as_str()
+            .parse()
+            .unwrap();
         let winrate = span
             .text()
             .next()
