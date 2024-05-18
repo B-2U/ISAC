@@ -8,6 +8,7 @@ on:
       - master
   workflow_dispatch:
 jobs:
+  
   # get-msrv:
   #   name: Get declared MSRV from Cargo.toml
   #   runs-on: ubuntu-latest
