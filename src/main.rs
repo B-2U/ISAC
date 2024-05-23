@@ -62,7 +62,6 @@ async fn main() {
             owner::clan_season(),
             owner::update_src(),
             tools::roulette(),
-            tools::rename(),
             tools::history(),
             tools::map(),
             tools::code(),
