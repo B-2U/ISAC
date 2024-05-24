@@ -37,6 +37,19 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             input: _,
             ctx,
         } => isac_err_handler(&ctx, &IsacHelp::LackOfArguments.into()).await,
+        // make the error become `debug` from `warning`
+        poise::FrameworkError::UnknownCommand {
+            ctx: _,
+            msg: _,
+            prefix,
+            msg_content,
+            framework: _,
+            invocation_data: _,
+            trigger: _,
+        } => {
+            debug!(
+            "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
+        }
 
         poise::FrameworkError::Command { error, ctx } => {
             // errors returned here, include discord shits
@@ -53,19 +66,15 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
                 error!("Error in command `{}`: {:?}", ctx.command().name, error,);
             }
         }
-        // make the error become `debug` from `warning`
-        poise::FrameworkError::UnknownCommand {
-            ctx: _,
-            msg: _,
-            prefix,
-            msg_content,
-            framework: _,
-            invocation_data: _,
-            trigger: _,
-        } => {
-            debug!(
-            "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
+        poise::FrameworkError::CommandPanic { payload, ctx } => {
+            isac_get_help(&ctx, None).await;
+            isac_err_logging(
+                &ctx,
+                &payload.unwrap_or("No panic payload".to_string()).into(),
+            )
+            .await;
         }
+
         error => {
             // panics and else here
             if let Some(ctx) = error.ctx() {
