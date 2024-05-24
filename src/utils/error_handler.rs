@@ -76,11 +76,7 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         }
 
         error => {
-            // panics and else here
             if let Some(ctx) = error.ctx() {
-                // thread 'tokio-runtime-worker' panicked at 'uuuuuuh', src\cmds\owner.rs:8:5
-                // note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-                // QA 這種是rust底層的logging嗎 有沒有可能拿出來
                 isac_get_help(&ctx, None).await;
                 isac_err_logging(&ctx, &error.to_string().into()).await;
             } else if let Err(e) = poise::builtins::on_error(error).await {
