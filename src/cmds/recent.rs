@@ -10,17 +10,14 @@ use poise::serenity_prelude::{
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    structs::{
+        Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType, Ship, ShipId,
+        ShipModeStatsPair, ShipStatsCollection,
+    },
     template_data::{
         RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
     },
-    utils::{
-        structs::{
-            Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType, Ship, ShipId,
-            ShipModeStatsPair, ShipStatsCollection,
-        },
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
-    },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 

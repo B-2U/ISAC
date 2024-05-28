@@ -1,12 +1,9 @@
 use std::{collections::HashSet, fmt::Display, ops::Deref};
 
+use super::{api, ClanDetail, Region, StatisticValueType};
 use crate::{
     template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
-    utils::{
-        structs::{api, ClanDetail, Region, StatisticValueType},
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
-    },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
 };
 
 use reqwest::Url;

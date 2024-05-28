@@ -18,15 +18,12 @@ use crate::{
         auto_complete::{self, AutoCompleteClan},
         Args, ContextAddon, CreateReplyAddon, EasyEmbed,
     },
+    structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
         ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
         ClanTemplateStats, ClanTemplateWrDis, Render,
     },
-    utils::{
-        structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
-        wws_api::WowsApi,
-        IsacError, IsacInfo, LoadSaveFromJson,
-    },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
 };
 

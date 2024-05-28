@@ -6,11 +6,9 @@ use serde_json::Value as JsonValue;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
+use super::{api, ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType};
 use crate::{
-    utils::{
-        structs::{api, ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType},
-        IsacError, IsacInfo,
-    },
+    utils::{IsacError, IsacInfo},
     Context,
 };
 

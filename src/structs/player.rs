@@ -1,12 +1,9 @@
 use crate::{
-    utils::{
-        structs::{
-            api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
-            ShipStatsCollection,
-        },
-        wws_api::WowsApi,
-        IsacError, IsacInfo, LoadSaveFromJson,
+    structs::{
+        api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
+        ShipStatsCollection,
     },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context,
 };
 

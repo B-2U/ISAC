@@ -1,10 +1,7 @@
 use crate::{
     dc_utils::{auto_complete, UserAddon},
-    utils::{
-        structs::{PartialPlayer, Region},
-        wws_api::WowsApi,
-        IsacError, IsacInfo, LoadSaveFromJson,
-    },
+    structs::{PartialPlayer, Region},
+    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
 };
 use poise;

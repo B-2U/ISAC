@@ -10,10 +10,8 @@ use serde::Deserialize;
 
 use crate::{
     dc_utils::CreateReplyAddon,
-    utils::{
-        structs::{ClanTag, Region},
-        IsacError,
-    },
+    structs::{ClanTag, Region},
+    utils::IsacError,
     Context, Error,
 };
 

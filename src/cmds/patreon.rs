@@ -3,7 +3,8 @@ use std::borrow::Cow;
 use crate::{
     cmds::wws::func_wws,
     dc_utils::{ContextAddon, UserAddon},
-    utils::{structs::BannerData, IsacError, IsacInfo, LoadSaveFromJson},
+    structs::BannerData,
+    utils::{IsacError, IsacInfo, LoadSaveFromJson},
     Context, Error,
 };
 use poise::{

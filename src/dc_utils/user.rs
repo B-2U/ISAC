@@ -2,7 +2,7 @@ use poise::serenity_prelude::{
     ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User, UserParseError,
 };
 
-use crate::{utils::structs::PartialPlayer, Error};
+use crate::{structs::PartialPlayer, Error};
 
 pub trait UserAddon: Sized {
     /// will only convert by user_id or mention, but not username

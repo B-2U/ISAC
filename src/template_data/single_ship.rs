@@ -6,10 +6,8 @@ use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
 
 use super::Render;
 use crate::{
-    utils::{
-        structs::{Mode, PartialClan, Player, Ship, ShipModeStatsPair, Statistic},
-        IsacError, IsacInfo,
-    },
+    structs::{Mode, PartialClan, Player, Ship, ShipModeStatsPair, Statistic},
+    utils::{IsacError, IsacInfo},
     Context,
 };
 

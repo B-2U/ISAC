@@ -1,10 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    utils::{
-        structs::{ClanTag, PartialClan, PartialPlayer, Region},
-        wws_api::WowsApi,
-    },
+    structs::{ClanTag, PartialClan, PartialPlayer, Region},
+    utils::wws_api::WowsApi,
     Context,
 };
 

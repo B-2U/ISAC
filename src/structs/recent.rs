@@ -7,7 +7,7 @@ use std::{
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
 
-use crate::utils::structs::{PartialPlayer, ShipStatsCollection};
+use crate::structs::{PartialPlayer, ShipStatsCollection};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerSnapshots {

@@ -9,15 +9,11 @@ use scraper::{node::Element, ElementRef, Html, Selector};
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
-    template_data::{LeaderboardTemplate, Render},
-    utils::{
-        structs::{
-            color::ColorStats, Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip,
-            StatisticValue,
-        },
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
+    structs::{
+        color::ColorStats, Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
     },
+    template_data::{LeaderboardTemplate, Render},
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 
@@ -108,7 +104,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                     author_ship.to_statistic(
                         &ship.ship_id,
                         ctx.data().expected_js.as_ref(),
-                        crate::utils::structs::Mode::Pvp,
+                        crate::structs::Mode::Pvp,
                     )
                 })
         {

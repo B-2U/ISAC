@@ -1,5 +1,4 @@
 pub mod error_handler;
-pub mod structs;
 pub mod wws_api;
 
 mod isac_error;

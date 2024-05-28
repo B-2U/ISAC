@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::Render;
-use crate::utils::{
+use crate::{
     structs::{PartialClan, Player, ShipClass, ShipTier, Statistic},
-    IsacError, IsacInfo,
+    utils::{IsacError, IsacInfo},
 };
 
 #[derive(Serialize, Deserialize, Debug)]

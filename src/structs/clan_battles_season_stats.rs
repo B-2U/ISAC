@@ -5,7 +5,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{structs::api, IsacError, IsacInfo};
+use super::api;
+use crate::utils::{IsacError, IsacInfo};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PlayerClanBattleAPIRes {

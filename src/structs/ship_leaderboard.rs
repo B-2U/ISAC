@@ -5,10 +5,8 @@ use std::{
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{
-    structs::{Region, ShipId, StatisticValue},
-    LoadSaveFromJson,
-};
+use super::{Region, ShipId, StatisticValue};
+use crate::utils::LoadSaveFromJson;
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);

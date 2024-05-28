@@ -6,12 +6,9 @@ use poise::serenity_prelude::AttachmentType;
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    structs::{PlayerSnapshots, Ship},
     template_data::{Render, ServerTopPlayer, ServerTopTemplate},
-    utils::{
-        structs::{PlayerSnapshots, Ship},
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
-    },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 
@@ -97,7 +94,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
         record
             .and_then(|r| {
                 r.get_ship(&ship.ship_id).and_then(|s| {
-                    s.to_statistic(&ship.ship_id, expected, crate::utils::structs::Mode::Pvp)
+                    s.to_statistic(&ship.ship_id, expected, crate::structs::Mode::Pvp)
                         .filter(|stats| stats.battles >= 10)
                 })
             })

@@ -4,6 +4,7 @@
 mod cmds;
 use cmds::*;
 mod dc_utils;
+mod structs;
 mod tasks;
 mod template_data;
 mod utils;
@@ -15,15 +16,12 @@ use tracing::{error, info, warn};
 use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
-    tasks::launch_renderer,
-    utils::{
-        error_handler,
-        structs::{
-            Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons,
-            ShipLeaderboard, ShipsPara,
-        },
-        LoadSaveFromJson,
+    structs::{
+        Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipLeaderboard,
+        ShipsPara,
     },
+    tasks::launch_renderer,
+    utils::{error_handler, LoadSaveFromJson},
 };
 
 // Types used by all command functions

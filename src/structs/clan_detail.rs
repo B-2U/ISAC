@@ -2,10 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::utils::{
-    structs::{api, ClanTag},
-    IsacError, IsacInfo,
-};
+use super::{api, ClanTag};
+use crate::utils::{IsacError, IsacInfo};
 
 // #[derive(Debug, Deserialize, Serialize)]
 // pub struct ClanDetailMember {

@@ -10,11 +10,8 @@ use regex::Regex;
 
 use crate::{
     dc_utils::CreateReplyAddon,
-    utils::{
-        structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
-        wws_api::WowsApi,
-        IsacError, IsacHelp, IsacInfo,
-    },
+    structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
+    utils::{wws_api::WowsApi, IsacError, IsacHelp, IsacInfo},
     Context,
 };
 

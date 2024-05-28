@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
 use crate::{
-    utils::structs::{Mode, PartialClan, Region},
+    structs::{Mode, PartialClan, Region},
     Error,
 };
 

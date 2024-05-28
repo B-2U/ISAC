@@ -10,10 +10,8 @@ use poise::serenity_prelude::{Http, RoleId};
 use tracing::warn;
 
 use crate::{
-    utils::{
-        structs::{Linked, Patron, Patrons},
-        LoadSaveFromJson,
-    },
+    structs::{Linked, Patron, Patrons},
+    utils::LoadSaveFromJson,
     Error,
 };
 

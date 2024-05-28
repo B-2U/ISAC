@@ -5,7 +5,7 @@ use std::fmt::Display;
 use strum::IntoEnumIterator;
 
 use crate::{
-    utils::structs::{
+    structs::{
         api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, ClanTag, Mode,
         PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
         PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara, VortexPlayer,

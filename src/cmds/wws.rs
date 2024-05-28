@@ -8,15 +8,12 @@ use poise::serenity_prelude::{
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, CreateReplyAddon, UserAddon},
+    structs::{Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic, StatisticValueType},
     template_data::{
         OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
-    utils::{
-        structs::{Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic, StatisticValueType},
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
-    },
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 

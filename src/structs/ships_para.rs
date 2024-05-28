@@ -8,10 +8,8 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use unidecode::unidecode;
 
-use crate::utils::{
-    structs::{api, Ship, ShipClass, ShipId, ShipTier},
-    IsacError, IsacInfo, LoadSaveFromJson,
-};
+use super::{api, Ship, ShipClass, ShipId, ShipTier};
+use crate::utils::{IsacError, IsacInfo, LoadSaveFromJson};
 
 /// the struct for laoding ships_para.json
 #[derive(Debug, Deserialize, Serialize, Default)]

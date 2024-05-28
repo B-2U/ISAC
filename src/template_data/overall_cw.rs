@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::Render;
-use crate::utils::structs::{PartialClan, Player, StatisticValue};
+use crate::structs::{PartialClan, Player, StatisticValue};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OverallCwTemplate {

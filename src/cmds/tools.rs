@@ -16,11 +16,8 @@ use scraper::{Element, ElementRef, Html, Selector};
 
 use crate::{
     dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed},
-    utils::{
-        structs::{PartialPlayer, Region, Ship},
-        wws_api::WowsApi,
-        IsacError, IsacInfo,
-    },
+    structs::{PartialPlayer, Region, Ship},
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 

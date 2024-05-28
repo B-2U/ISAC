@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use super::{ClanTemplateSeason, Render};
-use crate::utils::structs::{
+use crate::structs::{
     ClanMember, ClanStatsSeason, PartialClan, StatisticValue, StatisticValueType,
 };
 
