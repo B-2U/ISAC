@@ -17,7 +17,7 @@ use tokio::{fs, io::AsyncWriteExt};
 #[poise::command(slash_command)]
 pub async fn background(
     ctx: Context<'_>,
-    #[description = "width : height ~ 4.5 : 1"] file: Attachment, // the String is a Serialized PartialPlayer struct
+    #[description = "best resolution: 980*220px (4.45 : 1)"] file: Attachment, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
     if !ctx.data().patron.read().check_user(&ctx.author().id) {
         Err(IsacError::Info(IsacInfo::NeedPremium {
