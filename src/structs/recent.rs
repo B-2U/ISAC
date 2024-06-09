@@ -11,6 +11,7 @@ use crate::structs::{PartialPlayer, ShipStatsCollection};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PlayerSnapshots {
+    // PartialPlayer will get in Self::load()
     #[serde(default, skip_serializing)]
     pub player: PartialPlayer,
     pub last_update_at: u64, // unix timestamp
