@@ -62,6 +62,7 @@ async fn main() {
             tools::roulette(),
             tools::history(),
             tools::map(),
+            tools::ign(),
             tools::code(),
             tools::uid(),
             tools::clanuid(),

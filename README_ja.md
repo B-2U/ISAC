@@ -34,5 +34,6 @@
 | `/roulette`         | `/roulette`                    | `/roulette`                                            | randomly pick ships for you                                                                        |
 | `.uid`              | `.uid [region] <ign>`          | `.uid me`<br>`.uid B2U`<br>`.uid asia B2U`             | Get the player's UID                                                                               |
 | `.clanuid`          | `.clanuid [region] <clanName>` | `.clanuid me`<br>`.clanuid PANTS`<br>`.clanuid eu TCL` | Get the clan's UID                                                                                 |
+| `.ign`              | `.ign <player>`                | `.uid 2025455227`<br>`.uid asia 2025455227`            | Get the player's ign from given UID                                                                |
 | `.bonus`<br>`.code` | `.bonus <codes>`               | `.bonus CODE1`<br>`.bonus CODE1 CODE2`                 | Generate a link to redeem one or more bonus codes                                                  |
 | `.invite`           |                                |                                                        | Invite me to another server                                                                        |

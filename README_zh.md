@@ -42,5 +42,6 @@
 | `/roulette`         | `/roulette`                    | `/roulette`                                            | 隨機選擇船隻                                                           |
 | `.uid`              | `.uid <player>`                | `.uid me`<br>`.uid B2U`<br>`.uid asia B2U`             | 顯示該玩家的 UID                                                       |
 | `.clanuid`          | `.clanuid [region] <clanName>` | `.clanuid me`<br>`.clanuid PANTS`<br>`.clanuid eu TCL` | 顯示該公會的 UID                                                       |
+| `.ign`              | `.ign <player>`                | `.uid 2025455227`<br>`.uid asia 2025455227`            | 由玩家UID獲取他的目前名稱                                              |
 | `.bonus`<br>`.code` | `.bonus <codes>`               | `.bonus CODE1`<br>`.bonus CODE1 CODE2`                 | 為一個或多個獎勵代碼生成官網兌換的連結                                 |
 | `.invite`           |                                |                                                        | 機器人邀請連結                                                         |

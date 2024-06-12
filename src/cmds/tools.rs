@@ -28,6 +28,24 @@ pub async fn map(ctx: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
 
+/// Get the player's ign from his uid
+#[poise::command(prefix_command)]
+pub async fn ign(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+    let region = args.parse_region(&ctx).await?;
+    let uid: u64 = args.check(0)?.parse().map_err(|_| {
+        IsacError::Info(IsacInfo::GeneralError {
+            msg: "Not a valid uid".to_string(),
+        })
+    })?;
+
+    let pp = PartialPlayer { region, uid };
+    let player = pp.full_player(&WowsApi::new(&ctx)).await?;
+
+    ctx.reply(format!("`{}`", player.ign)).await?;
+
+    Ok(())
+}
+
 async fn code_err_handler(err: FrameworkError<'_, Data, Error>) {
     eprintln!("{err}");
     if let Some(ctx) = err.ctx() {
