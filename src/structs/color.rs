@@ -6,6 +6,7 @@ use crate::utils::IsacError;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum ColorStats {
+    // #A00DC5 is the SuperUnicum on wows number
     #[serde(rename = "#9D42F3", alias = "#A00DC5")]
     SuperUnicum,
     #[serde(rename = "#D042F3")]
@@ -33,6 +34,7 @@ impl FromStr for ColorStats {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.trim_matches('"') {
+            // #A00DC5 is the SuperUnicum on wows number
             "#9D42F3" | "#A00DC5" => Ok(ColorStats::SuperUnicum),
             "#D042F3" => Ok(ColorStats::Unicum),
             "#02C9B3" => Ok(ColorStats::Great),
