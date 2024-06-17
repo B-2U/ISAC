@@ -365,6 +365,12 @@ impl ClanView {
             .custom_id("clan_members")
             .style(ButtonStyle::Secondary);
 
+        let mut official_link = CreateButton::default();
+        official_link
+            .label("Official")
+            .url(self.clan.official_url().unwrap())
+            .style(ButtonStyle::Link);
+
         let mut num_link = CreateButton::default();
         num_link
             .label("Stats & Numbers")
@@ -379,6 +385,7 @@ impl ClanView {
         row.add_button(descrip)
             .add_button(member)
             .add_button(self.last_season_btn.clone())
+            .add_button(official_link)
             .add_button(num_link);
         view.set_action_row(row);
         view
