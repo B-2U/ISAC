@@ -3,8 +3,8 @@ use std::{fmt::Write, str::FromStr, time::Duration};
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use poise::serenity_prelude::{
-    ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed, CreateEmbedAuthor,
-    Message, ReactionType, User, UserId,
+    ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
+    ReactionType, User, UserId,
 };
 use regex::Regex;
 

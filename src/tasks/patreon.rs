@@ -34,7 +34,7 @@ pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) 
 
 async fn get_patrons(http: &Arc<Http>, ids: &Ids) -> Result<Patrons, Error> {
     let linked_js = Linked::load_json().await;
-    let guild = http.get_guild(ids.guild_id).await?;
+    let guild = http.get_guild(ids.guild_id.into()).await?;
     let patron_vec = guild
         .members(http, None, None)
         .await?
@@ -54,12 +54,12 @@ async fn get_patrons(http: &Arc<Http>, ids: &Ids) -> Result<Patrons, Error> {
 fn load_ids() -> Result<Ids, VarError> {
     let guild_id: u64 = env::var("GUILD_ID")?.parse().unwrap();
     // set role ids to 0 if wasn't specific
-    let patreon_id: RoleId = RoleId(
+    let patreon_id: RoleId = RoleId::new(
         env::var("PATREON_ROLE_ID")
             .map(|v| v.parse().unwrap())
             .unwrap_or_default(),
     );
-    let sup_id: RoleId = RoleId(
+    let sup_id: RoleId = RoleId::new(
         env::var("SUPPORTER_ROLE_ID")
             .map(|v| v.parse().unwrap())
             .unwrap_or_default(),

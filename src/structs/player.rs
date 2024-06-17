@@ -202,7 +202,7 @@ impl Default for BannerData {
         Self {
             url: DEFAULT_BANNER.to_string(),
             name: "".to_string(),
-            discord_id: UserId(0),
+            discord_id: UserId::new(0),
         }
     }
 }

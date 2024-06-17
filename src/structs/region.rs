@@ -7,7 +7,7 @@ use poise::serenity_prelude::GuildId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 /// wows server
 #[derive(
@@ -41,11 +41,11 @@ impl Region {
         }
     }
 }
-// impl Display for Region {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.upper())
-//     }
-// }
+impl Display for Region {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.upper())
+    }
+}
 impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
