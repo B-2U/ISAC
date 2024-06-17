@@ -1,3 +1,4 @@
+use poise::serenity_prelude::AutocompleteChoice;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -6,24 +7,18 @@ use crate::{
     Context,
 };
 
-pub async fn ship(
-    ctx: Context<'_>,
-    input: &str,
-) -> impl Iterator<Item = poise::AutocompleteChoice<String>> {
+pub async fn ship(ctx: Context<'_>, input: &str) -> impl Iterator<Item = AutocompleteChoice> {
     ctx.data()
         .ship_js
         .read()
         .search_name(input, 8)
         .unwrap_or_default()
         .into_iter()
-        .map(|ship| poise::AutocompleteChoice {
-            name: ship.name.clone(),
-            value: ship.name,
-        })
+        .map(|ship| AutocompleteChoice::new(ship.name.as_str(), ship.name.as_str()))
 }
 
 /// return a serialized [`PartialPlayer`] struct
-pub async fn player(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoice<String>> {
+pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     let input: Vec<&str> = input.split_whitespace().collect();
     let Some((region, ign)) = (match input.len() {
         0 => None,
@@ -68,9 +63,8 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteCho
             ),
         ]
         .into_iter()
-        .map(|(name, value)| poise::AutocompleteChoice {
-            name: name.to_string(),
-            value: serde_json::to_string(&value).unwrap(),
+        .map(|(name, value)| {
+            AutocompleteChoice::new(name.to_string(), serde_json::to_string(&value).unwrap())
         })
         .collect();
     };
@@ -83,16 +77,16 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteCho
                 region,
                 uid: vortex_p.uid,
             };
-            poise::AutocompleteChoice {
-                name: format!("{} [{}]", vortex_p.name, region),
-                value: serde_json::to_string(&partial_p).unwrap(),
-            }
+            AutocompleteChoice::new(
+                format!("{} [{}]", vortex_p.name, region),
+                serde_json::to_string(&partial_p).unwrap(),
+            )
         })
         .collect()
 }
 
 /// return a serialized [`AutoCompleteClan`] struct
-pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoice<String>> {
+pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     let input: Vec<&str> = input.split_whitespace().collect();
     let Some((region, clan_name)) = (match input.len() {
         0 => None,
@@ -123,9 +117,8 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoic
             ),
         ]
         .into_iter()
-        .map(|(name, value)| poise::AutocompleteChoice {
-            name: name.to_string(),
-            value: serde_json::to_string(&value).unwrap(),
+        .map(|(name, value)| {
+            AutocompleteChoice::new(name.to_string(), serde_json::to_string(&value).unwrap())
         })
         .collect();
     };
@@ -135,10 +128,10 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<poise::AutocompleteChoic
         .into_iter()
         .map(|clan| {
             let auto_complete_clan: AutoCompleteClan = clan.clone().into();
-            poise::AutocompleteChoice {
-                name: format!("[{}] {} ({})", clan, clan.name, clan.region),
-                value: serde_json::to_string(&auto_complete_clan).unwrap(),
-            }
+            AutocompleteChoice::new(
+                format!("[{}] {} ({})", clan, clan.name, clan.region),
+                serde_json::to_string(&auto_complete_clan).unwrap(),
+            )
         })
         .collect()
 }
