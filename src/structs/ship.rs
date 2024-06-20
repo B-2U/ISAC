@@ -166,7 +166,7 @@ impl TryFrom<VortexShipAPIRes> for ShipStatsCollection {
             .into());
         }
         let player_stats = value.data.values_mut().last().ok_or(IsacInfo::APIError {
-            msg: "expected PlayerStats".to_owned(),
+            msg: "expected PlayerStats".to_string(),
         })?;
         if player_stats.hidden_profile.is_some() || player_stats.statistics.is_none() {
             Err(IsacInfo::PlayerHidden {
