@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crate::{
     cmds::wws::func_wws,
     dc_utils::{ContextAddon, UserAddon},
@@ -9,7 +7,7 @@ use crate::{
 };
 use poise::{
     self,
-    serenity_prelude::{Attachment, AttachmentType, ChannelId},
+    serenity_prelude::{Attachment, ChannelId, CreateAttachment, CreateMessage},
 };
 use tokio::{fs, io::AsyncWriteExt};
 
@@ -82,21 +80,19 @@ pub async fn background(
     func_wws(&ctx, player).await?;
 
     // sending log
-    let att: AttachmentType<'_> = AttachmentType::Bytes {
-        data: Cow::Borrowed(&img_byte),
-        filename: file.filename,
-    };
-    let channel = ChannelId(1141973121352618074);
+    let att = CreateAttachment::bytes(img_byte, file.filename);
+    let channel = ChannelId::new(1141973121352618074);
     let _msg = channel
-        .send_message(ctx, |b| {
-            b.add_file(att).content(format!(
+        .send_message(
+            ctx,
+            CreateMessage::default().add_file(att).content(format!(
                 "{}, width: {} height: {}, size: {} KB",
                 ctx.author(),
                 file.width.unwrap_or_default(),
                 file.height.unwrap_or_default(),
                 file.size / 1000
-            ))
-        })
+            )),
+        )
         .await?;
     Ok(())
 }

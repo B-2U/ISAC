@@ -1,9 +1,9 @@
-use std::{
-    borrow::Cow,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
-use poise::serenity_prelude::AttachmentType;
+use poise::{
+    serenity_prelude::{CreateActionRow, CreateAttachment, CreateButton},
+    CreateReply,
+};
 use regex::Regex;
 use scraper::{node::Element, ElementRef, Html, Selector};
 
@@ -183,27 +183,17 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     };
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
-        .send(|b| {
-            b.attachment(AttachmentType::Bytes {
-                data: Cow::Borrowed(&img),
-                filename: "image.png".to_string(),
-            })
-            .components(|c| {
-                c.create_action_row(|r| {
-                    r.create_button(|b| {
-                        b.style(poise::serenity_prelude::ButtonStyle::Link)
-                            .url(
-                                region
-                                    .number_url(format!("/ship/{ship_id},/"))
-                                    .unwrap()
-                                    .to_string(),
-                            )
-                            .label("Stats & Numbers")
-                    })
-                })
-            })
-            .reply(true)
-        })
+        .send(
+            CreateReply::default()
+                .attachment(CreateAttachment::bytes(img, "image.png"))
+                .components(vec![CreateActionRow::Buttons(vec![
+                    CreateButton::new_link(
+                        region.number_url(format!("/ship/{ship_id},/")).to_string(),
+                    )
+                    .label("Stats & Numbers"),
+                ])])
+                .reply(true),
+        )
         .await?;
 
     Ok(())
@@ -217,7 +207,7 @@ pub async fn fetch_ship_leaderboard(
     let res_text = ctx
         .data()
         .client
-        .get(region.number_url(format!("/ship/{},/", ship.ship_id))?)
+        .get(region.number_url(format!("/ship/{},/", ship.ship_id)))
         .send()
         .await?
         .text()

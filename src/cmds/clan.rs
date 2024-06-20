@@ -18,7 +18,7 @@ use tokio::join;
 use crate::{
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
-        Args, ContextAddon, CreateReplyAddon, EasyEmbed,
+        Args, ContextAddon, EasyEmbed,
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
@@ -259,15 +259,12 @@ struct ClanView {
     clan: PartialClan,
     description: String,
     members: Vec<ClanMember>,
-    last_season_btn: CreateButton,
+    last_season_btn_disabled: bool,
     timeout: bool,
 }
 
 impl ClanView {
     fn new(clan: PartialClan, description: String, members: Vec<ClanMember>) -> Self {
-        let btn = CreateButton::new("last_season")
-            .label("Latest season")
-            .style(poise::serenity_prelude::ButtonStyle::Secondary);
         let description = if description.is_empty() {
             "❌ This clan has no description".to_string()
         } else {
@@ -277,7 +274,7 @@ impl ClanView {
             clan,
             description,
             members,
-            last_season_btn: btn,
+            last_season_btn_disabled: false,
             timeout: false,
         }
     }
@@ -295,7 +292,7 @@ impl ClanView {
         while let Some(interaction) = interaction_stream.next().await {
             let custom_id = interaction.data.custom_id.as_str();
             if custom_id == "clan_description" {
-                let embed = CreateEmbed::isac()
+                let embed = CreateEmbed::default_isac()
                     .description(self.description.clone())
                     .to_owned();
                 let _r = interaction
@@ -309,7 +306,7 @@ impl ClanView {
                     )
                     .await;
             } else if custom_id == "clan_members" {
-                let embed = CreateEmbed::isac().description(self.members_table());
+                let embed = CreateEmbed::default_isac().description(self.members_table());
                 let _r = interaction
                     .create_response(
                         ctx,
@@ -356,28 +353,32 @@ impl ClanView {
     }
 
     fn build(&self) -> Vec<CreateActionRow> {
-        let descrip = CreateButton::new("clan_description")
+        let mut descrip = CreateButton::new("clan_description")
             .label("Description")
             .style(ButtonStyle::Secondary);
-
-        let member = CreateButton::new("clan_members")
+        let mut member = CreateButton::new("clan_members")
             .label("Members")
             .style(ButtonStyle::Secondary);
-
-        let official_link =
-            CreateButton::new_link(self.clan.official_url().unwrap()).label("Official");
-
-        let num_link =
-            CreateButton::new_link(self.clan.wows_number_url().unwrap()).label("Stats & Numbers");
+        let latest_season = CreateButton::new("last_season")
+            .label("Latest season")
+            .style(poise::serenity_prelude::ButtonStyle::Secondary)
+            .disabled(if self.last_season_btn_disabled {
+                true
+            } else {
+                false
+            });
+        let official_link = CreateButton::new_link(self.clan.official_url()).label("Official");
+        let num_link = CreateButton::new_link(self.clan.wows_number_url()).label("Stats & Numbers");
 
         if self.timeout {
-            descrip.disabled(true);
-            member.disabled(true);
+            descrip = descrip.disabled(true);
+            member = member.disabled(true);
         }
 
         vec![CreateActionRow::Buttons(vec![
             descrip,
             member,
+            latest_season,
             official_link,
             num_link,
         ])]
@@ -385,13 +386,13 @@ impl ClanView {
 
     fn timeout(&mut self) -> &Self {
         self.timeout = true;
-        self.last_season_btn.disabled(true);
+        self.last_season_btn_disabled = true;
         self
     }
 
     /// disabled the season button
     fn pressed(&mut self) -> &Self {
-        self.last_season_btn.disabled(true);
+        self.last_season_btn_disabled = true;
         self
     }
 }

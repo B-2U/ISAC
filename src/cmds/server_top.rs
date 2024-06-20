@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-
 use futures::{future::join_all, StreamExt};
 use itertools::Itertools;
-use poise::serenity_prelude::AttachmentType;
+use poise::{serenity_prelude::CreateAttachment, CreateReply};
 
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
@@ -46,16 +44,20 @@ pub async fn server_top(
 }
 
 async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
-    let guild = ctx.guild().ok_or(IsacError::Info(IsacInfo::GeneralError {
-        msg: "Not a server".to_string(),
-    }))?;
+    let (guild_name, guild_id) = {
+        let guild = ctx.guild().ok_or(IsacError::Info(IsacInfo::GeneralError {
+            msg: "Not a server".to_string(),
+        }))?;
+        (guild.name.clone(), guild.id)
+    };
+
     let _typing = ctx.typing().await;
 
     let time = std::time::Instant::now();
 
     // linked users
     let p_players = join_all(
-        guild
+        guild_id
             .members(ctx, None, None)
             .await?
             .into_iter()
@@ -168,18 +170,16 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
     };
     let data = ServerTopTemplate {
         ship,
-        server: guild.name,
+        server: guild_name,
         players: lb_players,
     };
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
-        .send(|b| {
-            b.attachment(AttachmentType::Bytes {
-                data: Cow::Borrowed(&img),
-                filename: "image.png".to_string(),
-            })
-            .reply(true)
-        })
+        .send(
+            CreateReply::default()
+                .attachment(CreateAttachment::bytes(img, "image.png"))
+                .reply(true),
+        )
         .await?;
     println!(
         "server members: {}, took time: {:.4}s",

@@ -56,7 +56,7 @@ impl<'a> WowsApi<'a> {
         region: Region,
         uid: u64,
     ) -> Result<Player, IsacError> {
-        let url = region.vortex_url(format!("/api/accounts/{uid}"))?;
+        let url = region.vortex_url(format!("/api/accounts/{uid}"));
 
         let res: VortexPlayer = self
             ._get(url)
@@ -111,13 +111,14 @@ impl<'a> WowsApi<'a> {
                 ign: ign.to_string(),
             })?
         }
-        let Ok(url) = region.vortex_url(format!(
-            "/api/accounts/search/autocomplete/{ign}/?limit={limit}"
-        )) else {
+        if !ign.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
             Err(IsacInfo::InvalidIgn {
                 ign: ign.to_string(),
             })?
         };
+        let url = region.vortex_url(format!(
+            "/api/accounts/search/autocomplete/{ign}/?limit={limit}"
+        ));
         let res = self
             ._get(url)
             .await?
@@ -133,13 +134,17 @@ impl<'a> WowsApi<'a> {
         region: &Region,
         clan_name: &str,
     ) -> Result<Vec<PartialClan>, IsacError> {
-        let Ok(url) = region.clan_url(format!(
-            "/api/search/autocomplete/?search={clan_name}&type=clans"
-        )) else {
+        if !clan_name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        {
             Err(IsacInfo::InvalidClan {
                 clan: clan_name.to_string(),
             })?
         };
+        let url = region.clan_url(format!(
+            "/api/search/autocomplete/?search={clan_name}&type=clans"
+        ));
         let mut res = self._get(url).await?.json::<ClanSearchRes>().await.unwrap();
         let clans = res.search_autocomplete_result.take().map(|clan| {
             clan.into_iter()
@@ -157,9 +162,7 @@ impl<'a> WowsApi<'a> {
     }
     /// get a player clan by his uid, will return a default clan if the player is not in any clan
     pub async fn player_clan(&self, region: &Region, player_uid: u64) -> Option<PartialClan> {
-        let url = region
-            .vortex_url(format!("/api/accounts/{player_uid}/clans/"))
-            .unwrap();
+        let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"));
         let res = self
             ._get(url)
             .await
@@ -203,20 +206,16 @@ impl<'a> WowsApi<'a> {
         let urls: Vec<Url> = if let Some(ship_id) = ship_id {
             Mode::iter()
                 .map(|mode| {
-                    region
-                        .vortex_url(format!(
-                            "/api/accounts/{uid}/ships/{ship_id}/{}/",
-                            mode.api_name()
-                        ))
-                        .unwrap()
+                    region.vortex_url(format!(
+                        "/api/accounts/{uid}/ships/{ship_id}/{}/",
+                        mode.api_name()
+                    ))
                 })
                 .collect()
         } else {
             Mode::iter()
                 .map(|mode| {
-                    region
-                        .vortex_url(format!("/api/accounts/{uid}/ships/{}/", mode.api_name()))
-                        .unwrap()
+                    region.vortex_url(format!("/api/accounts/{uid}/ships/{}/", mode.api_name()))
                 })
                 .collect()
         };
@@ -250,7 +249,7 @@ impl<'a> WowsApi<'a> {
     }
     /// clan details from vortex
     pub async fn clan_stats(&self, region: Region, clan_id: u64) -> Result<Clan, IsacError> {
-        let url = region.clan_url(format!("/api/clanbase/{clan_id}/claninfo/"))?;
+        let url = region.clan_url(format!("/api/clanbase/{clan_id}/claninfo/"));
         let mut clan: Clan = self
             ._get(url)
             .await?
@@ -273,7 +272,7 @@ impl<'a> WowsApi<'a> {
         mode: Option<&str>,
         season: Option<u32>,
     ) -> Result<ClanMemberAPIRes, IsacError> {
-        let url = region.clan_url(format!("/api/members/{clan_id}/"))?;
+        let url = region.clan_url(format!("/api/members/{clan_id}/"));
         let mut query = vec![("battle_type", mode.unwrap_or("pvp").to_string())];
         if let Some(season) = season {
             query.push(("season", season.to_string()))
@@ -297,7 +296,7 @@ impl<'a> WowsApi<'a> {
         region: Region,
         clan_id: u64,
     ) -> Result<ClanDetail, IsacError> {
-        let url = region.api_url(format!("/wows/clans/info/{clan_id}"))?;
+        let url = region.api_url(format!("/wows/clans/info/{clan_id}"));
         let query = vec![
             ("application_id", self.token.to_string()),
             ("language", "en".to_string()),
@@ -323,7 +322,7 @@ impl<'a> WowsApi<'a> {
         region: Region,
         uid: u64,
     ) -> Result<PlayerClanBattle, IsacError> {
-        let url = region.api_url("/wows/clans/seasonstats/")?;
+        let url = region.api_url("/wows/clans/seasonstats/");
         let query = vec![
             ("application_id", self.token.to_string()),
             ("language", "en".to_string()),

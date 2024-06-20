@@ -91,7 +91,7 @@ async fn main() {
     let data = Data::default();
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
-    let bot = ClientBuilder::new(
+    let mut bot = ClientBuilder::new(
         token,
         serenity::GatewayIntents::non_privileged()
             | serenity::GatewayIntents::MESSAGE_CONTENT

@@ -2,14 +2,16 @@ use std::{fmt::Write, str::FromStr, time::Duration};
 
 use itertools::Itertools;
 use once_cell::sync::Lazy;
-use poise::serenity_prelude::{
-    ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
-    ReactionType, User, UserId,
+use poise::{
+    serenity_prelude::{
+        ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
+        ReactionType, User, UserId,
+    },
+    CreateReply,
 };
 use regex::Regex;
 
 use crate::{
-    dc_utils::CreateReplyAddon,
     structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
     utils::{wws_api::WowsApi, IsacError, IsacHelp, IsacInfo},
     Context,
@@ -182,7 +184,11 @@ impl Args {
     ) -> Result<usize, IsacError> {
         let view = PickView::new(candidates, ctx.author());
         let inter_msg = ctx
-            .send(|b| b.set_components(view.build()).set_embed(view.embed_build()))
+            .send(
+                CreateReply::default()
+                    .components(view.build())
+                    .embed(view.embed_build()),
+            )
             .await
             .map_err(|_| IsacInfo::EmbedPermission)?
             .into_message()
@@ -258,11 +264,6 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     }
 
     fn embed_build(&self) -> CreateEmbed {
-        let mut author = CreateEmbedAuthor::default();
-        author
-            .name(&self.user.name)
-            .icon_url(self.user.avatar_url().unwrap_or_default());
-
         let mut msg_text = self.candidates.iter().enumerate().fold(
             String::new(),
             |mut buf, (index, candidate)| {
@@ -273,9 +274,12 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
 
         msg_text += format!("{} None of above", self.x_emoji).as_str();
 
-        let mut embed = CreateEmbed::isac();
-        embed.set_author(author).description(msg_text);
-        embed
+        CreateEmbed::default_isac()
+            .author(
+                CreateEmbedAuthor::new(&self.user.name)
+                    .icon_url(self.user.avatar_url().unwrap_or_default()),
+            )
+            .description(msg_text)
     }
     async fn interactions(&self, ctx: &Context<'_>, author: UserId, msg: Message) -> Option<u8> {
         let result = match msg
@@ -299,49 +303,20 @@ impl<'a, T: std::fmt::Display> PickView<'a, T> {
     }
 
     /// build the `CreateActionRow` with current components state
-    fn build(&self) -> CreateComponents {
-        const BTN_STYLE: ButtonStyle = ButtonStyle::Secondary;
-        let mut view = CreateComponents::default();
-        let mut row = CreateActionRow::default();
-        if !self.candidates.is_empty() {
-            let btn_1 = CreateButton::default()
-                .emoji(ReactionType::Unicode(self.emoji[0].to_string()))
-                .custom_id("select_1")
-                .style(BTN_STYLE)
-                .to_owned();
-            row.add_button(btn_1);
-        }
-        if self.candidates.len() >= 2 {
-            let btn_2 = CreateButton::default()
-                .emoji(ReactionType::Unicode(self.emoji[1].to_string()))
-                .custom_id("select_2")
-                .style(BTN_STYLE)
-                .to_owned();
-            row.add_button(btn_2);
-        }
-        if self.candidates.len() >= 3 {
-            let btn_3 = CreateButton::default()
-                .emoji(ReactionType::Unicode(self.emoji[2].to_string()))
-                .custom_id("select_3")
-                .style(BTN_STYLE)
-                .to_owned();
-            row.add_button(btn_3);
-        }
-        if self.candidates.len() >= 4 {
-            let btn_4 = CreateButton::default()
-                .emoji(ReactionType::Unicode(self.emoji[3].to_string()))
-                .custom_id("select_4")
-                .style(BTN_STYLE)
-                .to_owned();
-            row.add_button(btn_4);
-        }
-        let btn_x = CreateButton::default()
+    fn build(&self) -> Vec<CreateActionRow> {
+        let mut btns = (1..=self.candidates.len())
+            .map(|i| {
+                CreateButton::new(format!("select_{}", i))
+                    .emoji(ReactionType::Unicode(self.emoji[i - 1].to_string()))
+                    .style(ButtonStyle::Secondary)
+            })
+            .collect::<Vec<_>>();
+
+        let btn_x = CreateButton::new("select_x")
             .emoji(ReactionType::Unicode(self.x_emoji.to_string()))
-            .custom_id("select_x")
-            .style(BTN_STYLE)
-            .to_owned();
-        row.add_button(btn_x);
-        view.set_action_row(row);
-        view
+            .style(ButtonStyle::Secondary);
+        btns.push(btn_x);
+
+        vec![CreateActionRow::Buttons(btns)]
     }
 }
