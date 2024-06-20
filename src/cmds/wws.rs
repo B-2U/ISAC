@@ -339,22 +339,18 @@ impl WwsView {
     }
 
     fn build(&self) -> Vec<CreateActionRow> {
-        let mut btns = vec![];
-        btns.push(
+        vec![CreateActionRow::Buttons(vec![
             CreateButton::new("overall_tier")
                 .style(ButtonStyle::Secondary)
                 .label("stats by tier")
                 .disabled(self.by_tier_btn_disabled),
-        );
-        btns.push(
             CreateButton::new("overall_cw")
                 .style(ButtonStyle::Secondary)
                 .label("CB seasons")
                 .disabled(self.cw_btn_disabled),
-        );
-        btns.push(CreateButton::new_link(self.player.profile_url()).label("Official"));
-        btns.push(CreateButton::new_link(self.player.wows_number_url()).label("Stats & Numbers"));
-        vec![CreateActionRow::Buttons(btns)]
+            CreateButton::new_link(self.player.profile_url()).label("Official"),
+            CreateButton::new_link(self.player.wows_number_url()).label("Stats & Numbers"),
+        ])]
     }
 
     fn timeout(&mut self) -> &Self {
