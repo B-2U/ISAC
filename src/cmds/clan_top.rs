@@ -179,7 +179,7 @@ impl ClanTopView {
             .custom_id("clan_top_left")
             .emoji(ReactionType::Unicode("◀️".to_string()))
             .style(ButtonStyle::Secondary)
-            .disabled(if self.ranks_index == 12 || self.timeout {
+            .disabled(if self.ranks_index == 0 || self.timeout {
                 true
             } else {
                 false
@@ -187,7 +187,7 @@ impl ClanTopView {
         let btn_right = CreateButton::new("clan_top_right")
             .emoji(ReactionType::Unicode("▶️".to_string()))
             .style(ButtonStyle::Secondary)
-            .disabled(if self.ranks_index == 0 || self.timeout {
+            .disabled(if self.ranks_index == 12 || self.timeout {
                 true
             } else {
                 false
