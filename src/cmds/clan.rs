@@ -360,11 +360,7 @@ impl ClanView {
         let latest_season = CreateButton::new("last_season")
             .label("Latest season")
             .style(poise::serenity_prelude::ButtonStyle::Secondary)
-            .disabled(if self.last_season_btn_disabled {
-                true
-            } else {
-                false
-            });
+            .disabled(self.last_season_btn_disabled);
         let official_link = CreateButton::new_link(self.clan.official_url()).label("Official");
         let num_link = CreateButton::new_link(self.clan.wows_number_url()).label("Stats & Numbers");
 

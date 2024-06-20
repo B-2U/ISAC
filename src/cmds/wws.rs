@@ -344,17 +344,13 @@ impl WwsView {
             CreateButton::new("overall_tier")
                 .style(ButtonStyle::Secondary)
                 .label("stats by tier")
-                .disabled(if self.by_tier_btn_disabled {
-                    true
-                } else {
-                    false
-                }),
+                .disabled(self.by_tier_btn_disabled),
         );
         btns.push(
             CreateButton::new("overall_cw")
                 .style(ButtonStyle::Secondary)
                 .label("CB seasons")
-                .disabled(if self.cw_btn_disabled { true } else { false }),
+                .disabled(self.cw_btn_disabled),
         );
         btns.push(CreateButton::new_link(self.player.profile_url()).label("Official"));
         btns.push(CreateButton::new_link(self.player.wows_number_url()).label("Stats & Numbers"));

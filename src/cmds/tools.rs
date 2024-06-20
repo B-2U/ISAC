@@ -457,13 +457,13 @@ impl RouletteView {
         let mut btns = vec![CreateButton::new("roulette_1")
             .label("1️⃣🔄")
             .style(ButtonStyle::Secondary)
-            .disabled(if self.btn_1_disabled { true } else { false })];
+            .disabled(self.btn_1_disabled)];
         if self.players as usize >= 2 {
             btns.push(
                 CreateButton::new("roulette_2")
                     .label("2️⃣🔄")
                     .style(ButtonStyle::Secondary)
-                    .disabled(if self.btn_2_disabled { true } else { false }),
+                    .disabled(self.btn_2_disabled),
             );
         }
         if self.players as usize >= 3 {
@@ -471,7 +471,7 @@ impl RouletteView {
                 CreateButton::new("roulette_3")
                     .label("3️⃣🔄")
                     .style(ButtonStyle::Secondary)
-                    .disabled(if self.btn_3_disabled { true } else { false }),
+                    .disabled(self.btn_3_disabled),
             );
         }
         vec![CreateActionRow::Buttons(btns)]

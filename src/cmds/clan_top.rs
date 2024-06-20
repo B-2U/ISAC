@@ -179,19 +179,11 @@ impl ClanTopView {
             .custom_id("clan_top_left")
             .emoji(ReactionType::Unicode("◀️".to_string()))
             .style(ButtonStyle::Secondary)
-            .disabled(if self.ranks_index == 0 || self.timeout {
-                true
-            } else {
-                false
-            });
+            .disabled(self.ranks_index == 0 || self.timeout);
         let btn_right = CreateButton::new("clan_top_right")
             .emoji(ReactionType::Unicode("▶️".to_string()))
             .style(ButtonStyle::Secondary)
-            .disabled(if self.ranks_index == 12 || self.timeout {
-                true
-            } else {
-                false
-            });
+            .disabled(self.ranks_index == 12 || self.timeout);
         vec![CreateActionRow::Buttons(vec![btn_left, btn_right])]
     }
 
