@@ -353,7 +353,6 @@ impl<'a> AskDay<'a> {
     ) -> Result<Option<u64>, Error> {
         // setting stuffs up
         // QA 原本單純用view.is_some()判斷，但過程view會被moved，才加了這個 has_choices，有更好的做法?
-        // TODO: 試試直接給view不判斷?
         let (has_choices, view) = {
             if available_days.is_empty() {
                 (false, vec![])
@@ -440,7 +439,7 @@ impl<'a> AskDay<'a> {
                 .create_response(
                     self.ctx,
                     CreateInteractionResponse::UpdateMessage(
-                        CreateInteractionResponseMessage::default().components(vec![]),
+                        CreateInteractionResponseMessage::default(),
                     ),
                 )
                 .await;

@@ -5,7 +5,7 @@ use itertools::Itertools;
 use poise::{
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateInteractionResponse,
-        CreateInteractionResponseMessage, EditAttachments, EditMessage, User,
+        EditAttachments, EditMessage, User,
     },
     CreateReply,
 };
@@ -247,12 +247,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
                 // disable button first
                 view.by_tier_btn_disabled = true;
                 let _ok = interaction
-                    .create_response(
-                        ctx,
-                        CreateInteractionResponse::UpdateMessage(
-                            CreateInteractionResponseMessage::new().components(view.build()),
-                        ),
-                    )
+                    .create_response(ctx, CreateInteractionResponse::Acknowledge)
                     .await;
                 // generate then send image
                 let img_tier = view.overall_data.render_tiers(&ctx.data().client).await?;
@@ -272,12 +267,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
                 // disable button first
                 view.cw_btn_disabled = true;
                 let _ok = interaction
-                    .create_response(
-                        ctx,
-                        CreateInteractionResponse::UpdateMessage(
-                            CreateInteractionResponseMessage::new().components(view.build()),
-                        ),
-                    )
+                    .create_response(ctx, CreateInteractionResponse::Acknowledge)
                     .await;
                 let api = WowsApi::new(ctx);
                 let data_2 = view.player.clan_battle_season_stats(&api).await?;
