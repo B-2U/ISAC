@@ -292,9 +292,7 @@ impl ClanView {
         while let Some(interaction) = interaction_stream.next().await {
             let custom_id = interaction.data.custom_id.as_str();
             if custom_id == "clan_description" {
-                let embed = CreateEmbed::default_isac()
-                    .description(self.description.clone())
-                    .to_owned();
+                let embed = CreateEmbed::default_isac().description(self.description.clone());
                 let _r = interaction
                     .create_response(
                         ctx,
