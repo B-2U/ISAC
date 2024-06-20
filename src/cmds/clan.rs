@@ -322,7 +322,7 @@ impl ClanView {
                 let _r = interaction
                     .create_response(
                         ctx,
-                        poise::serenity_prelude::CreateInteractionResponse::UpdateMessage(
+                        poise::serenity_prelude::CreateInteractionResponse::Message(
                             CreateInteractionResponseMessage::new()
                                 .components(self.pressed().build()),
                         ),
