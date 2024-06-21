@@ -205,7 +205,7 @@ pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<parking_lot::RwLock<Patrons>>,
     expected_js: Arc<parking_lot::RwLock<ExpectedJs>>,
-    ship_js: parking_lot::RwLock<ShipsPara>, // TODO make a command for update it
+    ship_js: parking_lot::RwLock<ShipsPara>,
     constant: parking_lot::RwLock<LittleConstant>,
     link_js: tokio::sync::RwLock<Linked>,
     wg_api_token: String,

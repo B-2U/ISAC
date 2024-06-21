@@ -243,7 +243,6 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
 
         match interaction.data.custom_id.as_str() {
             "overall_tier" => {
-                // TODO: make 2 edit into 1?
                 // disable button first
                 view.by_tier_btn_disabled = true;
                 let _ok = interaction
