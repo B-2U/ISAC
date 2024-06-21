@@ -2,14 +2,16 @@ use std::time::Duration;
 
 use chrono::{DateTime, Utc};
 use futures::StreamExt;
-use poise::serenity_prelude::{
-    ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed, Message,
-    ReactionType, UserId,
+use poise::{
+    serenity_prelude::{
+        ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateInteractionResponse,
+        CreateInteractionResponseMessage, EditMessage, Message, ReactionType, UserId,
+    },
+    CreateReply,
 };
 use serde::Deserialize;
 
 use crate::{
-    dc_utils::CreateReplyAddon,
     structs::{ClanTag, Region},
     utils::IsacError,
     Context, Error,
@@ -44,13 +46,11 @@ pub async fn clan_top(
     let mut view = ClanTopView::new(ctx.data().client.clone(), region, season);
     let first_embed = view.build_embed().await?;
     let msg = ctx
-        .send(|b| {
-            b.embed(|f| {
-                f.0 = first_embed.0;
-                f
-            })
-            .set_components(view.build())
-        })
+        .send(
+            CreateReply::default()
+                .embed(first_embed)
+                .components(view.build()),
+        )
         .await?
         .into_message()
         .await?;
@@ -102,7 +102,7 @@ impl ClanTopView {
             .await_component_interactions(ctx)
             .timeout(Duration::from_secs(60))
             .author_id(author)
-            .build()
+            .stream()
             .next()
             .await
         {
@@ -114,16 +114,22 @@ impl ClanTopView {
             }
             if let Ok(embed) = self.build_embed().await {
                 let _r = interaction
-                    .edit_original_message(ctx, |m| {
-                        m.interaction_response_data(|d| {
-                            d.add_embed(embed).set_components(self.build())
-                        })
-                    })
+                    .create_response(
+                        ctx,
+                        CreateInteractionResponse::UpdateMessage(
+                            CreateInteractionResponseMessage::default()
+                                .embed(embed)
+                                .components(self.build()),
+                        ),
+                    )
                     .await;
             }
         }
         let _r = msg
-            .edit(ctx, |m| m.set_components(self.timeout().build()))
+            .edit(
+                ctx,
+                EditMessage::default().components(self.timeout().build()),
+            )
             .await;
         Ok(())
     }
@@ -148,8 +154,7 @@ impl ClanTopView {
         }
     }
     async fn build_embed(&self) -> Result<CreateEmbed, IsacError> {
-        let mut embed = CreateEmbed::default();
-        embed
+        let mut embed = CreateEmbed::default()
             .title(format!("{} {}", self.league_name(), self.division_name()))
             .description(format!("{} S{}", self.region.upper(), self.season));
         let res_clans = self.req().await?;
@@ -164,46 +169,32 @@ impl ClanTopView {
                 .with_timezone(&Utc)
                 .timestamp();
             let value = format!("battles: {}, LBT: <t:{}:f>", clan.battles_count, timestamp);
-            embed.field(name, value, false);
+            embed = embed.field(name, value, false);
         }
-        Ok(embed.to_owned())
+        Ok(embed)
     }
 
-    fn build(&self) -> CreateComponents {
-        let mut view = CreateComponents::default();
-        let mut row = CreateActionRow::default();
-        let mut btn_left = CreateButton::default();
-        btn_left
+    fn build(&self) -> Vec<CreateActionRow> {
+        let btn_left = CreateButton::new("clan_top_left")
             .custom_id("clan_top_left")
             .emoji(ReactionType::Unicode("◀️".to_string()))
-            .style(ButtonStyle::Secondary);
-        let mut btn_right = CreateButton::default();
-        btn_right
-            .custom_id("clan_top_right")
+            .style(ButtonStyle::Secondary)
+            .disabled(self.ranks_index == 0 || self.timeout);
+        let btn_right = CreateButton::new("clan_top_right")
             .emoji(ReactionType::Unicode("▶️".to_string()))
-            .style(ButtonStyle::Secondary);
-        if self.ranks_index == 12 || self.timeout {
-            btn_right.disabled(true);
-        }
-        if self.ranks_index == 0 || self.timeout {
-            btn_left.disabled(true);
-        }
-        row.add_button(btn_left).add_button(btn_right);
-        view.set_action_row(row);
-        view
+            .style(ButtonStyle::Secondary)
+            .disabled(self.ranks_index == 12 || self.timeout);
+        vec![CreateActionRow::Buttons(vec![btn_left, btn_right])]
     }
 
     async fn req(&self) -> Result<Vec<ClanTopLadderClan>, reqwest::Error> {
-        let url = self
-            .region
-            .clan_url(format!(
-                "/api/ladder/structure/?season={}&realm={}&league={}&division={}",
-                self.season,
-                self.realm(&self.region),
-                self.ranks[self.ranks_index][0],
-                self.ranks[self.ranks_index][1]
-            ))
-            .unwrap();
+        let url = self.region.clan_url(format!(
+            "/api/ladder/structure/?season={}&realm={}&league={}&division={}",
+            self.season,
+            self.realm(&self.region),
+            self.ranks[self.ranks_index][0],
+            self.ranks[self.ranks_index][1]
+        ));
         self.client
             .get(url)
             .send()

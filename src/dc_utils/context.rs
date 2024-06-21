@@ -15,9 +15,8 @@ impl ContextAddon for Context<'_> {
             Context::Prefix(prefix_ctx) => {
                 let typing = Typing::start(
                     Arc::clone(&prefix_ctx.serenity_context.http),
-                    self.channel_id().0,
-                )
-                .ok();
+                    self.channel_id(),
+                );
                 MyTyping::Typing(typing)
             }
             Context::Application(app_ctx) => {
@@ -30,16 +29,14 @@ impl ContextAddon for Context<'_> {
 
 /// A wrapped serenity typing which impl dropping
 pub enum MyTyping {
-    Typing(Option<Typing>),
+    Typing(Typing),
     Thinking,
 }
 
 impl MyTyping {
     pub fn stop(self) {
-        if let MyTyping::Typing(mut typing) = self {
-            if let Some(typing) = typing.take() {
-                typing.stop();
-            }
+        if let MyTyping::Typing(typing) = self {
+            typing.stop();
         }
     }
 }

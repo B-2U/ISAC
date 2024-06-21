@@ -1,11 +1,13 @@
-use std::{
-    borrow::Cow,
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use itertools::Itertools;
-use poise::serenity_prelude::{
-    AttachmentType, CreateComponents, CreateSelectMenuOption, Message, User,
+use poise::{
+    serenity_prelude::{
+        ComponentInteractionDataKind, CreateActionRow, CreateAttachment, CreateInteractionResponse,
+        CreateInteractionResponseMessage, CreateSelectMenu, CreateSelectMenuOption,
+        EditAttachments, EditMessage, Message, User,
+    },
+    CreateReply,
 };
 
 use crate::{
@@ -260,19 +262,18 @@ async fn func_recent(
         };
         data.render(&ctx.data().client).await?
     };
-    let attachment = AttachmentType::Bytes {
-        data: Cow::Borrowed(&img),
-        filename: "image.png".to_string(),
-    };
+
+    let att = CreateAttachment::bytes(img, "image.png");
     if let Some(mut msg) = ask_struct.ask_msg {
-        msg.edit(ctx, |m| {
-            m.set_components(CreateComponents::default())
-                .content("")
-                .attachment(attachment)
-        })
+        msg.edit(
+            ctx,
+            EditMessage::default().attachments(EditAttachments::new().add(att)),
+        )
         .await?
     } else {
-        let _msg = ctx.send(|b| b.attachment(attachment).reply(true)).await?;
+        let _msg = ctx
+            .send(CreateReply::default().attachment(att).reply(true))
+            .await?;
     }
 
     Ok(())
@@ -354,34 +355,25 @@ impl<'a> AskDay<'a> {
         // QA 原本單純用view.is_some()判斷，但過程view會被moved，才加了這個 has_choices，有更好的做法?
         let (has_choices, view) = {
             if available_days.is_empty() {
-                (false, None)
+                (false, vec![])
             } else {
-                let mut view = CreateComponents::default();
                 let options = available_days
                     .iter()
                     .sorted()
                     .dedup()
                     .take(25)
-                    .map(|day| {
-                        let mut option = CreateSelectMenuOption::default();
-                        option.label(day.to_string()).value(*day);
-                        // if index == 0 {
-                        //     option.default_selection(true);
-                        // }
-                        option
-                    })
+                    .map(|day| CreateSelectMenuOption::new(day.to_string(), day.to_string()))
                     .collect_vec();
-                view.create_action_row(|r| {
-                    r.create_select_menu(|m| {
-                        m.placeholder("choose one (´･ω･`)? ")
-                            .custom_id("recent_select")
-                            .options(|op| op.set_options(options))
-                            .max_values(1)
-                            .min_values(1)
-                    })
-                });
+                let view = vec![CreateActionRow::SelectMenu(
+                    CreateSelectMenu::new(
+                        "recent_select",
+                        poise::serenity_prelude::CreateSelectMenuKind::String { options },
+                    )
+                    .min_values(1)
+                    .max_values(1),
+                )];
 
-                (true, Some(view))
+                (true, view)
             }
         };
         let msg_content = {
@@ -408,11 +400,11 @@ impl<'a> AskDay<'a> {
             // first time
             let msg = self
                 .ctx
-                .send(|b| {
-                    if has_choices {
-                        b.components = view;
-                    }
-                    b.content(msg_content).reply(true)
+                .send({
+                    CreateReply::default()
+                        .content(msg_content)
+                        .reply(true)
+                        .components(if has_choices { view } else { vec![] })
                 })
                 .await?
                 .into_message()
@@ -423,13 +415,10 @@ impl<'a> AskDay<'a> {
             self.ask_msg
                 .as_mut()
                 .expect("it shouldn't happen")
-                .edit(self.ctx, |m| {
-                    if has_choices {
-                        m.set_components(
-                            view.expect("if has_choices == true, view is always Some()"),
-                        );
-                    }
-                    m.content(msg_content)
+                .edit(self.ctx, {
+                    EditMessage::default()
+                        .content(msg_content)
+                        .components(if has_choices { view } else { vec![] })
                 })
                 .await?;
         }
@@ -447,15 +436,19 @@ impl<'a> AskDay<'a> {
             .await
         {
             let _r = interaction
-                .edit_original_message(self.ctx, |m| {
-                    m.interaction_response_data(|d| d.set_components(CreateComponents::default()))
-                })
+                .create_response(
+                    self.ctx,
+                    CreateInteractionResponse::UpdateMessage(
+                        CreateInteractionResponseMessage::default(),
+                    ),
+                )
                 .await;
-            Some(
-                interaction.data.values[0] // there should be one and only one value because of the min max limits
+            Some(match &interaction.data.kind {
+                ComponentInteractionDataKind::StringSelect { values } => values[0]
                     .parse::<u64>()
                     .expect("it was the day number we provided"),
-            )
+                _ => unreachable!(),
+            })
         } else {
             None
         };
@@ -463,17 +456,18 @@ impl<'a> AskDay<'a> {
     }
 
     /// remove the components under the ask_msg, this is for the situation that user didn't response
-    pub async fn finished<D: ToString + Sized>(
+    pub async fn finished<D: Into<String> + Sized>(
         &mut self,
         msg: Option<D>,
     ) -> Result<&AskDay<'a>, Error> {
         if let Some(ask_msg) = self.ask_msg.as_mut() {
             ask_msg
-                .edit(self.ctx, |m| {
+                .edit(self.ctx, {
+                    let mut edit = EditMessage::default().components(vec![]);
                     if let Some(msg_content) = msg {
-                        m.content(msg_content);
+                        edit = edit.content(msg_content);
                     };
-                    m.components(|c| c)
+                    edit
                 })
                 .await?;
         };

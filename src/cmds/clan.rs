@@ -1,5 +1,4 @@
 use std::{
-    borrow::Cow,
     fmt::Write,
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
@@ -7,16 +6,19 @@ use std::{
 use chrono::DateTime;
 use futures::StreamExt;
 use itertools::Itertools;
-use poise::serenity_prelude::{
-    AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed,
-    Message, UserId,
+use poise::{
+    serenity_prelude::{
+        ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
+        CreateInteractionResponseMessage, EditMessage, Message, UserId,
+    },
+    CreateReply,
 };
 use tokio::join;
 
 use crate::{
     dc_utils::{
         auto_complete::{self, AutoCompleteClan},
-        Args, ContextAddon, CreateReplyAddon, EasyEmbed,
+        Args, ContextAddon, EasyEmbed,
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
@@ -177,14 +179,12 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
     let img = data.render(&ctx.data().client).await?;
     let mut view = ClanView::new(partial_clan, clan_detail.description, clan_members.items);
     let msg = ctx
-        .send(|b| {
-            b.attachment(AttachmentType::Bytes {
-                data: Cow::Borrowed(&img),
-                filename: "image.png".to_string(),
-            })
-            .set_components(view.build())
-            .reply(true)
-        })
+        .send(
+            CreateReply::default()
+                .attachment(CreateAttachment::bytes(img, "image.png".to_string()))
+                .components(view.build())
+                .reply(true),
+        )
         .await?
         .into_message()
         .await?;
@@ -246,13 +246,11 @@ async fn func_clan_season(
 
     let img = data.render(&ctx.data().client).await?;
     let _msg = ctx
-        .send(|b| {
-            b.attachment(AttachmentType::Bytes {
-                data: Cow::Borrowed(&img),
-                filename: "image.png".to_string(),
-            })
-            .reply(true)
-        })
+        .send(
+            CreateReply::default()
+                .attachment(CreateAttachment::bytes(img, "image.png".to_string()))
+                .reply(true),
+        )
         .await?;
     Ok(())
 }
@@ -261,17 +259,12 @@ struct ClanView {
     clan: PartialClan,
     description: String,
     members: Vec<ClanMember>,
-    last_season_btn: CreateButton,
+    last_season_btn_disabled: bool,
     timeout: bool,
 }
 
 impl ClanView {
     fn new(clan: PartialClan, description: String, members: Vec<ClanMember>) -> Self {
-        let btn = CreateButton::default()
-            .custom_id("last_season")
-            .style(poise::serenity_prelude::ButtonStyle::Secondary)
-            .label("Latest season")
-            .to_owned();
         let description = if description.is_empty() {
             "❌ This clan has no description".to_string()
         } else {
@@ -281,7 +274,7 @@ impl ClanView {
             clan,
             description,
             members,
-            last_season_btn: btn,
+            last_season_btn_disabled: false,
             timeout: false,
         }
     }
@@ -292,46 +285,54 @@ impl ClanView {
         author: UserId,
         mut msg: Message,
     ) -> Result<(), Error> {
-        while let Some(interaction) = msg
+        let mut interaction_stream = msg
             .await_component_interactions(ctx)
             .timeout(Duration::from_secs(60))
-            .build()
-            .next()
-            .await
-        {
+            .stream();
+        while let Some(interaction) = interaction_stream.next().await {
             let custom_id = interaction.data.custom_id.as_str();
             if custom_id == "clan_description" {
-                let embed = CreateEmbed::isac()
-                    .description(self.description.clone())
-                    .to_owned();
+                let embed = CreateEmbed::default_isac().description(self.description.clone());
                 let _r = interaction
-                    .create_interaction_response(ctx, |i| {
-                        i.interaction_response_data(|b| b.add_embed(embed).ephemeral(true))
-                    })
+                    .create_response(
+                        ctx,
+                        poise::serenity_prelude::CreateInteractionResponse::Message(
+                            CreateInteractionResponseMessage::new()
+                                .add_embed(embed)
+                                .ephemeral(true),
+                        ),
+                    )
                     .await;
             } else if custom_id == "clan_members" {
-                let embed = CreateEmbed::isac()
-                    .description(self.members_table())
-                    .to_owned();
+                let embed = CreateEmbed::default_isac().description(self.members_table());
                 let _r = interaction
-                    .create_interaction_response(ctx, |i| {
-                        i.interaction_response_data(|b| b.add_embed(embed).ephemeral(true))
-                    })
+                    .create_response(
+                        ctx,
+                        poise::serenity_prelude::CreateInteractionResponse::Message(
+                            CreateInteractionResponseMessage::new()
+                                .add_embed(embed)
+                                .ephemeral(true),
+                        ),
+                    )
                     .await;
             } else if custom_id == "last_season" {
                 if interaction.user.id != author {
                     continue;
                 };
                 let _r = interaction
-                    .edit_original_message(ctx, |m| {
-                        m.interaction_response_data(|d| d.set_components(self.pressed().build()))
-                    })
+                    .create_response(
+                        ctx,
+                        poise::serenity_prelude::CreateInteractionResponse::Message(
+                            CreateInteractionResponseMessage::new()
+                                .components(self.pressed().build()),
+                        ),
+                    )
                     .await;
                 func_clan_season(ctx, self.clan.clone(), 0).await?
             }
         }
         // timeout;
-        msg.edit(ctx, |m| m.set_components(self.timeout().build()))
+        msg.edit(ctx, EditMessage::new().components(self.timeout().build()))
             .await?;
         Ok(())
     }
@@ -349,57 +350,43 @@ impl ClanView {
         )
     }
 
-    fn build(&self) -> CreateComponents {
-        let mut view = CreateComponents::default();
-        let mut row = CreateActionRow::default();
-
-        let mut descrip = CreateButton::default();
-        descrip
+    fn build(&self) -> Vec<CreateActionRow> {
+        let mut descrip = CreateButton::new("clan_description")
             .label("Description")
-            .custom_id("clan_description")
             .style(ButtonStyle::Secondary);
-
-        let mut member = CreateButton::default();
-        member
+        let mut member = CreateButton::new("clan_members")
             .label("Members")
-            .custom_id("clan_members")
             .style(ButtonStyle::Secondary);
-
-        let mut official_link = CreateButton::default();
-        official_link
-            .label("Official")
-            .url(self.clan.official_url().unwrap())
-            .style(ButtonStyle::Link);
-
-        let mut num_link = CreateButton::default();
-        num_link
-            .label("Stats & Numbers")
-            .url(self.clan.wows_number_url().unwrap())
-            .style(ButtonStyle::Link);
+        let latest_season = CreateButton::new("last_season")
+            .label("Latest season")
+            .style(poise::serenity_prelude::ButtonStyle::Secondary)
+            .disabled(self.last_season_btn_disabled);
+        let official_link = CreateButton::new_link(self.clan.official_url()).label("Official");
+        let num_link = CreateButton::new_link(self.clan.wows_number_url()).label("Stats & Numbers");
 
         if self.timeout {
-            descrip.disabled(true);
-            member.disabled(true);
+            descrip = descrip.disabled(true);
+            member = member.disabled(true);
         }
 
-        row.add_button(descrip)
-            .add_button(member)
-            .add_button(self.last_season_btn.clone())
-            .add_button(official_link)
-            .add_button(num_link);
-        view.set_action_row(row);
-        view
+        vec![CreateActionRow::Buttons(vec![
+            descrip,
+            member,
+            latest_season,
+            official_link,
+            num_link,
+        ])]
     }
 
     fn timeout(&mut self) -> &Self {
         self.timeout = true;
-        self.last_season_btn.disabled(true);
+        self.last_season_btn_disabled = true;
         self
     }
 
     /// disabled the season button
     fn pressed(&mut self) -> &Self {
-        self.last_season_btn.disabled(true);
+        self.last_season_btn_disabled = true;
         self
     }
 }

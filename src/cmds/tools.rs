@@ -1,21 +1,22 @@
-use std::{borrow::Cow, fmt::Write, sync::Arc};
+use std::{fmt::Write, sync::Arc};
 
 use chrono::NaiveDate;
 use itertools::Itertools;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
-        AttachmentType, ButtonStyle, CreateActionRow, CreateButton, CreateComponents, CreateEmbed,
-        CreateEmbedAuthor, Message, ReactionType, User, UserId,
+        ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
+        CreateEmbedAuthor, CreateInteractionResponse, CreateInteractionResponseMessage,
+        CreateMessage, EditMessage, Message, ReactionType, User, UserId,
     },
-    FrameworkError,
+    CreateReply, FrameworkError,
 };
 use rand::seq::SliceRandom;
 use regex::Regex;
 use scraper::{Element, ElementRef, Html, Selector};
 
 use crate::{
-    dc_utils::{Args, ContextAddon, CreateReplyAddon, EasyEmbed},
+    dc_utils::{Args, ContextAddon, EasyEmbed},
     structs::{PartialPlayer, Region, Ship},
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
@@ -83,21 +84,24 @@ pub async fn code(
         let view = BonusView::new(code);
         let last_msg = match index {
             0 => {
-                ctx.send(|b| {
-                    b.content(format!("{addition}wows code: **{code}**"))
-                        .set_components(view.build())
-                        .reply(true)
-                })
+                ctx.send(
+                    CreateReply::default()
+                        .content(format!("{addition}wows code: **{code}**"))
+                        .components(view.build())
+                        .reply(true),
+                )
                 .await?
                 .into_message()
                 .await?
             }
             _ => {
                 ctx.channel_id()
-                    .send_message(&ctx, |b| {
-                        b.set_components(view.build())
-                            .content(format!("wows code: **{code}**"))
-                    })
+                    .send_message(
+                        &ctx,
+                        CreateMessage::default()
+                            .components(view.build())
+                            .content(format!("wows code: **{code}**")),
+                    )
                     .await?
             }
         };
@@ -118,10 +122,10 @@ impl<'a> BonusView<'a> {
     fn new(code: &'a str) -> Self {
         Self { code }
     }
-    fn build(&self) -> CreateComponents {
+    fn build(&self) -> Vec<CreateActionRow> {
         // sepereated them to 2 array becuz with a Array<Tuple> it formatted ugly
         const LABEL: [&str; 4] = ["Asia", "Na", "Eu", "Ru"];
-        let buttons = [
+        let urls = [
             format!(
                 "https://asia.wargaming.net/shop/bonus/?bonus_mode={}",
                 self.code
@@ -136,13 +140,13 @@ impl<'a> BonusView<'a> {
             ),
             format!("https://lesta.ru/shop/bonus/?bonus_mode={}", self.code),
         ];
-        let mut view = CreateComponents::default();
-        let mut row = CreateActionRow::default();
-        LABEL.iter().zip(buttons.iter()).for_each(|(label, btn)| {
-            row.create_button(|b| b.label(label).url(btn).style(ButtonStyle::Link));
-        });
-        view.set_action_row(row);
-        view
+        vec![CreateActionRow::Buttons(
+            LABEL
+                .iter()
+                .zip(urls.iter())
+                .map(|(label, url)| CreateButton::new_link(url).label(*label))
+                .collect(),
+        )]
     }
 }
 
@@ -156,7 +160,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
     let res_text = ctx
         .data()
         .client
-        .get(player.wows_number_url()?)
+        .get(player.wows_number_url())
         .send()
         .await?
         .text()
@@ -223,7 +227,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
             .get(
                 player
                     .region
-                    .number_url(format!("/clan/transfers/{clan_uid},/"))?,
+                    .number_url(format!("/clan/transfers/{clan_uid},/")),
             )
             .send()
             .await
@@ -246,14 +250,12 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         });
     let output = format!("```py\n{}\n```", output);
     if ctx.reply(&output).await.is_err() {
-        // the history might exceed the limit
+        // the history might exceed the limit, send it as a file
         let _r = ctx
-            .send(|b| {
-                b.attachment(AttachmentType::Bytes {
-                    data: Cow::Borrowed(output.as_bytes()),
-                    filename: "rename history".to_string(),
-                })
-            })
+            .send(
+                CreateReply::default()
+                    .attachment(CreateAttachment::bytes(output.as_bytes(), "rename history")),
+            )
             .await;
     }
     Ok(())
@@ -334,7 +336,11 @@ pub async fn roulette(
     let mut view = RouletteView::new(cadidates, players, ctx.author().clone());
 
     let inter_msg = ctx
-        .send(|b| b.set_embed(view.embed_build()).set_components(view.build()))
+        .send(
+            CreateReply::default()
+                .embed(view.embed_build())
+                .components(view.build()),
+        )
         .await
         .map_err(|_| IsacError::Info(crate::utils::IsacInfo::EmbedPermission))?
         .into_message()
@@ -353,13 +359,12 @@ struct RouletteView {
     candidates: Vec<Arc<Ship>>,
     ships: Vec<Arc<Ship>>,
     user: User,
-    btn_1: CreateButton,
-    btn_2: CreateButton,
-    btn_3: CreateButton,
+    btn_1_disabled: bool,
+    btn_2_disabled: bool,
+    btn_3_disabled: bool,
 }
 impl RouletteView {
     fn new(candidates: Vec<Ship>, players: RoulettePlayer, user: User) -> Self {
-        let btn_style = ButtonStyle::Secondary;
         let candidates: Vec<_> = candidates.into_iter().map(Arc::new).collect();
         RouletteView {
             ships: candidates
@@ -369,21 +374,9 @@ impl RouletteView {
             players,
             candidates,
             user,
-            btn_1: CreateButton::default()
-                .label("1️⃣🔄")
-                .custom_id("roulette_1")
-                .style(btn_style)
-                .to_owned(),
-            btn_2: CreateButton::default()
-                .label("2️⃣🔄")
-                .custom_id("roulette_2")
-                .style(btn_style)
-                .to_owned(),
-            btn_3: CreateButton::default()
-                .label("3️⃣🔄")
-                .custom_id("roulette_3")
-                .style(btn_style)
-                .to_owned(),
+            btn_1_disabled: false,
+            btn_2_disabled: false,
+            btn_3_disabled: false,
         }
     }
     fn reroll(&mut self, index: usize) -> &Self {
@@ -397,20 +390,16 @@ impl RouletteView {
 
     fn embed_build(&mut self) -> CreateEmbed {
         const EMOJI: [&str; 3] = ["1️⃣", "2️⃣", "3️⃣"];
-        let author = CreateEmbedAuthor::default()
-            .name(&self.user.name)
-            .icon_url(self.user.avatar_url().unwrap_or_default())
-            .to_owned();
+        let author = CreateEmbedAuthor::new(&self.user.name)
+            .icon_url(self.user.avatar_url().unwrap_or_default());
 
         let mut msg_text = String::new();
         for (index, ship) in self.ships.iter().enumerate() {
             msg_text += format!("{} {ship}\n\n", EMOJI[index]).as_str();
         }
-        let embed = CreateEmbed::isac()
+        CreateEmbed::default_isac()
             .description(msg_text)
-            .set_author(author)
-            .to_owned();
-        embed
+            .author(author)
     }
     async fn interactions(
         &mut self,
@@ -423,7 +412,7 @@ impl RouletteView {
             .await_component_interactions(ctx)
             .timeout(duration)
             .author_id(author)
-            .build()
+            .stream()
             .next()
             .await
         {
@@ -440,36 +429,52 @@ impl RouletteView {
                 _ => (),
             }
             interaction
-                .edit_original_message(ctx, |m| {
-                    m.interaction_response_data(|d| d.set_embed(self.embed_build()))
-                })
+                .create_response(
+                    ctx,
+                    CreateInteractionResponse::UpdateMessage(
+                        CreateInteractionResponseMessage::default().embed(self.embed_build()),
+                    ),
+                )
                 .await?;
         }
         // timeout;
-        msg.edit(ctx, |m| m.set_components(self.timeout().build()))
-            .await?;
+        msg.edit(
+            ctx,
+            EditMessage::default().components(self.timeout().build()),
+        )
+        .await?;
 
         Ok(())
     }
     fn timeout(&mut self) -> &mut Self {
-        self.btn_1.disabled(true);
-        self.btn_2.disabled(true);
-        self.btn_3.disabled(true);
+        self.btn_1_disabled = true;
+        self.btn_2_disabled = true;
+        self.btn_3_disabled = true;
         self
     }
-    /// build the [`CreateComponents`] with current components state
-    fn build(&self) -> CreateComponents {
-        let mut view = CreateComponents::default();
-        let mut row = CreateActionRow::default();
-        row.add_button(self.btn_1.clone());
+    /// build the [`Vec<CreateActionRow>`] with current components state
+    fn build(&self) -> Vec<CreateActionRow> {
+        let mut btns = vec![CreateButton::new("roulette_1")
+            .label("1️⃣🔄")
+            .style(ButtonStyle::Secondary)
+            .disabled(self.btn_1_disabled)];
         if self.players as usize >= 2 {
-            row.add_button(self.btn_2.clone());
+            btns.push(
+                CreateButton::new("roulette_2")
+                    .label("2️⃣🔄")
+                    .style(ButtonStyle::Secondary)
+                    .disabled(self.btn_2_disabled),
+            );
         }
         if self.players as usize >= 3 {
-            row.add_button(self.btn_3.clone());
+            btns.push(
+                CreateButton::new("roulette_3")
+                    .label("3️⃣🔄")
+                    .style(ButtonStyle::Secondary)
+                    .disabled(self.btn_3_disabled),
+            );
         }
-        view.set_action_row(row);
-        view
+        vec![CreateActionRow::Buttons(btns)]
     }
 }
 

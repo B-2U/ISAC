@@ -9,7 +9,9 @@ mod tasks;
 mod template_data;
 mod utils;
 
-use poise::serenity_prelude::{self as serenity, Activity, UserId, Webhook};
+use poise::serenity_prelude::{
+    self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
+};
 use std::{collections::HashSet, env, ops::Deref, sync::Arc};
 use tokio::sync::Mutex;
 use tracing::{error, info, warn};
@@ -49,7 +51,7 @@ async fn main() {
     };
 
     let options = poise::FrameworkOptions {
-        owners: HashSet::from([UserId(930855839961591849)]),
+        owners: HashSet::from([UserId::new(930855839961591849)]),
         commands: vec![
             general::invite(),
             general::help(),
@@ -89,26 +91,29 @@ async fn main() {
     let data = Data::default();
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
-    let bot = poise::Framework::builder()
-        .token(token)
-        .setup(move |ctx, ready, framework| {
-            Box::pin(async move {
-                info!("Logged in as {}", ready.user.name);
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                ctx.set_activity(Activity::listening(".help")).await;
-                Ok(data)
+    let mut bot = ClientBuilder::new(
+        token,
+        serenity::GatewayIntents::non_privileged()
+            | serenity::GatewayIntents::MESSAGE_CONTENT
+            | serenity::GatewayIntents::GUILD_MEMBERS,
+    )
+    .framework(
+        poise::Framework::builder()
+            .setup(move |ctx, ready, framework| {
+                Box::pin(async move {
+                    info!("Logged in as {}", ready.user.name);
+                    poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                    Ok(data)
+                })
             })
-        })
-        .options(options)
-        .intents(
-            serenity::GatewayIntents::non_privileged()
-                | serenity::GatewayIntents::MESSAGE_CONTENT
-                | serenity::GatewayIntents::GUILD_MEMBERS,
-        )
-        .build()
-        .await
-        .unwrap();
-    let shard_manager = Arc::clone(bot.shard_manager());
+            .options(options)
+            .build(),
+    )
+    .activity(ActivityData::listening(".help"))
+    .await
+    .unwrap();
+    let shard_manager = bot.shard_manager.clone();
+
     // ctrl_c catcher for both Win and Unix
     let tx2 = tx.clone();
     tokio::spawn(async move {
@@ -132,7 +137,7 @@ async fn main() {
     }
 
     // update patreon
-    let http = bot.client().cache_and_http.http.clone();
+    let http = bot.http.clone();
     let patron = Arc::clone(&arc_data.patron);
     tokio::spawn(async move { tasks::patron_updater(http, patron).await });
     // update expected json
@@ -140,7 +145,7 @@ async fn main() {
     let expected = Arc::clone(&arc_data.expected_js);
     tokio::spawn(async move { tasks::expected_updater(client, expected).await });
 
-    let webhook_http = bot.client().cache_and_http.http.clone();
+    let webhook_http = bot.http.clone();
 
     let _renderer = launch_renderer().await; // it's used in linux specific code below
 
@@ -160,7 +165,11 @@ async fn main() {
             .await
             .unwrap();
         let _r = web_hook
-            .execute(webhook_http, false, |b| b.content("Bot shutting down..."))
+            .execute(
+                webhook_http,
+                false,
+                ExecuteWebhook::new().content("Bot shutting down..."),
+            )
             .await;
     }
 
@@ -174,7 +183,7 @@ async fn main() {
     if let Some(renderer_pid) = _renderer.id() {
         unsafe { libc::kill(renderer_pid as i32, libc::SIGINT) };
     }
-    shard_manager.lock().await.shutdown_all().await;
+    shard_manager.shutdown_all().await;
 }
 
 /// My custom Data, it already uses an [`Arc`] internally.
@@ -196,7 +205,7 @@ pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<parking_lot::RwLock<Patrons>>,
     expected_js: Arc<parking_lot::RwLock<ExpectedJs>>,
-    ship_js: parking_lot::RwLock<ShipsPara>, // TODO make a command for update it
+    ship_js: parking_lot::RwLock<ShipsPara>,
     constant: parking_lot::RwLock<LittleConstant>,
     link_js: tokio::sync::RwLock<Linked>,
     wg_api_token: String,

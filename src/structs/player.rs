@@ -30,11 +30,11 @@ impl PartialPlayer {
         api.player_personal_data(self.region, self.uid).await
     }
     /// the link of player's wow-number page
-    pub fn wows_number_url(&self) -> Result<Url, IsacError> {
+    pub fn wows_number_url(&self) -> Url {
         self.region.number_url(format!("/player/{},/", self.uid))
     }
     /// the link of player's official profile
-    pub fn profile_url(&self) -> Result<Url, IsacError> {
+    pub fn profile_url(&self) -> Url {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
     /// player's clan data, only error when request or api issue
@@ -202,7 +202,7 @@ impl Default for BannerData {
         Self {
             url: DEFAULT_BANNER.to_string(),
             name: "".to_string(),
-            discord_id: UserId(0),
+            discord_id: UserId::new(0),
         }
     }
 }

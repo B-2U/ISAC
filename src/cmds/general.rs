@@ -1,4 +1,5 @@
 use poise::serenity_prelude::CreateEmbed;
+use poise::CreateReply;
 
 use crate::dc_utils::EasyEmbed;
 use crate::{Context, Error};
@@ -8,7 +9,7 @@ use crate::{Context, Error};
 pub async fn invite(ctx: Context<'_>) -> Result<(), Error> {
     const INVITE_MSG: &str = "[Click here](https://discord.com/oauth2/authorize?client_id=961882964034203648&permissions=0&scope=bot%20applications.commands) to invite ISAC";
 
-    ctx.send(|b| b.embed(|e| CreateEmbed::default_from(e).description(INVITE_MSG)))
+    ctx.send(CreateReply::default().embed(CreateEmbed::default_isac().description(INVITE_MSG)))
         .await?;
     Ok(())
 }

@@ -45,7 +45,7 @@ impl UserAddon for User {
     async fn get_permissions(&self, ctx: &crate::Context<'_>) -> Result<Permissions, Error> {
         let guild_id = ctx.guild_id().ok_or::<Error>("Not in a guild".into())?;
         ctx.http()
-            .get_member(guild_id.0, ctx.author().id.0)
+            .get_member(guild_id, ctx.author().id)
             .await?
             .permissions(ctx.cache().ok_or::<Error>("get cache failed".into())?)
             .map_err(|err| err.into())

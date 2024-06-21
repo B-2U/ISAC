@@ -1,13 +1,10 @@
-use crate::{
-    utils::{IsacError, LoadSaveFromJson},
-    Context,
-};
+use crate::{utils::LoadSaveFromJson, Context};
 
 use poise::serenity_prelude::GuildId;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 /// wows server
 #[derive(
@@ -41,11 +38,11 @@ impl Region {
         }
     }
 }
-// impl Display for Region {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.upper())
-//     }
-// }
+impl Display for Region {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.upper())
+    }
+}
 impl Region {
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
@@ -57,7 +54,7 @@ impl Region {
         }
     }
     /// vortex url ( https://vortex.worldofwarships.asia )
-    pub fn vortex_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+    pub fn vortex_url(&self, sub_url: impl AsRef<str>) -> Url {
         let base = match self {
             Region::Asia => "https://vortex.worldofwarships.asia",
             Region::Na => "https://vortex.worldofwarships.com",
@@ -66,7 +63,7 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
     /// official api url ( https://api.worldofwarships.asia )
-    pub fn api_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+    pub fn api_url(&self, sub_url: impl AsRef<str>) -> Url {
         let base = match self {
             Region::Asia => "https://api.worldofwarships.asia",
             Region::Na => "https://api.worldofwarships.com",
@@ -76,7 +73,7 @@ impl Region {
     }
 
     /// player profile url ( https://profile.worldofwarships.asia )
-    pub fn profile_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+    pub fn profile_url(&self, sub_url: impl AsRef<str>) -> Url {
         let base = match self {
             Region::Asia => "https://profile.worldofwarships.asia",
             Region::Na => "https://profile.worldofwarships.com",
@@ -86,7 +83,7 @@ impl Region {
     }
 
     /// number url ( https://asia.wows-numbers.com )
-    pub fn number_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+    pub fn number_url(&self, sub_url: impl AsRef<str>) -> Url {
         let base = match self {
             Region::Asia => "https://asia.wows-numbers.com",
             Region::Na => "https://na.wows-numbers.com",
@@ -96,7 +93,7 @@ impl Region {
     }
 
     /// clan api url ( https://clans.worldofwarships.asia )
-    pub fn clan_url(&self, sub_url: impl AsRef<str>) -> Result<Url, IsacError> {
+    pub fn clan_url(&self, sub_url: impl AsRef<str>) -> Url {
         let base = match self {
             Region::Asia => "https://clans.worldofwarships.asia",
             Region::Na => "https://clans.worldofwarships.com",
@@ -105,9 +102,12 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
 
-    fn _construct_url(base: &str, sub: impl AsRef<str>) -> Result<Url, IsacError> {
-        Url::parse(format!("{}{}", base, sub.as_ref()).as_str())
-            .map_err(|err| IsacError::UnknownError(Box::new(err)))
+    fn _construct_url(base: &str, sub: impl AsRef<str>) -> Url {
+        let fmt_url = format!("{}{}", base, sub.as_ref());
+        Url::parse(&fmt_url).unwrap_or_else(|err| {
+            eprintln!("Failed to parse URL: {}. Error: {}", fmt_url, err);
+            panic!("Failed to parse URL");
+        })
     }
     /// get guild default region setting if exist,
     /// otherwirse return [`Region::Asia`]

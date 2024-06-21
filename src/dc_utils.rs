@@ -11,6 +11,3 @@ mod user;
 pub use user::UserAddon;
 
 pub mod auto_complete;
-
-mod create_reply;
-pub use create_reply::CreateReplyAddon;
