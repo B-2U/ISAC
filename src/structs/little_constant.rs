@@ -9,7 +9,7 @@ pub struct LittleConstant {
 
 impl Default for LittleConstant {
     fn default() -> Self {
-        Self { clan_season: 22 } // need a better way to update this...
+        Self { clan_season: 5 } // will be updated in first .clan command
     }
 }
 
