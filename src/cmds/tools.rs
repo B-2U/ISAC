@@ -182,7 +182,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
             // get header's parent
             .and_then(|e| e.parent().and_then(ElementRef::wrap))
             .ok_or(IsacError::Info(IsacInfo::GeneralError {
-                msg: "❌ Parsing failed".to_string(),
+                msg: "Parsing failed".to_string(),
             }))?;
         // find tables in it
         let tables = transfer_header.select(&table_selector).collect::<Vec<_>>();

@@ -217,11 +217,11 @@ pub async fn fetch_ship_leaderboard(
     let table_selector = Selector::parse(".ranking-table").unwrap();
     let table = match html.select(&table_selector).count() {
         5 => Err(IsacInfo::GeneralError {
-            msg: format!("❌ No one on the leaderboard of `{}` yet", ship.name),
+            msg: format!("No one on the leaderboard of `{}` yet", ship.name),
         })?,
         6 => html.select(&table_selector).nth(5).expect("no way to fail"),
         _ => Err(IsacError::Info(IsacInfo::GeneralError {
-            msg: "❌ Parsing failed".to_string(),
+            msg: "Parsing failed".to_string(),
         }))?,
     };
 

@@ -109,7 +109,7 @@ impl Display for IsacInfo {
             IsacInfo::PlayerNoBattle { ign } => {
                 format!("Player `{ign}` hasn't played any battle.")
             }
-            IsacInfo::GeneralError { msg } => msg.clone(),
+            IsacInfo::GeneralError { msg } => format!("❌ {msg}"),
             IsacInfo::InvalidClan { clan } => format!("❌ Invalid clan name: `{clan}`"),
             IsacInfo::ClanNotFound { clan, region } => {
                 format!("Clan: `{clan}` not found in `{region}`")

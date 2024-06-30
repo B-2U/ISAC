@@ -266,7 +266,7 @@ struct ClanView {
 impl ClanView {
     fn new(clan: PartialClan, description: String, members: Vec<ClanMember>) -> Self {
         let description = if description.is_empty() {
-            "❌ This clan has no description".to_string()
+            "This clan has no description".to_string()
         } else {
             description
         };

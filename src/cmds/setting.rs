@@ -54,7 +54,7 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
     let guild_id = ctx
         .guild_id()
         .ok_or(IsacError::Info(IsacInfo::GeneralError {
-            msg: "❌ You have to use this command in a server".to_string(),
+            msg: "You have to use this command in a server".to_string(),
         }))?;
     if let Some(region) = region {
         let is_admin = ctx
@@ -74,7 +74,7 @@ pub async fn wows_region(ctx: Context<'_>, region: Option<Region>) -> Result<(),
                 .await;
         } else {
             Err(IsacError::Info(IsacInfo::GeneralError {
-                msg: "❌ You need admin permission to do this".to_string(),
+                msg: "You need admin permission to do this".to_string(),
             }))?
         }
     } else {
