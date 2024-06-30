@@ -215,10 +215,14 @@ pub async fn fetch_ship_leaderboard(
     let html = Html::parse_document(&res_text);
     // Find the ranking table
     let table_selector = Selector::parse(".ranking-table").unwrap();
-    let Some(table) = html.select(&table_selector).nth(5) else {
-        Err(IsacInfo::GeneralError {
+    let table = match html.select(&table_selector).count() {
+        5 => Err(IsacInfo::GeneralError {
             msg: format!("❌ No one on the leaderboard of `{}` yet", ship.name),
-        })?
+        })?,
+        6 => html.select(&table_selector).nth(5).expect("no way to fail"),
+        _ => Err(IsacError::Info(IsacInfo::GeneralError {
+            msg: "❌ Parsing failed".to_string(),
+        }))?,
     };
 
     // Parse cells in the table
