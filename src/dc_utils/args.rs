@@ -235,7 +235,11 @@ impl FromStr for Args {
         static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""[^"]+"|\S+"#).unwrap());
         Ok(Args(
             RE.find_iter(input)
-                .map(|s| s.as_str().trim_matches('"').to_string())
+                .filter_map(|m| {
+                    // case like " " will be skipped
+                    let s = m.as_str().trim_matches('"').trim();
+                    (!s.is_empty()).then(|| s.to_string())
+                })
                 .collect(),
         ))
     }
