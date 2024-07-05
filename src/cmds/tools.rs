@@ -2,6 +2,7 @@ use std::{fmt::Write, sync::Arc};
 
 use chrono::NaiveDate;
 use itertools::Itertools;
+use once_cell::sync::Lazy;
 use poise::{
     futures_util::StreamExt,
     serenity_prelude::{
@@ -173,7 +174,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
         let table_selector = Selector::parse(".table-styled").unwrap();
         let cells_selector = Selector::parse("tr").unwrap();
         let a_selector = Selector::parse("a").unwrap();
-        let clan_uid_re = Regex::new(r"/clan/(\d+),").unwrap();
+        static CLAN_UID_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"/clan/(\d+),").unwrap());
 
         let transfer_header = html
             .select(&transfer_header_selector)
@@ -208,7 +209,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
                     .unwrap_or("[]")
                     .to_string();
                 let _clan_href = selected.value().attr("href")?;
-                clan_uid_re
+                CLAN_UID_RE
                     .captures(_clan_href)?
                     .get(1)
                     .and_then(|uid| uid.as_str().parse::<u64>().ok())
@@ -271,7 +272,7 @@ fn _rename_parse_clan(
     let cells_selector = Selector::parse("table tr").unwrap();
     let cells = html.select(&cells_selector);
 
-    let player_re = Regex::new(r"/player/(\d+),").unwrap();
+    static PLAYER_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"/player/(\d+),").unwrap());
 
     let mut history_names: Vec<(NaiveDate, String)> = vec![];
 
@@ -285,7 +286,7 @@ fn _rename_parse_clan(
             .first_element_child()
             .and_then(|ele| ele.value().attr("href"))
             .unwrap();
-        let player_uid = player_re
+        let player_uid = PLAYER_RE
             .captures(_player_href)
             .and_then(|c| c.get(1))
             .unwrap()

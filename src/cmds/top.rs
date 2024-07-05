@@ -1,5 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use once_cell::sync::Lazy;
 use poise::{
     serenity_prelude::{CreateActionRow, CreateAttachment, CreateButton},
     CreateReply,
@@ -231,14 +232,14 @@ pub async fn fetch_ship_leaderboard(
     let td_selector = Selector::parse("td").unwrap();
     let span_selector = Selector::parse("span").unwrap();
 
-    let ign_uid_re = Regex::new(r"/player/(\d+),([^/]+)/").unwrap();
-    let color_re = Regex::new(r"#[a-zA-Z\d]{6}").unwrap();
+    static IGN_UID_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"/player/(\d+),([^/]+)/").unwrap());
+    static COLOR_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"#[a-zA-Z\d]{6}").unwrap());
 
     let mut leader_board = vec![];
 
     let get_color_value = |element: ElementRef<'_>| -> StatisticValue {
         let span = element.select(&span_selector).next().unwrap();
-        let color: ColorStats = color_re
+        let color: ColorStats = COLOR_RE
             .captures(span.value().attr("style").unwrap())
             .unwrap()
             .get(0)
@@ -261,7 +262,7 @@ pub async fn fetch_ship_leaderboard(
         }
     };
     let get_uid_and_ign = |value: &Element| -> (u64, String) {
-        if let Some(captures) = ign_uid_re.captures(value.attr("href").unwrap()) {
+        if let Some(captures) = IGN_UID_RE.captures(value.attr("href").unwrap()) {
             let uid = captures
                 .get(1)
                 .unwrap()
