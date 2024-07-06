@@ -232,14 +232,18 @@ impl Args {
 impl FromStr for Args {
     type Err = IsacError;
     fn from_str(input: &str) -> Result<Self, Self::Err> {
-        static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""[^"]+"|\S+"#).unwrap());
+        static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r#""([^"]+)"|([^\s"]+)"#).unwrap());
         Ok(Args(
-            RE.find_iter(input)
-                .filter_map(|m| {
-                    // case like " " will be skipped
-                    let s = m.as_str().trim_matches('"').trim();
-                    (!s.is_empty()).then(|| s.to_string())
+            RE.captures_iter(input)
+                .map(|c| {
+                    c.get(1)
+                        .or_else(|| c.get(2))
+                        .expect("it's either 1 or 2")
+                        .as_str()
+                        .trim()
+                        .to_string()
                 })
+                .filter(|s| !s.is_empty())
                 .collect(),
         ))
     }

@@ -22,7 +22,7 @@ poise = "0.6.1"
 # poise = {version = "0.5.5", path="D:/GitHub/poise/"}
 # serenity = {git = "https://github.com/serenity-rs/serenity/", branch="next"}
 rand = "0.8.5"
-regex = "1.10.2"
+regex = "1.10.5"
 reqwest = { version = "0.12.4", features = ["json"] }
 scraper = "0.19.0"
 serde = { version = "1.0.189", features = ["derive"] }
