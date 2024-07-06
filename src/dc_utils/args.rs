@@ -45,9 +45,7 @@ impl Args {
                     self.remove(0)?;
                     Ok(linked_user)
                 }
-                None => {
-                    return Err(IsacInfo::UserNotLinked { user_name: None })?;
-                }
+                None => Err(IsacInfo::UserNotLinked { user_name: None })?,
             }
         } else {
             // parse region, player
@@ -111,9 +109,7 @@ impl Args {
                         .await
                         .ok_or(IsacInfo::UserNoClan { user_name: None }.into())
                 }
-                None => {
-                    return Err(IsacInfo::UserNotLinked { user_name: None })?;
-                }
+                None => Err(IsacInfo::UserNotLinked { user_name: None })?,
             }
         } else {
             // parse region, clan
