@@ -28,7 +28,7 @@ pub async fn link(
     let api = WowsApi::new(&ctx);
     let player = partial_player.full_player(&api).await?;
     {
-        let mut guard = ctx.data().link_js.write().await;
+        let mut guard = ctx.data().link.write().await;
         guard.0.insert(ctx.author().id, partial_player);
         guard.save_json().await;
     }

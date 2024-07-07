@@ -38,7 +38,7 @@ impl UserAddon for User {
 
     /// get the user's linked account if exist
     async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer> {
-        ctx.data().link_js.read().await.get(&self.id)
+        ctx.data().link.read().await.get(&self.id)
     }
 
     /// get permissions

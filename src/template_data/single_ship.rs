@@ -70,7 +70,7 @@ impl SingleShipTemplate {
         clan: Option<PartialClan>,
         player: Player,
     ) -> Result<Self, IsacError> {
-        let Some(main_mode) = ship_stats.to_statistic(&ship.ship_id, &ctx.data().expected_js, mode)
+        let Some(main_mode) = ship_stats.to_statistic(&ship.ship_id, &ctx.data().expected, mode)
         else {
             Err(IsacInfo::PlayerNoBattleShip {
                 ign: player.ign,
@@ -83,13 +83,13 @@ impl SingleShipTemplate {
         } else {
             Some(SingleShipTemplateSub::new(
                 ship_stats
-                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Solo)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected, Mode::Solo)
                     .unwrap_or_default(),
                 ship_stats
-                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Div2)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected, Mode::Div2)
                     .unwrap_or_default(),
                 ship_stats
-                    .to_statistic(&ship.ship_id, &ctx.data().expected_js, Mode::Div3)
+                    .to_statistic(&ship.ship_id, &ctx.data().expected, Mode::Div3)
                     .unwrap_or_default(),
             ))
         };

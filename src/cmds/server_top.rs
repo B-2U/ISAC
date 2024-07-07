@@ -34,12 +34,7 @@ pub async fn server_top(
     #[autocomplete = "auto_complete::ship"]
     ship_name: String,
 ) -> Result<(), Error> {
-    let ship = ctx
-        .data()
-        .ship_js
-        .read()
-        .search_name(&ship_name, 1)?
-        .first();
+    let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();
     func_server_top(ctx, ship).await
 }
 
@@ -72,7 +67,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
 
     let api = WowsApi::new(&ctx);
     let api_ref = &api;
-    let expected = ctx.data().expected_js.as_ref();
+    let expected = ctx.data().expected.as_ref();
     // the players who have stats in that ship
     // let mut players = HashMap::new();
 

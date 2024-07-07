@@ -321,7 +321,7 @@ pub async fn roulette(
     let players = players.unwrap_or(RoulettePlayer::Three);
     let tier = tier.unwrap_or(RouletteTier::X);
     let cadidates = {
-        let ship_js = ctx.data().ship_js.read();
+        let ship_js = ctx.data().ships.read();
         ship_js
             .0
             .iter()

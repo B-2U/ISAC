@@ -63,7 +63,7 @@ pub async fn wws(
             ctx.author().clone()
         };
         ctx.data()
-            .link_js
+            .link
             .read()
             .await
             .get(&user.id)
@@ -74,12 +74,7 @@ pub async fn wws(
 
     if let Some(ship_name) = ship_name {
         // wws ship
-        let ship = ctx
-            .data()
-            .ship_js
-            .read()
-            .search_name(&ship_name, 1)?
-            .first();
+        let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();
         let battle_type = battle_type.unwrap_or_default();
         func_ship(&ctx, partial_player, ship, battle_type).await?;
     } else {
@@ -167,16 +162,16 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
     let ships = player.all_ships(&api).await?;
     let div = OverallTemplateDiv::new(
         ships
-            .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+            .to_statistic(&ctx.data().expected, Mode::Pvp)
             .unwrap_or_default(),
         ships
-            .to_statistic(&ctx.data().expected_js, Mode::Solo)
+            .to_statistic(&ctx.data().expected, Mode::Solo)
             .unwrap_or_default(),
         ships
-            .to_statistic(&ctx.data().expected_js, Mode::Div2)
+            .to_statistic(&ctx.data().expected, Mode::Div2)
             .unwrap_or_default(),
         ships
-            .to_statistic(&ctx.data().expected_js, Mode::Div3)
+            .to_statistic(&ctx.data().expected, Mode::Div3)
             .unwrap_or_default(),
     );
     let class: OverallTemplateClass = ships
@@ -188,7 +183,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
             (
                 class,
                 ships
-                    .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+                    .to_statistic(&ctx.data().expected, Mode::Pvp)
                     .unwrap_or_default(),
             )
         })
@@ -202,7 +197,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
             (
                 class,
                 ships
-                    .to_statistic(&ctx.data().expected_js, Mode::Pvp)
+                    .to_statistic(&ctx.data().expected, Mode::Pvp)
                     .unwrap_or_default(),
             )
         })

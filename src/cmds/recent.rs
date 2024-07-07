@@ -69,7 +69,7 @@ pub async fn recent(
             ctx.author().clone()
         };
         ctx.data()
-            .link_js
+            .link
             .read()
             .await
             .get(&user.id)
@@ -81,7 +81,7 @@ pub async fn recent(
     let ship = ship_name
         .map(|ship_name| {
             ctx.data()
-                .ship_js
+                .ships
                 .read()
                 .search_name(&ship_name, 1)
                 .map(|v| v.first())
@@ -207,7 +207,7 @@ async fn func_recent(
     // got the history, constructing template data
     let _typing2 = ctx.typing().await;
     // parsing and render
-    let expected_js = &ctx.data().expected_js;
+    let expected = &ctx.data().expected;
     let clan = player.clan(&api).await;
     // QA 這個超大的if else感覺好糟...
     let img = if let Some(ship) = specific_ship.as_ref() {
@@ -230,20 +230,20 @@ async fn func_recent(
     } else {
         // recent all
         let div = RecentTemplateDiv {
-            pvp: stats.to_statistic(expected_js, Mode::Pvp),
-            pvp_solo: stats.to_statistic(expected_js, Mode::Solo),
-            pvp_div2: stats.to_statistic(expected_js, Mode::Div2),
-            pvp_div3: stats.to_statistic(expected_js, Mode::Div3),
-            rank_solo: stats.to_statistic(expected_js, Mode::Rank),
+            pvp: stats.to_statistic(expected, Mode::Pvp),
+            pvp_solo: stats.to_statistic(expected, Mode::Solo),
+            pvp_div2: stats.to_statistic(expected, Mode::Div2),
+            pvp_div3: stats.to_statistic(expected, Mode::Div3),
+            rank_solo: stats.to_statistic(expected, Mode::Rank),
         };
         let ships = stats
             .0
             .into_iter()
             .filter_map(|(ship_id, ship_stats)| {
                 ship_stats
-                    .to_statistic(&ship_id, expected_js, mode)
+                    .to_statistic(&ship_id, expected, mode)
                     .map(|stats| RecentTemplateShip {
-                        info: ship_id.get_ship(&ctx.data().ship_js).unwrap_or_default(),
+                        info: ship_id.get_ship(&ctx.data().ships).unwrap_or_default(),
                         stats,
                     })
             })

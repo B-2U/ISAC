@@ -44,12 +44,7 @@ pub async fn top(
     ship_name: String,
     #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
-    let ship = ctx
-        .data()
-        .ship_js
-        .read()
-        .search_name(&ship_name, 1)?
-        .first();
+    let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();
     let region = region.unwrap_or_default();
     func_top(ctx, region, ship).await
 }
@@ -104,7 +99,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                 .and_then(|author_ship| {
                     author_ship.to_statistic(
                         &ship.ship_id,
-                        ctx.data().expected_js.as_ref(),
+                        ctx.data().expected.as_ref(),
                         crate::structs::Mode::Pvp,
                     )
                 })

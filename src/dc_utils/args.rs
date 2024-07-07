@@ -162,7 +162,7 @@ impl Args {
         self.0.clear();
 
         let mut candidates = {
-            let ship_js = ctx.data().ship_js.read();
+            let ship_js = ctx.data().ships.read();
             ship_js.search_name(&ship_input, 4)?
         };
 

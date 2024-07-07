@@ -255,7 +255,7 @@ impl ShipStatsCollection {
             .map(|class| (class, ShipStatsCollection::default()))
             .collect();
 
-        let ship_js = ctx.data().ship_js.read();
+        let ship_js = ctx.data().ships.read();
         for (ship_id, ship_modes) in self.0 {
             if let Some(class_collection) = ship_js
                 .get(&ship_id)
@@ -272,7 +272,7 @@ impl ShipStatsCollection {
             .map(|class| (class, ShipStatsCollection::default()))
             .collect();
         {
-            let ship_js = ctx.data().ship_js.read();
+            let ship_js = ctx.data().ships.read();
             for (ship_id, ship_modes) in self.0 {
                 if let Some(ship_para) = ship_js.get(&ship_id) {
                     if let Some(class_collection) = map.get_mut(&ship_para.tier) {

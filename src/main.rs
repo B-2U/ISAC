@@ -142,7 +142,7 @@ async fn main() {
     tokio::spawn(async move { tasks::patron_updater(http, patron).await });
     // update expected json
     let client = arc_data.client.clone();
-    let expected = Arc::clone(&arc_data.expected_js);
+    let expected = Arc::clone(&arc_data.expected);
     tokio::spawn(async move { tasks::expected_updater(client, expected).await });
 
     let webhook_http = bot.http.clone();
@@ -204,10 +204,10 @@ impl Deref for Data {
 pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<parking_lot::RwLock<Patrons>>,
-    expected_js: Arc<parking_lot::RwLock<ExpectedJs>>,
-    ship_js: parking_lot::RwLock<ShipsPara>,
+    expected: Arc<parking_lot::RwLock<ExpectedJs>>,
+    ships: parking_lot::RwLock<ShipsPara>,
     constant: parking_lot::RwLock<LittleConstant>,
-    link_js: tokio::sync::RwLock<Linked>,
+    link: tokio::sync::RwLock<Linked>,
     wg_api_token: String,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
@@ -219,10 +219,10 @@ impl Default for DataInner {
         DataInner {
             client: reqwest::Client::new(),
             patron: Arc::new(parking_lot::RwLock::new(Patrons::default())),
-            expected_js: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json_sync())),
-            ship_js: parking_lot::RwLock::new(ShipsPara::load_json_sync()),
+            expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json_sync())),
+            ships: parking_lot::RwLock::new(ShipsPara::load_json_sync()),
             constant: parking_lot::RwLock::new(LittleConstant::load_json_sync()),
-            link_js: tokio::sync::RwLock::new(Linked::load_json_sync()),
+            link: tokio::sync::RwLock::new(Linked::load_json_sync()),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json_sync()),
             banner: tokio::sync::RwLock::new(Banner::load_json_sync()),

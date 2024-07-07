@@ -9,7 +9,7 @@ use crate::{
 
 pub async fn ship(ctx: Context<'_>, input: &str) -> impl Iterator<Item = AutocompleteChoice> {
     ctx.data()
-        .ship_js
+        .ships
         .read()
         .search_name(input, 8)
         .unwrap_or_default()

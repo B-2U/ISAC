@@ -26,11 +26,11 @@ pub async fn update_src(ctx: Context<'_>) -> Result<(), Error> {
     let api = WowsApi::new(&ctx);
     if let Ok(res) = api.encyclopedia_vehicles().await {
         res.save_json().await;
-        *ctx.data().ship_js.write() = res;
+        *ctx.data().ships.write() = res;
     }
     let res = api.encyclopedia_vehicles().await?;
     res.save_json().await;
-    *ctx.data().ship_js.write() = res;
+    *ctx.data().ships.write() = res;
     ctx.reply("Updated").await?;
     Ok(())
 }
@@ -44,7 +44,7 @@ pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn users(ctx: Context<'_>) -> Result<(), Error> {
-    let len = ctx.data().link_js.read().await.0.len();
+    let len = ctx.data().link.read().await.0.len();
     let _a = ctx.reply(len.to_string()).await?;
     Ok(())
 }
