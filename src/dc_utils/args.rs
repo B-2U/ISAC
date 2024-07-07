@@ -50,13 +50,13 @@ impl Args {
         } else {
             // parse region, player
             let region = self.parse_region(ctx).await?;
-            let player_id = self.check(0)?;
+            let ign = self.check(0)?;
 
             let api = WowsApi::new(ctx);
-            let candidates = api.players(&region, player_id, 4).await?;
+            let candidates = api.players(&region, ign, 4).await?;
             let player = match candidates.len() {
                 0 => Err(IsacInfo::PlayerIgnNotFound {
-                    ign: player_id.to_string(),
+                    ign: ign.to_string(),
                     region,
                 })?,
                 1 => {
