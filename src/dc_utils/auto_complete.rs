@@ -2,7 +2,7 @@ use poise::serenity_prelude::AutocompleteChoice;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    structs::{ClanTag, PartialClan, PartialPlayer, Region},
+    structs::{ClanTag, PartialClan, Region},
     utils::wws_api::WowsApi,
     Context,
 };
@@ -17,7 +17,7 @@ pub async fn ship(ctx: Context<'_>, input: &str) -> impl Iterator<Item = Autocom
         .map(|ship| AutocompleteChoice::new(ship.name.as_str(), ship.name.as_str()))
 }
 
-/// return a serialized [`PartialPlayer`] struct
+/// return a formatted string like: B2U[ASIA]
 pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     let input: Vec<&str> = input.split_whitespace().collect();
     let Some((region, ign)) = (match input.len() {
@@ -26,61 +26,24 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
     }) else {
         return [
-            (
-                "Usage: <region(optional)> <ign>",
-                PartialPlayer {
-                    region: Region::Asia,
-                    uid: 2025455227,
-                },
-            ),
-            (
-                "Example: B2U",
-                PartialPlayer {
-                    region: Region::Asia,
-                    uid: 2025455227,
-                },
-            ),
-            (
-                "Example: asia B2U",
-                PartialPlayer {
-                    region: Region::Asia,
-                    uid: 2025455227,
-                },
-            ),
-            (
-                "Example: eu CVptsd",
-                PartialPlayer {
-                    region: Region::Eu,
-                    uid: 566491687,
-                },
-            ),
-            (
-                "Example: NA JustDodge",
-                PartialPlayer {
-                    region: Region::Na,
-                    uid: 1035252322,
-                },
-            ),
+            "Usage: [optional] <ign>",
+            "Example: B2U",
+            "Example: asia B2U",
+            "Example: eu CVptsd",
         ]
         .into_iter()
-        .map(|(name, value)| {
-            AutocompleteChoice::new(name.to_string(), serde_json::to_string(&value).unwrap())
-        })
+        .map(|name| AutocompleteChoice::new(name.to_string(), name.to_string()))
         .collect();
     };
-    let api = WowsApi::new(&ctx);
-    let candidates = api.players(&region, ign, 8).await.unwrap_or_default();
+    let candidates = WowsApi::new(&ctx)
+        .players(&region, ign, 8)
+        .await
+        .unwrap_or_default();
     candidates
         .into_iter()
         .map(|vortex_p| {
-            let partial_p = PartialPlayer {
-                region,
-                uid: vortex_p.uid,
-            };
-            AutocompleteChoice::new(
-                format!("{} [{}]", vortex_p.name, region),
-                serde_json::to_string(&partial_p).unwrap(),
-            )
+            let output = format!("[{}] {}", region, vortex_p.name);
+            AutocompleteChoice::new(output.clone(), output)
         })
         .collect()
 }

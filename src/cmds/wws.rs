@@ -17,7 +17,7 @@ use crate::{
         OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
+    utils::{cache_methods, parse::parse_region_ign, wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 
@@ -39,16 +39,15 @@ pub async fn wws(
     ship_name: Option<String>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
-    player: Option<String>, // the String is a Serialized PartialPlayer struct
+    player: Option<String>, // e.g. [ASIA] B2U
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(player) =
-        player.and_then(|player_str| serde_json::from_str::<PartialPlayer>(&player_str).ok())
-    {
-        player
+    let partial_player = if let Some(player_input) = player {
+        let (region, ign) = parse_region_ign(&player_input)?;
+        cache_methods::player(WowsApi::new(&ctx), &region, &ign).await?
     } else {
         let user = if let Some(discord_user_str) = discord_user {
             User::convert_strict(
