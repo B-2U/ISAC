@@ -26,7 +26,7 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
     }) else {
         return [
-            "Usage: [optional] <ign>",
+            "Usage: [region] <ign>",
             "Example: B2U",
             "Example: asia B2U",
             "Example: eu CVptsd",
