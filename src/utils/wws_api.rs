@@ -99,7 +99,7 @@ impl<'a> WowsApi<'a> {
 
         // Player::parse(self.data, region, res).await
     }
-    /// searching player with ign
+    /// searching player with ign, return an empty vec if no matched
     pub async fn players(
         &self,
         region: &Region,
