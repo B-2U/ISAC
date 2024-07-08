@@ -26,7 +26,7 @@ pub async fn player(
         lock.get(&(*region, ign.to_string())).cloned()
     };
     if let Some(cached_player) = cache_result {
-        Ok(cached_player.clone())
+        Ok(cached_player)
     } else {
         let candidates = api.players(region, ign, 1).await?;
         let first_candidate = candidates.first().ok_or(IsacInfo::PlayerIgnNotFound {
