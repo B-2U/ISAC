@@ -28,14 +28,19 @@ pub async fn player(
     if let Some(cached_player) = cache_result {
         Ok(cached_player.clone())
     } else {
-        let candidates = api.players(&region, ign, 1).await?;
-        let first = candidates.first().ok_or(IsacInfo::PlayerIgnNotFound {
+        let candidates = api.players(region, ign, 1).await?;
+        let first_candidate = candidates.first().ok_or(IsacInfo::PlayerIgnNotFound {
             ign: ign.to_string(),
             region: *region,
         })?;
-        Ok(PartialPlayer {
+        let partial_player = PartialPlayer {
             region: *region,
-            uid: first.uid,
-        })
+            uid: first_candidate.uid,
+        };
+        CACHE
+            .lock()
+            .put((*region, first_candidate.name.clone()), partial_player);
+
+        Ok(partial_player)
     }
 }
