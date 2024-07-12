@@ -56,8 +56,7 @@ pub async fn wws(
                 None,
                 &discord_user_str,
             )
-            .await
-            .unwrap_or(ctx.author().clone())
+            .await?
         } else {
             ctx.author().clone()
         };
