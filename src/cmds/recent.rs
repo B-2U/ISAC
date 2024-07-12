@@ -198,7 +198,7 @@ async fn func_recent(
                 // next iter
                 target_day = selected_day;
             } else {
-                ask_struct.finished(None::<String>).await?;
+                ask_struct.finished().await?;
                 Err(IsacError::Cancelled)?
             }
         }
@@ -266,7 +266,9 @@ async fn func_recent(
     if let Some(mut msg) = ask_struct.ask_msg {
         msg.edit(
             ctx,
-            EditMessage::default().attachments(EditAttachments::new().add(att)),
+            EditMessage::default()
+                .components(vec![])
+                .attachments(EditAttachments::new().add(att)),
         )
         .await?
     } else {
@@ -455,19 +457,10 @@ impl<'a> AskDay<'a> {
     }
 
     /// remove the components under the ask_msg, this is for the situation that user didn't response
-    pub async fn finished<D: Into<String> + Sized>(
-        &mut self,
-        msg: Option<D>,
-    ) -> Result<&AskDay<'a>, Error> {
+    pub async fn finished(&mut self) -> Result<&AskDay<'a>, Error> {
         if let Some(ask_msg) = self.ask_msg.as_mut() {
             ask_msg
-                .edit(self.ctx, {
-                    let mut edit = EditMessage::default().components(vec![]);
-                    if let Some(msg_content) = msg {
-                        edit = edit.content(msg_content);
-                    };
-                    edit
-                })
+                .edit(self.ctx, EditMessage::default().components(vec![]))
                 .await?;
         };
         Ok(self)
