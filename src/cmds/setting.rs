@@ -1,7 +1,10 @@
 use crate::{
     dc_utils::{auto_complete, UserAddon},
-    structs::{PartialPlayer, Region},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
+    structs::Region,
+    utils::{
+        cache_methods, parse::parse_region_ign, wws_api::WowsApi, IsacError, IsacInfo,
+        LoadSaveFromJson,
+    },
     Context, Data, Error,
 };
 use poise;
@@ -22,8 +25,9 @@ pub async fn link(
     #[description = "your game server & ign"]
     player: String, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
-    let Ok(partial_player) = serde_json::from_str::<PartialPlayer>(&player) else {
-        Err(IsacError::Info(IsacInfo::AutoCompleteError))?
+    let partial_player = {
+        let (region, ign) = parse_region_ign(&player)?;
+        cache_methods::player(WowsApi::new(&ctx), &region, &ign).await?
     };
     let api = WowsApi::new(&ctx);
     let player = partial_player.full_player(&api).await?;
