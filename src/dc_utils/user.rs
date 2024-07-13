@@ -1,8 +1,12 @@
 use poise::serenity_prelude::{
-    ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User, UserParseError,
+    ArgumentConvert, CacheHttp, ChannelId, Context, GuildId, Permissions, User,
 };
 
-use crate::{structs::PartialPlayer, Error};
+use crate::{
+    structs::PartialPlayer,
+    utils::{IsacError, IsacInfo},
+    Error,
+};
 
 pub trait UserAddon: Sized {
     /// will only convert by user_id or mention, but not username
@@ -12,7 +16,7 @@ pub trait UserAddon: Sized {
         guild_id: Option<GuildId>,
         channel_id: Option<ChannelId>,
         s: &str,
-    ) -> Result<User, UserParseError>;
+    ) -> Result<User, IsacError>;
 
     /// get the user's linked account if exist
     async fn get_player(&self, ctx: &crate::Context<'_>) -> Option<PartialPlayer>;
@@ -27,12 +31,17 @@ impl UserAddon for User {
         guild_id: Option<GuildId>,
         channel_id: Option<ChannelId>,
         s: &str,
-    ) -> Result<User, UserParseError> {
-        if s.chars().all(|c| c.is_ascii_digit()) || s.chars().any(|c| ['<', '@', '>'].contains(&c))
-        {
-            User::convert(ctx, guild_id, channel_id, s).await
+    ) -> Result<User, IsacError> {
+        let error_message = IsacInfo::GeneralError {
+            msg: "Not a valid input, please enter an @ping or Discord User ID".to_string(),
+        };
+
+        if s.chars().any(|c| matches!(c, '<' | '@' | '>')) || s.chars().all(|c| c.is_digit(10)) {
+            User::convert(ctx, guild_id, channel_id, s)
+                .await
+                .map_err(|_| error_message.into())
         } else {
-            Err(UserParseError::NotFoundOrMalformed)
+            Err(error_message.into())
         }
     }
 
