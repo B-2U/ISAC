@@ -36,7 +36,7 @@ impl UserAddon for User {
             msg: "Not a valid input, please enter an @ping or Discord User ID".to_string(),
         };
 
-        if s.chars().any(|c| matches!(c, '<' | '@' | '>')) || s.chars().all(|c| c.is_digit(10)) {
+        if s.chars().any(|c| matches!(c, '<' | '@' | '>')) || s.chars().all(|c| c.is_ascii_digit()) {
             User::convert(ctx, guild_id, channel_id, s)
                 .await
                 .map_err(|_| error_message.into())
