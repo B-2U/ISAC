@@ -33,7 +33,7 @@ impl UserAddon for User {
         s: &str,
     ) -> Result<User, IsacError> {
         let error_message = IsacInfo::GeneralError {
-            msg: "Not a valid input, please enter an @ping or Discord User ID".to_string(),
+            msg: format!("`{s}` is not a valid user, please enter a pign like <@930855839961591849> or a Discord User ID"),
         };
 
         if s.chars().any(|c| matches!(c, '<' | '@' | '>')) || s.chars().all(|c| c.is_ascii_digit())
