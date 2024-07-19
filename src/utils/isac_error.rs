@@ -23,11 +23,13 @@ pub enum IsacHelp {
 }
 #[derive(Debug, thiserror::Error)]
 pub enum IsacInfo {
+    /// give None if its author himself
     UserNotLinked {
-        user_name: Option<String>, // give None if its author himself
+        user_name: Option<String>,
     },
+    /// give None if its author himself
     UserNoClan {
-        user_name: Option<String>, // give None if its author himself
+        user_name: Option<String>,
     },
     TooShortIgn {
         ign: String,
