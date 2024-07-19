@@ -5,7 +5,8 @@ use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
 use crate::{
-    structs::{PartialPlayer, Region},
+    dc_utils::auto_complete::AutoCompleteClan,
+    structs::{PartialClan, PartialPlayer, Region},
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
 };
 
@@ -42,5 +43,41 @@ pub async fn player(
             .put((*region, first_candidate.name.clone()), partial_player);
 
         Ok(partial_player)
+    }
+}
+
+/// searching clan with the tag, with LRU cache
+///
+/// # Error
+/// [`IsacInfo::ClanNotFound`]
+pub async fn clan(
+    api: &WowsApi<'_>,
+    auto_complete_clan: AutoCompleteClan,
+) -> Result<PartialClan, IsacError> {
+    static CACHE: Lazy<Mutex<LruCache<AutoCompleteClan, PartialClan>>> =
+        Lazy::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(30).unwrap())));
+
+    let cache_result = {
+        let mut lock = CACHE.lock();
+        lock.get(&auto_complete_clan).cloned()
+    };
+    if let Some(cached_clan) = cache_result {
+        Ok(cached_clan)
+    } else {
+        let mut candidates = api
+            .clans(&auto_complete_clan.region, &auto_complete_clan.tag)
+            .await?;
+        let first_candidate = match candidates.is_empty() {
+            true => Err(IsacInfo::ClanNotFound {
+                clan: auto_complete_clan.tag.to_string(),
+                region: auto_complete_clan.region,
+            })?,
+            false => candidates.swap_remove(0),
+        };
+        CACHE
+            .lock()
+            .put(auto_complete_clan, first_candidate.clone());
+
+        Ok(first_candidate)
     }
 }

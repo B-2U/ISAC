@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
 use serde_with::{serde_as, DefaultOnError};
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, Hash)]
 pub struct PartialClan {
     pub tag: ClanTag,  // e.g. PANTS, do not include [ ]
     pub color: String, // hex color string
@@ -66,7 +66,7 @@ impl PartialClan {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, Hash, PartialEq, Eq)]
 pub struct ClanTag(String);
 
 impl From<&str> for ClanTag {

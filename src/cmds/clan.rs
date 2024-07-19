@@ -17,7 +17,7 @@ use tokio::join;
 
 use crate::{
     dc_utils::{
-        auto_complete::{self, AutoCompleteClan},
+        auto_complete::{self},
         Args, ContextAddon, EasyEmbed,
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
@@ -25,7 +25,7 @@ use crate::{
         ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
         ClanTemplateStats, ClanTemplateWrDis, Render,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
+    utils::{cache_methods, parse, wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
 };
 
@@ -41,18 +41,28 @@ pub fn clan_hybrid() -> poise::Command<Data, Error> {
 #[poise::command(slash_command)]
 pub async fn clan(
     ctx: Context<'_>,
-    #[description = "clan's tag or name"]
+    #[description = "clan's tag or name, default: yourself"]
     #[autocomplete = "auto_complete::clan"]
-    clan: String,
+    clan: Option<String>,
     #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i32>,
 ) -> Result<(), Error> {
-    let auto_complete_clan: AutoCompleteClan =
-        serde_json::from_str(&clan).map_err(|_| IsacError::Info(IsacInfo::AutoCompleteError))?;
     let api = WowsApi::new(&ctx);
-    let partial_clan = api
-        .clans(&auto_complete_clan.region, &auto_complete_clan.tag)
-        .await?
-        .swap_remove(0);
+    let partial_clan = if let Some(clan_input) = clan {
+        let auto_complete_clan = parse::parse_region_clan(&clan_input)?;
+        cache_methods::clan(&api, auto_complete_clan).await?
+    } else {
+        let author = ctx
+            .data()
+            .link
+            .read()
+            .await
+            .get(&ctx.author().id)
+            .ok_or(IsacError::Info(IsacInfo::UserNotLinked { user_name: None }))?;
+        author
+            .clan(&api)
+            .await
+            .ok_or(IsacInfo::UserNoClan { user_name: None })?
+    };
 
     if let Some(season) = season {
         func_clan_season(&ctx, partial_clan, season).await
