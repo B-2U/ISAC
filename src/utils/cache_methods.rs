@@ -15,7 +15,7 @@ use crate::{
 /// # Error
 /// [`IsacInfo::PlayerIgnNotFound`]
 pub async fn player(
-    api: WowsApi<'_>,
+    api: &WowsApi<'_>,
     region: &Region,
     ign: &str,
 ) -> Result<PartialPlayer, IsacError> {
