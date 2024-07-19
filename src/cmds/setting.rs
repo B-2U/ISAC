@@ -25,11 +25,11 @@ pub async fn link(
     #[description = "your game server & ign"]
     player: String, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
+    let api = WowsApi::new(&ctx);
     let partial_player = {
         let (region, ign) = parse_region_ign(&player)?;
-        cache_methods::player(WowsApi::new(&ctx), &region, &ign).await?
+        cache_methods::player(&api, &region, &ign).await?
     };
-    let api = WowsApi::new(&ctx);
     let player = partial_player.full_player(&api).await?;
     {
         let mut guard = ctx.data().link.write().await;

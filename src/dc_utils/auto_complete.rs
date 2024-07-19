@@ -42,7 +42,7 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     candidates
         .into_iter()
         .map(|vortex_p| {
-            let output = format!("[{}] {}", region, vortex_p.name);
+            let output = format!("{}  ({})", vortex_p.name, region);
             AutocompleteChoice::new(output.clone(), output)
         })
         .collect()
