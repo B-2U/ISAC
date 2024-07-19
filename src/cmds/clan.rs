@@ -9,7 +9,7 @@ use itertools::Itertools;
 use poise::{
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
-        CreateInteractionResponseMessage, EditMessage, Message, UserId,
+        CreateInteractionResponse, CreateInteractionResponseMessage, EditMessage, Message, UserId,
     },
     CreateReply,
 };
@@ -159,12 +159,12 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         .sorted_by_key(|f| -(f.season_number as i32))
         .map(|f| f.into())
         .collect();
+
     // fill the missing seasons
     let missing_seasons = ((current_season_num - 3)..=current_season_num)
         .filter(|season| !clan_seasons.iter().any(|s| s.season == *season))
         .map(|season| ClanStatsSeason::default_season(season).into())
         .collect::<Vec<_>>();
-
     if !missing_seasons.is_empty() {
         clan_seasons.extend(missing_seasons);
         clan_seasons.sort_by(|a, b| b.season.cmp(&a.season));
@@ -319,13 +319,15 @@ impl ClanView {
                 if interaction.user.id != author {
                     continue;
                 };
+                // acknowledge the interaction
                 let _r = interaction
-                    .create_response(
+                    .create_response(ctx, CreateInteractionResponse::Acknowledge)
+                    .await;
+                // disable the button
+                let _r = msg
+                    .edit(
                         ctx,
-                        poise::serenity_prelude::CreateInteractionResponse::Message(
-                            CreateInteractionResponseMessage::new()
-                                .components(self.pressed().build()),
-                        ),
+                        EditMessage::default().components(self.pressed().build()),
                     )
                     .await;
                 func_clan_season(ctx, self.clan.clone(), 0).await?
