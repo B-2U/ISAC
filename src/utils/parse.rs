@@ -12,7 +12,7 @@ use crate::{
 /// [`IsacInfo::GeneralError`] if received a malformed input
 pub fn parse_region_ign(input: &str) -> Result<(Region, String), IsacError> {
     static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\w+)\s+\((\w+)\)").unwrap());
-    let (_, [region_str, ign]) = RE
+    let (_, [ign, region_str]) = RE
         .captures(input)
         .ok_or(IsacInfo::GeneralError {
             msg: "invalid input!".to_string(),
