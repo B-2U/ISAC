@@ -48,7 +48,7 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         .collect()
 }
 
-/// return a serialized [`AutoCompleteClan`] struct
+/// return a formatted string, e.g. [PANTS] Dont Cap Kill All (ASIA)
 pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     let input: Vec<&str> = input.split_whitespace().collect();
     let Some((region, clan_name)) = (match input.len() {
@@ -57,32 +57,12 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
     }) else {
         return [
-            (
-                "Example: VOR",
-                AutoCompleteClan {
-                    tag: ClanTag::from("VOR"),
-                    region: Region::Asia,
-                },
-            ),
-            (
-                "Example: EU RAIN",
-                AutoCompleteClan {
-                    tag: ClanTag::from("RAIN"),
-                    region: Region::Eu,
-                },
-            ),
-            (
-                "Example: NA RESIN",
-                AutoCompleteClan {
-                    tag: ClanTag::from("RESIN"),
-                    region: Region::Na,
-                },
-            ),
+            ("Example: VOR", "[PANTS] (ASIA)"),
+            ("Example: EU RAIN", "[RAIN] (EU)"),
+            ("Example: NA RESIN", "[RESIN] (NA)"),
         ]
         .into_iter()
-        .map(|(name, value)| {
-            AutocompleteChoice::new(name.to_string(), serde_json::to_string(&value).unwrap())
-        })
+        .map(|(name, value)| AutocompleteChoice::new(name, value))
         .collect();
     };
     let api = WowsApi::new(&ctx);
@@ -90,11 +70,8 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     candidates
         .into_iter()
         .map(|clan| {
-            let auto_complete_clan: AutoCompleteClan = clan.clone().into();
-            AutocompleteChoice::new(
-                format!("[{}] {} ({})", clan, clan.name, clan.region),
-                serde_json::to_string(&auto_complete_clan).unwrap(),
-            )
+            let formatted_str = format!("[{}] {} ({})", clan, clan.name, clan.region);
+            AutocompleteChoice::new(formatted_str.clone(), formatted_str)
         })
         .collect()
 }
