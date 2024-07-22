@@ -303,17 +303,38 @@ impl<'a> WowsApi<'a> {
             ("clan_id", clan_id.to_string()),
             // ("extra", "members".to_string()),
         ];
-        let clan_res: ClanDetailAPIRes = self
+
+        // TEMP code for DEBUG here
+
+        let res = self
             .client
             .get(url)
             .query(&query)
             .send()
             .await
             .map_err(Self::_err_wrap)?
-            .json::<ClanDetailAPIRes>()
-            .await
-            .unwrap();
-        clan_res.data()
+            .text()
+            .await?;
+
+        match serde_json::from_str::<ClanDetailAPIRes>(&res) {
+            Ok(clan_res) => clan_res.data(),
+            Err(err) => {
+                dbg!(res);
+                panic!("{:?}", err)
+            }
+        }
+
+        // let clan_res: ClanDetailAPIRes = self
+        //     .client
+        //     .get(url)
+        //     .query(&query)
+        //     .send()
+        //     .await
+        //     .map_err(Self::_err_wrap)?
+        //     .json::<ClanDetailAPIRes>()
+        //     .await
+        //     .unwrap();
+        // clan_res.data()
     }
 
     /// player's CB seasons stats from official api
