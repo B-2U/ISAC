@@ -209,14 +209,13 @@ async fn func_clan_season(
     season_num: i32,
 ) -> Result<(), Error> {
     let current_season_num = ctx.data().constant.read().clan_season;
-    let season_num = match season_num {
-        0 => current_season_num,
-        n if n > 0 => n.unsigned_abs(),
-        // negative index
-        n if n < 0 && current_season_num.checked_add_signed(n).is_some() => {
-            current_season_num - n.unsigned_abs()
-        }
-        _ => current_season_num,
+    let season_num = if season_num >= 0 {
+        season_num.unsigned_abs()
+    } else if let Some(sub_num) = current_season_num.checked_add_signed(season_num + 1) {
+        // negative index, -1 will be the last element
+        sub_num
+    } else {
+        current_season_num
     };
 
     let api = WowsApi::new(ctx);
