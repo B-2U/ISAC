@@ -319,7 +319,7 @@ impl<'a> WowsApi<'a> {
         match serde_json::from_str::<ClanDetailAPIRes>(&res) {
             Ok(clan_res) => clan_res.data(),
             Err(err) => {
-                dbg!(res);
+                println!("{:?}", res);
                 panic!("{:?}", err)
             }
         }
