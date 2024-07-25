@@ -324,7 +324,7 @@ impl ClanView {
                         ),
                     )
                     .await;
-            } else if custom_id == "last_season" {
+            } else if custom_id == "latest_season" {
                 if interaction.user.id != author {
                     continue;
                 };
@@ -339,7 +339,7 @@ impl ClanView {
                         EditMessage::default().components(self.pressed().build()),
                     )
                     .await;
-                func_clan_season(ctx, self.clan.clone(), 0).await?
+                func_clan_season(ctx, self.clan.clone(), -1).await?
             }
         }
         // timeout;
@@ -368,7 +368,7 @@ impl ClanView {
         let mut member = CreateButton::new("clan_members")
             .label("Members")
             .style(ButtonStyle::Secondary);
-        let latest_season = CreateButton::new("last_season")
+        let latest_season = CreateButton::new("latest_season")
             .label("Latest season")
             .style(poise::serenity_prelude::ButtonStyle::Secondary)
             .disabled(self.last_season_btn_disabled);
