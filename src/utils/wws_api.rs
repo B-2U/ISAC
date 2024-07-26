@@ -349,7 +349,7 @@ impl<'a> WowsApi<'a> {
             ("language", "en".to_string()),
             ("account_id", uid.to_string()),
         ];
-        let res: PlayerClanBattle = self
+        let mut res: PlayerClanBattle = self
             .client
             .get(url)
             .query(&query)
@@ -359,6 +359,8 @@ impl<'a> WowsApi<'a> {
             .json::<PlayerClanBattleAPIRes>()
             .await?
             .try_into()?;
+        // filter out some ancient clan battle seasons
+        res.seasons.retain(|s| !matches!(s.season_id, 101 | 102));
         Ok(res)
     }
 
