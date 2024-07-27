@@ -389,7 +389,7 @@ impl<'a> AskDay<'a> {
                 current_day
             );
             if has_choices {
-                content.push_str("\nChoose a larger day number?");
+                content.push_str("\nChoose an older date?");
             }
             if !self.is_active {
                 content.push_str("```\nYou didn't use this command in the last 14 days, so ISAC stopped tracking your account, plz play a game and try it again```");
