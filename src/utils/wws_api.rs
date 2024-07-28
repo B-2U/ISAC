@@ -312,6 +312,7 @@ impl<'a> WowsApi<'a> {
             .query(&query)
             .send()
             .await
+            .and_then(|res| res.error_for_status())
             .map_err(Self::_err_wrap)?
             .text()
             .await?;
