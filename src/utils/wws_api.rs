@@ -313,14 +313,15 @@ impl<'a> WowsApi<'a> {
             .send()
             .await
             .and_then(|res| res.error_for_status())
-            .map_err(Self::_err_wrap)?
-            .text()
-            .await?;
+            .map_err(Self::_err_wrap)?;
+        let res_status = res.status();
+        let res_text = res.text().await?;
 
-        match serde_json::from_str::<ClanDetailAPIRes>(&res) {
+        match serde_json::from_str::<ClanDetailAPIRes>(&res_text) {
             Ok(clan_res) => clan_res.data(),
             Err(err) => {
-                println!("{:?}", res);
+                println!("Err code: {}", res_status);
+                println!("Response: {:?}", res_text);
                 panic!("{:?}", err)
             }
         }
