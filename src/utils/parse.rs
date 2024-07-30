@@ -28,7 +28,7 @@ pub fn parse_region_ign(input: &str) -> Result<(Region, String), IsacError> {
 /// # Error
 /// [`IsacInfo::GeneralError`] if received a malformed input
 pub fn parse_region_clan(input: &str) -> Result<AutoCompleteClan, IsacError> {
-    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[(\w+)].+\((\w+)\)").unwrap());
+    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[([\w|-]+)].+\((\w+)\)").unwrap());
     let (_, [clan_tag, region_str]) = RE
         .captures(input)
         .ok_or(IsacInfo::GeneralError {
