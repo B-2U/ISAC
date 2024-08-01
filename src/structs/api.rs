@@ -4,6 +4,8 @@ use serde::de::{self, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fmt;
 
+use crate::utils::{IsacError, IsacInfo};
+
 /// the status code of the response
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Status {
@@ -12,13 +14,23 @@ pub struct Status {
 }
 
 impl Status {
+    /// return an [`IsacInfo::APIError`] if the status is not `ok`
+    pub fn error_for_status(&self) -> Result<(), IsacError> {
+        match self.status.as_str() == "ok" {
+            true => Ok(()),
+            false => Err(IsacInfo::APIError {
+                msg: self.err_msg(),
+            })?,
+        }
+    }
     /// true if the status code is "ok"
     pub fn ok(&self) -> bool {
         matches!(self.status.as_str(), "ok")
     }
     /// return the error message, return "Unknown Error" if its None
-    pub fn err_msg(self) -> String {
+    pub fn err_msg(&self) -> String {
         self.error
+            .as_ref()
             .map(|e| e.message.clone())
             .unwrap_or("Unknown Error".to_string())
     }

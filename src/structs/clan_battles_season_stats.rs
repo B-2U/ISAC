@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 use super::api;
-use crate::utils::{IsacError, IsacInfo};
+use crate::utils::IsacError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PlayerClanBattleAPIRes {
@@ -24,12 +24,7 @@ impl TryFrom<PlayerClanBattleAPIRes> for PlayerClanBattle {
     type Error = IsacError;
 
     fn try_from(value: PlayerClanBattleAPIRes) -> Result<Self, Self::Error> {
-        if !value.status.ok() {
-            return Err(IsacInfo::APIError {
-                msg: value.status.err_msg(),
-            }
-            .into());
-        }
+        value.status.error_for_status()?;
         Ok(value
             .data
             .into_iter()

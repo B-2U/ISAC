@@ -403,13 +403,9 @@ impl TryFrom<VortexPlayerSearchAPIRes> for Vec<VortexPlayerSearch> {
     type Error = IsacError;
 
     fn try_from(res: VortexPlayerSearchAPIRes) -> Result<Self, Self::Error> {
-        if !res.status.ok() {
-            Err(IsacInfo::APIError {
-                msg: res.status.err_msg(),
-            })?
-        } else {
-            Ok(res.data)
-        }
+        res.status.error_for_status()?;
+
+        Ok(res.data)
     }
 }
 

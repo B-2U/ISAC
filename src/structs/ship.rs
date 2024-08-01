@@ -159,12 +159,8 @@ impl TryFrom<VortexShipAPIRes> for ShipStatsCollection {
     type Error = IsacError;
 
     fn try_from(mut value: VortexShipAPIRes) -> Result<Self, Self::Error> {
-        if !value.status.ok() {
-            return Err(IsacInfo::APIError {
-                msg: value.status.err_msg(),
-            }
-            .into());
-        }
+        value.status.error_for_status()?;
+
         let player_stats = value.data.values_mut().last().ok_or(IsacInfo::APIError {
             msg: "expected PlayerStats".to_string(),
         })?;

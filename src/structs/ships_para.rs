@@ -130,36 +130,32 @@ impl TryFrom<VortexVehicleAPIRes> for ShipsPara {
     type Error = IsacError;
 
     fn try_from(res: VortexVehicleAPIRes) -> Result<Self, Self::Error> {
-        if !res.status.ok() {
-            Err(IsacInfo::APIError {
-                msg: res.status.err_msg(),
-            })?
-        } else {
-            let output = res
-                .data
-                .into_iter()
-                .map(|(k, mut v)| {
-                    let class = v
-                        .tags
-                        .iter()
-                        .find_map(ShipClass::from_tag)
-                        .expect("missing ship class tag");
-                    let ship = Ship {
-                        ship_id: k,
-                        tier: v.level,
-                        tier_roman: v.level.into(),
-                        class,
-                        name: v.localization.mark.remove("en").expect("missing en"),
-                        short_name: v.localization.shortmark.remove("en").expect("missing en"),
-                        nation: v.nation,
-                        icon: v.icons.small,
-                    };
-                    (k, ship)
-                })
-                .collect::<HashMap<ShipId, Ship>>()
-                .into();
-            Ok(output)
-        }
+        res.status.error_for_status()?;
+
+        let output = res
+            .data
+            .into_iter()
+            .map(|(k, mut v)| {
+                let class = v
+                    .tags
+                    .iter()
+                    .find_map(ShipClass::from_tag)
+                    .expect("missing ship class tag");
+                let ship = Ship {
+                    ship_id: k,
+                    tier: v.level,
+                    tier_roman: v.level.into(),
+                    class,
+                    name: v.localization.mark.remove("en").expect("missing en"),
+                    short_name: v.localization.shortmark.remove("en").expect("missing en"),
+                    nation: v.nation,
+                    icon: v.icons.small,
+                };
+                (k, ship)
+            })
+            .collect::<HashMap<ShipId, Ship>>()
+            .into();
+        Ok(output)
     }
 }
 

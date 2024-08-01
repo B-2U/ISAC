@@ -3,7 +3,7 @@ use crate::{
         api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
         ShipStatsCollection,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
+    utils::{wws_api::WowsApi, IsacError, LoadSaveFromJson},
     Context,
 };
 
@@ -140,11 +140,7 @@ impl TryFrom<VortexPlayerAPIRes> for VortexPlayer {
     type Error = IsacError;
 
     fn try_from(value: VortexPlayerAPIRes) -> Result<Self, Self::Error> {
-        if !value.status.ok() {
-            Err(IsacInfo::APIError {
-                msg: value.status.err_msg(),
-            })?
-        };
+        value.status.error_for_status()?;
         Ok(value.data.into_iter().next().unwrap().1)
     }
 }
