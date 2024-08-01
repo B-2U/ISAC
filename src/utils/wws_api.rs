@@ -304,39 +304,39 @@ impl<'a> WowsApi<'a> {
             // ("extra", "members".to_string()),
         ];
 
-        // TEMP code for DEBUG here
+        // // TEMP code for DEBUG here
 
-        let res = self
-            .client
-            .get(url)
-            .query(&query)
-            .send()
-            .await
-            .and_then(|res| res.error_for_status())
-            .map_err(Self::_err_wrap)?;
-        let res_status = res.status();
-        let res_text = res.text().await?;
-
-        match serde_json::from_str::<ClanDetailAPIRes>(&res_text) {
-            Ok(clan_res) => clan_res.data(),
-            Err(err) => {
-                println!("Err code: {}", res_status);
-                println!("Response: {:?}", res_text);
-                panic!("{:?}", err)
-            }
-        }
-
-        // let clan_res: ClanDetailAPIRes = self
+        // let res = self
         //     .client
         //     .get(url)
         //     .query(&query)
         //     .send()
         //     .await
-        //     .map_err(Self::_err_wrap)?
-        //     .json::<ClanDetailAPIRes>()
-        //     .await
-        //     .unwrap();
-        // clan_res.data()
+        //     .and_then(|res| res.error_for_status())
+        //     .map_err(Self::_err_wrap)?;
+        // let res_status = res.status();
+        // let res_text = res.text().await?;
+
+        // match serde_json::from_str::<ClanDetailAPIRes>(&res_text) {
+        //     Ok(clan_res) => clan_res.data(),
+        //     Err(err) => {
+        //         println!("Err code: {}", res_status);
+        //         println!("Response: {:?}", res_text);
+        //         panic!("{:?}", err)
+        //     }
+        // }
+
+        let clan_res: ClanDetailAPIRes = self
+            .client
+            .get(url)
+            .query(&query)
+            .send()
+            .await
+            .map_err(Self::_err_wrap)?
+            .json::<ClanDetailAPIRes>()
+            .await
+            .unwrap();
+        clan_res.data()
     }
 
     /// player's CB seasons stats from official api

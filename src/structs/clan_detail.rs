@@ -41,6 +41,7 @@ pub struct ClanDetailAPIRes {
     #[serde(flatten)]
     status: api::Status,
     // meta: Meta,
+    #[serde(default)] // its missing if an error occur
     pub data: HashMap<u64, ClanDetail>, // only one in the map
 }
 impl ClanDetailAPIRes {
@@ -54,4 +55,26 @@ impl ClanDetailAPIRes {
             Ok(self.data.into_values().next().unwrap())
         }
     }
+}
+
+#[test]
+fn clan_detail_res_can_deserialize() {
+    let err_json = r#"
+    {
+        "status": "error",
+        "error": {          
+            "code": 504,
+            "message": "SOURCE_NOT_AVAILABLE",
+            "field": null,
+            "value": null
+        }
+    }"#;
+    match serde_json::from_str::<ClanDetailAPIRes>(err_json) {
+        Ok(s) => {
+            if !s.status.ok() {
+                println!("{}", s.status.err_msg());
+            }
+        }
+        Err(e) => panic!("{}", e),
+    };
 }
