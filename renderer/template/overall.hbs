@@ -356,9 +356,9 @@
                         <img class="dogtag-dogtag" src="{{user.dogtag}}" onerror="this.style.display='none'">
                         <img class="dogtag-dogtag_bg" src="{{user.dogtag_bg}}" onerror=" this.style.display='none'">
                     </div>
-                    {{#clan}}
+                    {{#if clan}}
                     <span style="color: {{clan.color}}; font-weight: bold;">[{{clan.tag}}]</span>
-                    {{/clan}}
+                    {{/if}}
                     <span class="user-id" style="font-weight: bold;">{{user.ign}}
                         <sup style="color:#AAAAAA;font-size:25px;">{{user.karma}}</sup>
                     </span>

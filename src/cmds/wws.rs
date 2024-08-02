@@ -208,7 +208,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
         clan: clan.clone(),
         user: player.clone(),
     };
-    let img = overall_data.render(&ctx.data().client).await?;
+    let img = overall_data.render_test(&ctx.data().renderer).await?;
 
     let mut view = WwsView::new(overall_data, partial_player);
     let mut msg = ctx

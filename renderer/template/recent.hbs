@@ -273,7 +273,7 @@
                     <div class="division-stats-label avg-frags-label label-text">Frags</div>
                     <div class="division-stats-label avg-planes-label label-text">Planes</div>
                 </div>
-                {{#div.pvp_solo}}
+                {{#if div.pvp_solo}}
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-pvp_solo">Solo</div>
                     <div class="division-stats-data battles-data division-type-pvp_solo">{{div.pvp_solo.battles}}</div>
@@ -290,8 +290,8 @@
                     <div class="division-stats-data avg-planes-data division-type-pvp_solo"
                         style="color: {{div.pvp_solo.planes.color}};">{{div.pvp_solo.planes.value}}</div>
                 </div>
-                {{/div.pvp_solo}}
-                {{#div.pvp_div2}}
+                {{/if}}
+                {{#if div.pvp_div2}}
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-pvp_div2">Div 2</div>
                     <div class="division-stats-data battles-data division-type-pvp_div2">{{div.pvp_div2.battles}}</div>
@@ -308,8 +308,8 @@
                     <div class="division-stats-data avg-planes-data division-type-pvp_div2"
                         style="color: {{div.pvp_div2.planes.color}};">{{div.pvp_div2.planes.value}}</div>
                 </div>
-                {{/div.pvp_div2}}
-                {{#div.pvp_div3}}
+                {{/if}}
+                {{#if div.pvp_div3}}
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-pvp_div3">Div 3</div>
                     <div class="division-stats-data battles-data division-type-pvp_div3">{{div.pvp_div3.battles}}</div>
@@ -326,8 +326,8 @@
                     <div class="division-stats-data avg-planes-data division-type-pvp_div3"
                         style="color: {{div.pvp_div3.planes.color}};">{{div.pvp_div3.planes.value}}</div>
                 </div>
-                {{/div.pvp_div3}}
-                {{#div.rank_solo}}
+                {{/if}}
+                {{#if div.rank_solo}}
                 <div class="division-stats-row">
                     <div class="division-stats-label division-type-label division-type-rank_solo">Rank</div>
                     <div class="division-stats-data battles-data division-type-rank_solo">{{div.rank_solo.battles}}
@@ -345,7 +345,7 @@
                     <div class="division-stats-data avg-planes-data division-type-rank_solo"
                         style="color: {{div.rank_solo.planes.color}};">{{div.rank_solo.planes.value}}</div>
                 </div>
-                {{/div.rank_solo}}
+                {{/if}}
             </div>
         </section>
         <div class="divider"></div>

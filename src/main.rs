@@ -4,6 +4,7 @@
 mod cmds;
 use cmds::*;
 mod dc_utils;
+mod renderer;
 mod structs;
 mod tasks;
 mod template_data;
@@ -18,11 +19,11 @@ use tracing::{error, info, warn};
 use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
+    renderer::Renderer,
     structs::{
         Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipLeaderboard,
         ShipsPara,
     },
-    tasks::launch_renderer,
     utils::{error_handler, LoadSaveFromJson},
 };
 
@@ -147,8 +148,6 @@ async fn main() {
 
     let webhook_http = bot.http.clone();
 
-    let _renderer = launch_renderer().await; // it's used in linux specific code below
-
     tokio::spawn(async move {
         if let Err(why) = bot.start().await {
             error!("Client error: {:?}", why);
@@ -178,11 +177,6 @@ async fn main() {
     lb.save_json().await;
     info!("Saved leaderboard.json");
 
-    // close renderer
-    #[cfg(target_os = "linux")]
-    if let Some(renderer_pid) = _renderer.id() {
-        unsafe { libc::kill(renderer_pid as i32, libc::SIGINT) };
-    }
     shard_manager.shutdown_all().await;
 }
 
@@ -212,6 +206,7 @@ pub struct DataInner {
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
     leaderboard: Mutex<ShipLeaderboard>,
+    renderer: Renderer,
 }
 
 impl Default for DataInner {
@@ -227,6 +222,7 @@ impl Default for DataInner {
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json_sync()),
             banner: tokio::sync::RwLock::new(Banner::load_json_sync()),
             leaderboard: Mutex::new(ShipLeaderboard::load_json_sync()),
+            renderer: Renderer::launch(),
         }
     }
 }

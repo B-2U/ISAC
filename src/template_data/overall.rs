@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use super::Render;
 use crate::{
+    renderer::Renderer,
     structs::{PartialClan, Player, ShipClass, ShipTier, Statistic},
     utils::{IsacError, IsacInfo},
 };
@@ -49,6 +50,9 @@ impl OverallTemplate {
             .map_err(|_| IsacInfo::GeneralError {
                 msg: "screenshot failed".to_string(),
             })?)
+    }
+    pub async fn render_test(&self, renderer: &Renderer) -> Result<Bytes, IsacError> {
+        renderer.render("overall", &self).await
     }
 }
 
