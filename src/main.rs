@@ -89,7 +89,7 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    let data = Data::default();
+    let data = Data::new().await;
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
     let mut bot = ClientBuilder::new(
@@ -180,11 +180,17 @@ async fn main() {
     shard_manager.shutdown_all().await;
 }
 
-/// My custom Data, it already uses an [`Arc`] internally.
-/// well its a bit tricky, but I'm lazy to clone them before bot building one by one
-#[derive(Clone, Default)]
+/// My custom Data, it already uses an [`Arc`] internally just like [reqwest::Client].
+#[derive(Clone)]
 pub struct Data {
     pub inner: Arc<DataInner>,
+}
+impl Data {
+    async fn new() -> Self {
+        Self {
+            inner: Arc::new(DataInner::new().await),
+        }
+    }
 }
 
 impl Deref for Data {
@@ -209,15 +215,15 @@ pub struct DataInner {
     renderer: Renderer,
 }
 
-impl Default for DataInner {
-    fn default() -> Self {
+impl DataInner {
+    pub async fn new() -> Self {
         DataInner {
             client: reqwest::Client::new(),
             patron: Arc::new(parking_lot::RwLock::new(Patrons::default())),
-            expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json_sync())),
-            ships: parking_lot::RwLock::new(ShipsPara::load_json_sync()),
-            constant: parking_lot::RwLock::new(LittleConstant::load_json_sync()),
-            link: tokio::sync::RwLock::new(Linked::load_json_sync()),
+            expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
+            ships: parking_lot::RwLock::new(ShipsPara::load_json().await),
+            constant: parking_lot::RwLock::new(LittleConstant::load_json().await),
+            link: tokio::sync::RwLock::new(Linked::load_json().await),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json_sync()),
             banner: tokio::sync::RwLock::new(Banner::load_json_sync()),
