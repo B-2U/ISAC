@@ -47,6 +47,7 @@ pub async fn wws(
 ) -> Result<(), Error> {
     let partial_player = if let Some(player_input) = player {
         let (region, ign) = parse_region_ign(&player_input)?;
+        cache_methods::save_user_search_history(&ctx, region, ign.clone()).await;
         cache_methods::player(&WowsApi::new(&ctx), &region, &ign).await?
     } else {
         let user = if let Some(discord_user_str) = discord_user {

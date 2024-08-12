@@ -8,6 +8,7 @@ use crate::{
     dc_utils::auto_complete::AutoCompleteClan,
     structs::{PartialClan, PartialPlayer, Region},
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
+    Context, PerUserSearchCache,
 };
 
 /// searching player with the ign, with LRU cache
@@ -80,4 +81,13 @@ pub async fn clan(
 
         Ok(first_candidate)
     }
+}
+
+/// save the result into ctx::cache
+pub async fn save_user_search_history(ctx: &Context<'_>, region: Region, ign: String) {
+    let mut mg = ctx.data().cache.lock().await;
+    mg.cache
+        .get_or_insert_mut(ctx.author().id, || PerUserSearchCache::new())
+        .history
+        .put((region, ign), ());
 }

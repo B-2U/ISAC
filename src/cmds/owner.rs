@@ -10,6 +10,13 @@ pub async fn test(_ctx: Context<'_>, #[rest] _args: Args) -> Result<(), Error> {
 }
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
+pub async fn cache_size(ctx: Context<'_>) -> Result<(), Error> {
+    let size = std::mem::size_of_val(&ctx.data().cache);
+    let _a = ctx.reply(format!("cache size: {} bytes", size)).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn clan_season(ctx: Context<'_>, season: u32) -> Result<(), Error> {
     {
         ctx.data().constant.write().clan_season = season;
