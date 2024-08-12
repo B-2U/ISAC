@@ -38,13 +38,13 @@ pub fn recent_hybrid() -> poise::Command<Data, Error> {
 #[poise::command(slash_command, user_cooldown = 5)]
 pub async fn recent(
     ctx: Context<'_>,
+    #[description = "last 1~30(90 for patreons) days of stats, default: 1"] days: Option<u64>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
     player: Option<String>, // the String is a Serialized PartialPlayer struct
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
-    #[description = "last 1~30(90 for patreons) days of stats, default: 1"] days: Option<u64>,
     #[description = "specific warship, default: all ships' recent"]
     #[rename = "warship"]
     #[autocomplete = "auto_complete::ship"]
