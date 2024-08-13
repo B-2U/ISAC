@@ -73,7 +73,9 @@ impl SearchCache {
             // if someone evicted, save it
             self.push_save(*user_id, cache).await;
         };
-        self.users.get(user_id).expect("we put it in above already")
+        self.users
+            .get_mut(user_id)
+            .expect("we put it in above already")
     }
     /// insert new child, save the evicted one to disk
     pub async fn push_save(&mut self, user_id: UserId, cache: UserSearchCache) {
