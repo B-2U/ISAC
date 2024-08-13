@@ -38,7 +38,7 @@ pub fn recent_hybrid() -> poise::Command<Data, Error> {
 #[poise::command(slash_command, user_cooldown = 5)]
 pub async fn recent(
     ctx: Context<'_>,
-    #[description = "last 1~30(90 for patreons) days of stats, default: 1"] days: Option<u64>,
+    #[description = "last 1~30 (90 for patreons) days of stats, default: 1"] days: Option<u64>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
     player: Option<String>, // the String is a Serialized PartialPlayer struct
@@ -53,6 +53,7 @@ pub async fn recent(
 ) -> Result<(), Error> {
     let partial_player = if let Some(player_input) = player {
         let (region, ign) = parse_region_ign(&player_input)?;
+        cache_methods::save_user_search_history(&ctx, region, ign.clone()).await;
         cache_methods::player(&WowsApi::new(&ctx), &region, &ign).await?
     } else {
         let user = if let Some(discord_user_str) = discord_user {
