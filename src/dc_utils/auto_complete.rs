@@ -25,15 +25,25 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         1 => Some((Region::Asia, input[0])),
         _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
     }) else {
-        return [
-            "Usage: [region] <ign>",
-            "Example: B2U",
-            "Example: asia B2U",
-            "Example: eu CVptsd",
-        ]
-        .into_iter()
-        .map(|name| AutocompleteChoice::new(name.to_string(), name.to_string()))
-        .collect();
+        return match ctx.data().cache.lock().await.get(&ctx.author().id).await {
+            Some(cache) => cache
+                .auto_complete_player
+                .iter()
+                .map(|(region, ign)| {
+                    let s = format!("{}  ({})", ign.clone(), region);
+                    AutocompleteChoice::new(s.clone(), s)
+                })
+                .collect(),
+            None => [
+                "Usage: [region] <ign>",
+                "Example: B2U",
+                "Example: asia B2U",
+                "Example: eu CVptsd",
+            ]
+            .into_iter()
+            .map(|name| AutocompleteChoice::new(name.to_string(), name.to_string()))
+            .collect(),
+        };
     };
     let candidates = WowsApi::new(&ctx)
         .players(&region, ign, 8)

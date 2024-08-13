@@ -52,3 +52,5 @@ pub use clan_battles_season_stats::*;
 
 pub mod api;
 pub mod color;
+pub mod lru_vector;
+pub mod user_search_history;

@@ -9,18 +9,18 @@ mod tasks;
 mod template_data;
 mod utils;
 
+use futures::future::join_all;
 use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
 use std::{collections::HashSet, env, ops::Deref, sync::Arc};
-use tokio::sync::Mutex;
 use tracing::{error, info, warn};
 use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
     structs::{
-        Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipLeaderboard,
-        ShipsPara,
+        user_search_history::SearchCache, Banner, ExpectedJs, GuildDefaultRegion, Linked,
+        LittleConstant, Patrons, ShipLeaderboard, ShipsPara,
     },
     tasks::launch_renderer,
     utils::{error_handler, LoadSaveFromJson},
@@ -57,6 +57,7 @@ async fn main() {
             general::help(),
             owner::guilds(),
             owner::test(),
+            owner::cache_size(),
             owner::send(),
             owner::users(),
             owner::clan_season(),
@@ -172,11 +173,14 @@ async fn main() {
             )
             .await;
     }
-
-    let lb = arc_data.leaderboard.lock().await;
-    info!("Saving leaderboard.json");
-    lb.save_json().await;
+    // TODO: use async drop trait?
+    let lb_mg = arc_data.leaderboard.lock().await;
+    lb_mg.save_json().await;
     info!("Saved leaderboard.json");
+
+    let cache_mg = arc_data.cache.lock().await;
+    join_all(cache_mg.users.iter().map(|(_, data)| data.save())).await;
+    info!("Saved users' history cache");
 
     // close renderer
     #[cfg(target_os = "linux")]
@@ -217,7 +221,8 @@ pub struct DataInner {
     wg_api_token: String,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
-    leaderboard: Mutex<ShipLeaderboard>,
+    leaderboard: tokio::sync::Mutex<ShipLeaderboard>,
+    cache: tokio::sync::Mutex<SearchCache>,
 }
 
 impl DataInner {
@@ -232,7 +237,8 @@ impl DataInner {
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json().await),
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
-            leaderboard: Mutex::new(ShipLeaderboard::load_json().await),
+            leaderboard: tokio::sync::Mutex::new(ShipLeaderboard::load_json().await),
+            cache: tokio::sync::Mutex::new(SearchCache::new()),
         }
     }
 }
