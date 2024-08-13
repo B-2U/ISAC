@@ -45,15 +45,16 @@ where
         }
     }
 
-    pub fn get(&mut self, value: &T) -> Option<&T> {
-        if let Some(pos) = self.data.iter().position(|x| x == value) {
-            // Move the accessed item to the front (most recent)
-            let item = self.data.remove(pos).unwrap();
-            self.data.push_front(item);
-            return self.data.front();
-        }
-        None
-    }
+    // pub fn get(&mut self, value: &T) -> Option<&T> {
+    //     if let Some(pos) = self.data.iter().position(|x| x == value) {
+    //         // Move the accessed item to the front (most recent)
+    //         let item = self.data.remove(pos).unwrap();
+    //         self.data.push_front(item);
+    //         return self.data.front();
+    //     }
+    //     None
+    // }
+
     /// return the evicted element if its over capacity
     pub fn put(&mut self, value: T) -> Option<T> {
         // If the item is already in the vector, remove it first
@@ -70,17 +71,17 @@ where
         }
     }
 
-    pub fn contains(&self, value: &T) -> bool {
-        self.data.contains(value)
-    }
+    // pub fn contains(&self, value: &T) -> bool {
+    //     self.data.contains(value)
+    // }
 
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
+    // pub fn len(&self) -> usize {
+    //     self.data.len()
+    // }
 
-    pub fn is_empty(&self) -> bool {
-        self.data.is_empty()
-    }
+    // pub fn is_empty(&self) -> bool {
+    //     self.data.is_empty()
+    // }
 
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         self.data.iter()
