@@ -9,20 +9,18 @@ mod tasks;
 mod template_data;
 mod utils;
 
-use lru::LruCache;
+use futures::future::join_all;
 use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
-use serde::{Deserialize, Serialize};
-use std::{collections::HashSet, env, num::NonZeroUsize, ops::Deref, sync::Arc};
-use tokio::sync::Mutex;
+use std::{collections::HashSet, env, ops::Deref, sync::Arc};
 use tracing::{error, info, warn};
 use tracing_subscriber::{prelude::*, EnvFilter};
 
 use crate::{
     structs::{
-        Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, Region,
-        ShipLeaderboard, ShipsPara,
+        user_search_history::SearchCache, Banner, ExpectedJs, GuildDefaultRegion, Linked,
+        LittleConstant, Patrons, ShipLeaderboard, ShipsPara,
     },
     tasks::launch_renderer,
     utils::{error_handler, LoadSaveFromJson},
@@ -175,11 +173,14 @@ async fn main() {
             )
             .await;
     }
-
-    let lb = arc_data.leaderboard.lock().await;
-    info!("Saving leaderboard.json");
-    lb.save_json().await;
+    // TODO: use async drop trait?
+    let lb_mg = arc_data.leaderboard.lock().await;
+    lb_mg.save_json().await;
     info!("Saved leaderboard.json");
+
+    let cache_mg = arc_data.cache.lock().await;
+    join_all(cache_mg.users.iter().map(|(_, data)| data.save())).await;
+    info!("Saved users' history cache");
 
     // close renderer
     #[cfg(target_os = "linux")]
@@ -220,8 +221,8 @@ pub struct DataInner {
     wg_api_token: String,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
-    leaderboard: Mutex<ShipLeaderboard>,
-    cache: tokio::sync::Mutex<UserSearchCache>,
+    leaderboard: tokio::sync::Mutex<ShipLeaderboard>,
+    cache: tokio::sync::Mutex<SearchCache>,
 }
 
 impl DataInner {
@@ -236,32 +237,8 @@ impl DataInner {
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json().await),
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
-            leaderboard: Mutex::new(ShipLeaderboard::load_json().await),
-            cache: tokio::sync::Mutex::new(UserSearchCache::new()),
-        }
-    }
-}
-
-/// users searching history in auto_complete::player()
-struct UserSearchCache {
-    cache: LruCache<UserId, PerUserSearchCache>,
-}
-impl UserSearchCache {
-    pub fn new() -> Self {
-        UserSearchCache {
-            cache: LruCache::new(NonZeroUsize::new(400).unwrap()),
-        }
-    }
-}
-
-/// the `String` is players ign
-struct PerUserSearchCache {
-    history: LruCache<(Region, String), ()>,
-}
-impl PerUserSearchCache {
-    pub fn new() -> Self {
-        PerUserSearchCache {
-            history: LruCache::new(NonZeroUsize::new(8).unwrap()),
+            leaderboard: tokio::sync::Mutex::new(ShipLeaderboard::load_json().await),
+            cache: tokio::sync::Mutex::new(SearchCache::new()),
         }
     }
 }

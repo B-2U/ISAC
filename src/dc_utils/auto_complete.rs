@@ -25,15 +25,13 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
         1 => Some((Region::Asia, input[0])),
         _ => Some((Region::parse(input[0]).unwrap_or_default(), input[1])),
     }) else {
-        return match ctx.data().cache.lock().await.cache.get(&ctx.author().id) {
+        return match ctx.data().cache.lock().await.get(&ctx.author().id).await {
             Some(cache) => cache
-                .history
+                .auto_complete_player
                 .iter()
-                .map(|(k, _)| {
-                    AutocompleteChoice::new(
-                        format!("{}  ({})", k.1, k.0),
-                        format!("{}  ({})", k.1, k.0),
-                    )
+                .map(|(region, ign)| {
+                    let s = format!("{}  ({})", ign.clone(), region);
+                    AutocompleteChoice::new(s.clone(), s)
                 })
                 .collect(),
             None => [

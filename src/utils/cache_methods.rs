@@ -6,9 +6,9 @@ use parking_lot::Mutex;
 
 use crate::{
     dc_utils::auto_complete::AutoCompleteClan,
-    structs::{PartialClan, PartialPlayer, Region},
+    structs::{user_search_history::UserSearchCache, PartialClan, PartialPlayer, Region},
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, PerUserSearchCache,
+    Context,
 };
 
 /// searching player with the ign, with LRU cache
@@ -83,11 +83,11 @@ pub async fn clan(
     }
 }
 
-/// save the result into ctx::cache
+/// save the result into ctx::cache::auto_complete_player
 pub async fn save_user_search_history(ctx: &Context<'_>, region: Region, ign: String) {
     let mut mg = ctx.data().cache.lock().await;
-    mg.cache
-        .get_or_insert_mut(ctx.author().id, || PerUserSearchCache::new())
-        .history
-        .put((region, ign), ());
+    mg.get_or_insert_mut(&ctx.author().id, || UserSearchCache::new(ctx.author().id))
+        .await
+        .auto_complete_player
+        .put((region, ign));
 }
