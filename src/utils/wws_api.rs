@@ -400,7 +400,7 @@ impl Display for VortexPlayerSearch {
 
 impl VortexPlayerSearch {
     /// for turning it into [`AutocompleteChoice`]
-    pub fn to_autocomplete_player(self, region: Region) -> AutocompletePlayer {
+    pub fn into_autocomplete_player(self, region: Region) -> AutocompletePlayer {
         AutocompletePlayer {
             region,
             ign: self.name,

@@ -237,15 +237,15 @@ impl FromStr for AutocompletePlayer {
     }
 }
 
-impl Into<String> for AutocompletePlayer {
-    fn into(self) -> String {
-        format!("{}  ({})", self.ign, self.region)
+impl From<AutocompletePlayer> for String {
+    fn from(val: AutocompletePlayer) -> Self {
+        format!("{}  ({})", val.ign, val.region)
     }
 }
 
-impl Into<Value> for AutocompletePlayer {
-    fn into(self) -> Value {
-        Value::String(self.into())
+impl From<AutocompletePlayer> for Value {
+    fn from(val: AutocompletePlayer) -> Self {
+        Value::String(val.into())
     }
 }
 
