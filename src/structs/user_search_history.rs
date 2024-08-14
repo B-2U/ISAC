@@ -7,7 +7,7 @@ use tokio::io::AsyncWriteExt;
 
 use crate::structs::{lru_vector::LruVector, AutoCompletePlayer};
 
-/// users searching history in auto_complete::player()
+/// users searching history in autocomplete::player()
 /// user's data is saved when getting evicted or bot shutting down
 #[derive(Debug)]
 pub struct SearchCache {
@@ -91,15 +91,15 @@ impl SearchCache {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserSearchCache {
     pub user_id: UserId,
-    pub auto_complete_player: LruVector<AutoCompletePlayer>,
+    pub autocomplete_player: LruVector<AutoCompletePlayer>,
 }
 
 impl UserSearchCache {
     pub fn new(user_id: UserId) -> Self {
-        let auto_complete_player = LruVector::new(15);
+        let autocomplete_player = LruVector::new(15);
         UserSearchCache {
             user_id,
-            auto_complete_player,
+            autocomplete_player,
         }
     }
     /// load the player's recent data, return None if he is not inside

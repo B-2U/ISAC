@@ -206,7 +206,7 @@ impl Default for BannerData {
     }
 }
 
-// a intermediate struct for receiving formatted String from `auto_complete::player()`
+// a intermediate struct for receiving formatted String from `autocomplete::player()`
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct AutoCompletePlayer {
     pub region: Region,

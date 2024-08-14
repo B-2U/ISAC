@@ -17,7 +17,7 @@ use tokio::join;
 
 use crate::{
     dc_utils::{
-        auto_complete::{self},
+        autocomplete::{self},
         Args, ContextAddon, EasyEmbed,
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
@@ -42,14 +42,14 @@ pub fn clan_hybrid() -> poise::Command<Data, Error> {
 pub async fn clan(
     ctx: Context<'_>,
     #[description = "clan's tag or name, default: yourself"]
-    #[autocomplete = "auto_complete::clan"]
+    #[autocomplete = "autocomplete::clan"]
     clan: Option<String>,
     #[description = "specify season of Clan Battle, -1 for the latest season"] season: Option<i32>,
 ) -> Result<(), Error> {
     let api = WowsApi::new(&ctx);
     let partial_clan = if let Some(clan_input) = clan {
-        let auto_complete_clan = parse::parse_region_clan(&clan_input)?;
-        cache_methods::clan(&api, auto_complete_clan).await?
+        let autocomplete_clan = parse::parse_region_clan(&clan_input)?;
+        cache_methods::clan(&api, autocomplete_clan).await?
     } else {
         let author = ctx
             .data()

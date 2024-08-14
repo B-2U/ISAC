@@ -27,7 +27,7 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     }) else {
         return match ctx.data().cache.lock().await.get(&ctx.author().id).await {
             Some(cache) => cache
-                .auto_complete_player
+                .autocomplete_player
                 .iter()
                 .map(|p| AutocompleteChoice::new(p.clone(), p.clone()))
                 .collect(),
@@ -49,8 +49,8 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     candidates
         .into_iter()
         .map(|vortex_p| {
-            let auto_complete_p = vortex_p.to_auto_complete_player(region);
-            AutocompleteChoice::new(auto_complete_p.clone(), auto_complete_p.clone())
+            let autocomplete_p = vortex_p.to_autocomplete_player(region);
+            AutocompleteChoice::new(autocomplete_p.clone(), autocomplete_p.clone())
         })
         .collect()
 }

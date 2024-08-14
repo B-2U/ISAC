@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 
 use crate::{
-    dc_utils::auto_complete::AutoCompleteClan,
+    dc_utils::autocomplete::AutoCompleteClan,
     structs::{ClanTag, Region},
     utils::{IsacError, IsacInfo},
 };

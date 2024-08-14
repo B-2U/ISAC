@@ -3,7 +3,7 @@ use itertools::Itertools;
 use poise::{serenity_prelude::CreateAttachment, CreateReply};
 
 use crate::{
-    dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
     structs::{PlayerSnapshots, Ship},
     template_data::{Render, ServerTopPlayer, ServerTopTemplate},
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
@@ -31,7 +31,7 @@ pub async fn server_top(
     ctx: Context<'_>,
     #[description = "warship's name"]
     #[rename = "warship"]
-    #[autocomplete = "auto_complete::ship"]
+    #[autocomplete = "autocomplete::ship"]
     ship_name: String,
 ) -> Result<(), Error> {
     let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();

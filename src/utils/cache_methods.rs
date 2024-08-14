@@ -5,8 +5,11 @@ use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
 use crate::{
-    dc_utils::auto_complete::AutoCompleteClan,
-    structs::{user_search_history::UserSearchCache, PartialClan, PartialPlayer, Region},
+    dc_utils::autocomplete::AutoCompleteClan,
+    structs::{
+        user_search_history::UserSearchCache, AutoCompletePlayer, PartialClan, PartialPlayer,
+        Region,
+    },
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context,
 };
@@ -53,41 +56,39 @@ pub async fn player(
 /// [`IsacInfo::ClanNotFound`]
 pub async fn clan(
     api: &WowsApi<'_>,
-    auto_complete_clan: AutoCompleteClan,
+    autocomplete_clan: AutoCompleteClan,
 ) -> Result<PartialClan, IsacError> {
     static CACHE: Lazy<Mutex<LruCache<AutoCompleteClan, PartialClan>>> =
         Lazy::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(30).unwrap())));
 
     let cache_result = {
         let mut lock = CACHE.lock();
-        lock.get(&auto_complete_clan).cloned()
+        lock.get(&autocomplete_clan).cloned()
     };
     if let Some(cached_clan) = cache_result {
         Ok(cached_clan)
     } else {
         let mut candidates = api
-            .clans(&auto_complete_clan.region, &auto_complete_clan.tag)
+            .clans(&autocomplete_clan.region, &autocomplete_clan.tag)
             .await?;
         let first_candidate = match candidates.is_empty() {
             true => Err(IsacInfo::ClanNotFound {
-                clan: auto_complete_clan.tag.to_string(),
-                region: auto_complete_clan.region,
+                clan: autocomplete_clan.tag.to_string(),
+                region: autocomplete_clan.region,
             })?,
             false => candidates.swap_remove(0),
         };
-        CACHE
-            .lock()
-            .put(auto_complete_clan, first_candidate.clone());
+        CACHE.lock().put(autocomplete_clan, first_candidate.clone());
 
         Ok(first_candidate)
     }
 }
 
-/// save the result into ctx::cache::auto_complete_player
+/// save the result into ctx::cache::autocomplete_player
 pub async fn save_user_search_history(ctx: &Context<'_>, region: Region, ign: String) {
     let mut mg = ctx.data().cache.lock().await;
     mg.get_or_insert_mut(&ctx.author().id, || UserSearchCache::new(ctx.author().id))
         .await
-        .auto_complete_player
-        .put((region, ign));
+        .autocomplete_player
+        .put(AutoCompletePlayer { region, ign });
 }

@@ -11,7 +11,7 @@ use poise::{
 };
 
 use crate::{
-    dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
     structs::{
         AutoCompletePlayer, Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic,
         StatisticValueType,
@@ -38,19 +38,19 @@ pub async fn wws(
     ctx: Context<'_>,
     #[description = "specific warship, default: account's overall stats"]
     #[rename = "warship"]
-    #[autocomplete = "auto_complete::ship"]
+    #[autocomplete = "autocomplete::ship"]
     ship_name: Option<String>,
     #[description = "player's ign, default: yourself"]
-    #[autocomplete = "auto_complete::player"]
+    #[autocomplete = "autocomplete::player"]
     player: Option<AutoCompletePlayer>,
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(auto_complete_player) = player {
-        auto_complete_player.save_user_search_history(&ctx).await;
-        auto_complete_player
+    let partial_player = if let Some(autocomplete_player) = player {
+        autocomplete_player.save_user_search_history(&ctx).await;
+        autocomplete_player
             .fetch_partial_player(&WowsApi::new(&ctx))
             .await?
     } else {

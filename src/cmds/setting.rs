@@ -1,10 +1,7 @@
 use crate::{
-    dc_utils::{auto_complete, UserAddon},
-    structs::Region,
-    utils::{
-        cache_methods, parse::parse_region_ign, wws_api::WowsApi, IsacError, IsacInfo,
-        LoadSaveFromJson,
-    },
+    dc_utils::{autocomplete, UserAddon},
+    structs::{AutoCompletePlayer, Region},
+    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
 };
 use poise;
@@ -21,15 +18,12 @@ pub fn link_hybrid() -> poise::Command<Data, Error> {
 #[poise::command(slash_command)]
 pub async fn link(
     ctx: Context<'_>,
-    #[autocomplete = "auto_complete::player"]
+    #[autocomplete = "autocomplete::player"]
     #[description = "your game server & ign"]
-    player: String, // the String is a Serialized PartialPlayer struct
+    player: AutoCompletePlayer, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
     let api = WowsApi::new(&ctx);
-    let partial_player = {
-        let (region, ign) = parse_region_ign(&player)?;
-        cache_methods::player(&api, &region, &ign).await?
-    };
+    let partial_player = { player.fetch_partial_player(&api).await? };
     let player = partial_player.full_player(&api).await?;
     {
         let mut guard = ctx.data().link.write().await;

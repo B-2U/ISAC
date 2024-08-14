@@ -9,7 +9,7 @@ use regex::Regex;
 use scraper::{node::Element, ElementRef, Html, Selector};
 
 use crate::{
-    dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
+    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
     structs::{
         color::ColorStats, Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
     },
@@ -40,7 +40,7 @@ pub async fn top(
     ctx: Context<'_>,
     #[description = "warship's name"]
     #[rename = "warship"]
-    #[autocomplete = "auto_complete::ship"]
+    #[autocomplete = "autocomplete::ship"]
     ship_name: String,
     #[description = "specific region, default: depend on server's default"] region: Option<Region>,
 ) -> Result<(), Error> {
