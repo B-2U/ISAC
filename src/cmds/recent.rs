@@ -13,13 +13,13 @@ use poise::{
 use crate::{
     dc_utils::{auto_complete, Args, ContextAddon, UserAddon},
     structs::{
-        Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType, Ship, ShipId,
-        ShipModeStatsPair, ShipStatsCollection,
+        AutoCompletePlayer, Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType,
+        Ship, ShipId, ShipModeStatsPair, ShipStatsCollection,
     },
     template_data::{
         RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
     },
-    utils::{cache_methods, parse::parse_region_ign, wws_api::WowsApi, IsacError, IsacInfo},
+    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Context, Data, Error,
 };
 
@@ -41,7 +41,7 @@ pub async fn recent(
     #[description = "last 1~30 (90 for patreons) days of stats, default: 1"] days: Option<u64>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "auto_complete::player"]
-    player: Option<String>, // the String is a Serialized PartialPlayer struct
+    player: Option<AutoCompletePlayer>, // the String is a Serialized PartialPlayer struct
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
@@ -51,10 +51,11 @@ pub async fn recent(
     ship_name: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(player_input) = player {
-        let (region, ign) = parse_region_ign(&player_input)?;
-        cache_methods::save_user_search_history(&ctx, region, ign.clone()).await;
-        cache_methods::player(&WowsApi::new(&ctx), &region, &ign).await?
+    let partial_player = if let Some(auto_complete_player) = player {
+        auto_complete_player.save_user_search_history(&ctx).await;
+        auto_complete_player
+            .fetch_partial_player(&WowsApi::new(&ctx))
+            .await?
     } else {
         let user = if let Some(discord_user_str) = discord_user {
             User::convert_strict(

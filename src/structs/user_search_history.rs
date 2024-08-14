@@ -5,7 +5,7 @@ use poise::serenity_prelude::UserId;
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
 
-use crate::structs::{lru_vector::LruVector, Region};
+use crate::structs::{lru_vector::LruVector, AutoCompletePlayer};
 
 /// users searching history in auto_complete::player()
 /// user's data is saved when getting evicted or bot shutting down
@@ -91,7 +91,7 @@ impl SearchCache {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserSearchCache {
     pub user_id: UserId,
-    pub auto_complete_player: LruVector<(Region, String)>,
+    pub auto_complete_player: LruVector<AutoCompletePlayer>,
 }
 
 impl UserSearchCache {

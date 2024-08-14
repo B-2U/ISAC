@@ -3,16 +3,19 @@ use crate::{
         api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
         ShipStatsCollection,
     },
-    utils::{wws_api::WowsApi, IsacError, LoadSaveFromJson},
+    utils::{cache_methods, wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context,
 };
 
+use once_cell::sync::Lazy;
 use poise::serenity_prelude::UserId;
+use regex::Regex;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use serde_with::{serde_as, DefaultOnError};
 
-use std::{collections::HashMap, ops::Deref};
+use std::{collections::HashMap, ops::Deref, str::FromStr};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, Eq, PartialEq, Hash)]
 pub struct PartialPlayer {
@@ -200,5 +203,61 @@ impl Default for BannerData {
             name: "".to_string(),
             discord_id: UserId::new(0),
         }
+    }
+}
+
+// a intermediate struct for receiving formatted String from `auto_complete::player()`
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AutoCompletePlayer {
+    pub region: Region,
+    pub ign: String,
+}
+
+impl FromStr for AutoCompletePlayer {
+    type Err = IsacError;
+
+    /// parsing region and ign from str, for example: `[ASIA] B2U` or `ASIA B2U`
+    /// # Error
+    /// [`IsacInfo::GeneralError`] if received a malformed input
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"(\w+)\s+\((\w+)\)").unwrap());
+        let (_, [ign, region_str]) = RE
+            .captures(input)
+            .ok_or(IsacInfo::GeneralError {
+                msg: "invalid input!".to_string(),
+            })?
+            .extract();
+        let region = Region::parse(region_str).ok_or(IsacInfo::GeneralError {
+            msg: format!("`{region_str}` is not a valid region"),
+        })?;
+        Ok(Self {
+            region,
+            ign: ign.to_string(),
+        })
+    }
+}
+
+impl Into<String> for AutoCompletePlayer {
+    fn into(self) -> String {
+        format!("{}  ({})", self.ign, self.region)
+    }
+}
+
+impl Into<Value> for AutoCompletePlayer {
+    fn into(self) -> Value {
+        Value::String(self.into())
+    }
+}
+
+impl AutoCompletePlayer {
+    /// fetch the PartialPlayer
+    pub async fn fetch_partial_player(
+        &self,
+        api: &WowsApi<'_>,
+    ) -> Result<PartialPlayer, IsacError> {
+        cache_methods::player(api, &self.region, &self.ign).await
+    }
+    pub async fn save_user_search_history(&self, ctx: &Context<'_>) {
+        cache_methods::save_user_search_history(ctx, self.region, self.ign.clone()).await
     }
 }

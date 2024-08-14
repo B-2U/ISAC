@@ -29,10 +29,7 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
             Some(cache) => cache
                 .auto_complete_player
                 .iter()
-                .map(|(region, ign)| {
-                    let s = format!("{}  ({})", ign.clone(), region);
-                    AutocompleteChoice::new(s.clone(), s)
-                })
+                .map(|p| AutocompleteChoice::new(p.clone(), p.clone()))
                 .collect(),
             None => [
                 "Usage: [region] <ign>",
@@ -52,8 +49,8 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
     candidates
         .into_iter()
         .map(|vortex_p| {
-            let output = format!("{}  ({})", vortex_p.name, region);
-            AutocompleteChoice::new(output.clone(), output)
+            let auto_complete_p = vortex_p.to_auto_complete_player(region);
+            AutocompleteChoice::new(auto_complete_p.clone(), auto_complete_p.clone())
         })
         .collect()
 }

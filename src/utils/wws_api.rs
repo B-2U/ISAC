@@ -6,10 +6,10 @@ use strum::IntoEnumIterator;
 
 use crate::{
     structs::{
-        api, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes, ClanTag, Mode,
-        PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
-        PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara, VortexPlayer,
-        VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
+        api, AutoCompletePlayer, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes,
+        ClanMemberAPIRes, ClanTag, Mode, PartialClan, PartialPlayer, Player, PlayerClanAPIRes,
+        PlayerClanBattle, PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara,
+        VortexPlayer, VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
     },
     Context, Data,
 };
@@ -395,6 +395,16 @@ pub struct VortexPlayerSearch {
 impl Display for VortexPlayerSearch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", &self.name.replace('_', r"\_"))
+    }
+}
+
+impl VortexPlayerSearch {
+    /// for turning it into [`AutocompleteChoice`]
+    pub fn to_auto_complete_player(self, region: Region) -> AutoCompletePlayer {
+        AutoCompletePlayer {
+            region,
+            ign: self.name,
+        }
     }
 }
 
