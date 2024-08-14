@@ -6,7 +6,7 @@ use strum::IntoEnumIterator;
 
 use crate::{
     structs::{
-        api, AutoCompletePlayer, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes,
+        api, AutocompletePlayer, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes,
         ClanMemberAPIRes, ClanTag, Mode, PartialClan, PartialPlayer, Player, PlayerClanAPIRes,
         PlayerClanBattle, PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara,
         VortexPlayer, VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
@@ -400,8 +400,8 @@ impl Display for VortexPlayerSearch {
 
 impl VortexPlayerSearch {
     /// for turning it into [`AutocompleteChoice`]
-    pub fn to_autocomplete_player(self, region: Region) -> AutoCompletePlayer {
-        AutoCompletePlayer {
+    pub fn to_autocomplete_player(self, region: Region) -> AutocompletePlayer {
+        AutocompletePlayer {
             region,
             ign: self.name,
         }

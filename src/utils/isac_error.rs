@@ -77,7 +77,7 @@ pub enum IsacInfo {
     NeedPremium {
         msg: String,
     },
-    AutoCompleteError,
+    AutocompleteError,
 
     EmbedPermission,
 }
@@ -127,7 +127,7 @@ impl Display for IsacInfo {
                     mode.upper()
                 )
             }
-            IsacInfo::AutoCompleteError => {
+            IsacInfo::AutocompleteError => {
                 "❌ please select an option in the results!".to_string()
             }
             IsacInfo::ClanNoBattle { clan, season } => format!(

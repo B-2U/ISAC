@@ -13,7 +13,7 @@ use poise::{
 use crate::{
     dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
     structs::{
-        AutoCompletePlayer, Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType,
+        AutocompletePlayer, Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType,
         Ship, ShipId, ShipModeStatsPair, ShipStatsCollection,
     },
     template_data::{
@@ -41,7 +41,7 @@ pub async fn recent(
     #[description = "last 1~30 (90 for patreons) days of stats, default: 1"] days: Option<u64>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "autocomplete::player"]
-    player: Option<AutoCompletePlayer>, // the String is a Serialized PartialPlayer struct
+    player: Option<AutocompletePlayer>, // the String is a Serialized PartialPlayer struct
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,

@@ -85,12 +85,12 @@ pub async fn clan(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
 
 /// a temp struct for passing autocomplete result back due to the value size limit (100), can be removed if there's a better way lik command data()
 #[derive(Serialize, Deserialize, Debug, Hash, PartialEq, Eq)]
-pub struct AutoCompleteClan {
+pub struct AutocompleteClan {
     pub tag: ClanTag,
     pub region: Region,
 }
 
-impl From<PartialClan> for AutoCompleteClan {
+impl From<PartialClan> for AutocompleteClan {
     fn from(v: PartialClan) -> Self {
         Self {
             tag: v.tag,

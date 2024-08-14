@@ -1,6 +1,6 @@
 use crate::{
     dc_utils::{autocomplete, UserAddon},
-    structs::{AutoCompletePlayer, Region},
+    structs::{AutocompletePlayer, Region},
     utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
 };
@@ -20,7 +20,7 @@ pub async fn link(
     ctx: Context<'_>,
     #[autocomplete = "autocomplete::player"]
     #[description = "your game server & ign"]
-    player: AutoCompletePlayer, // the String is a Serialized PartialPlayer struct
+    player: AutocompletePlayer, // the String is a Serialized PartialPlayer struct
 ) -> Result<(), Error> {
     let api = WowsApi::new(&ctx);
     let partial_player = { player.fetch_partial_player(&api).await? };

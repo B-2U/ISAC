@@ -208,12 +208,12 @@ impl Default for BannerData {
 
 // a intermediate struct for receiving formatted String from `autocomplete::player()`
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct AutoCompletePlayer {
+pub struct AutocompletePlayer {
     pub region: Region,
     pub ign: String,
 }
 
-impl FromStr for AutoCompletePlayer {
+impl FromStr for AutocompletePlayer {
     type Err = IsacError;
 
     /// parsing region and ign from str, for example: `[ASIA] B2U` or `ASIA B2U`
@@ -237,19 +237,19 @@ impl FromStr for AutoCompletePlayer {
     }
 }
 
-impl Into<String> for AutoCompletePlayer {
+impl Into<String> for AutocompletePlayer {
     fn into(self) -> String {
         format!("{}  ({})", self.ign, self.region)
     }
 }
 
-impl Into<Value> for AutoCompletePlayer {
+impl Into<Value> for AutocompletePlayer {
     fn into(self) -> Value {
         Value::String(self.into())
     }
 }
 
-impl AutoCompletePlayer {
+impl AutocompletePlayer {
     /// fetch the PartialPlayer
     pub async fn fetch_partial_player(
         &self,

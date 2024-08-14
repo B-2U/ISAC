@@ -5,9 +5,9 @@ use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
 use crate::{
-    dc_utils::autocomplete::AutoCompleteClan,
+    dc_utils::autocomplete::AutocompleteClan,
     structs::{
-        user_search_history::UserSearchCache, AutoCompletePlayer, PartialClan, PartialPlayer,
+        user_search_history::UserSearchCache, AutocompletePlayer, PartialClan, PartialPlayer,
         Region,
     },
     utils::{wws_api::WowsApi, IsacError, IsacInfo},
@@ -56,9 +56,9 @@ pub async fn player(
 /// [`IsacInfo::ClanNotFound`]
 pub async fn clan(
     api: &WowsApi<'_>,
-    autocomplete_clan: AutoCompleteClan,
+    autocomplete_clan: AutocompleteClan,
 ) -> Result<PartialClan, IsacError> {
-    static CACHE: Lazy<Mutex<LruCache<AutoCompleteClan, PartialClan>>> =
+    static CACHE: Lazy<Mutex<LruCache<AutocompleteClan, PartialClan>>> =
         Lazy::new(|| Mutex::new(LruCache::new(NonZeroUsize::new(30).unwrap())));
 
     let cache_result = {
@@ -90,5 +90,5 @@ pub async fn save_user_search_history(ctx: &Context<'_>, region: Region, ign: St
     mg.get_or_insert_mut(&ctx.author().id, || UserSearchCache::new(ctx.author().id))
         .await
         .autocomplete_player
-        .put(AutoCompletePlayer { region, ign });
+        .put(AutocompletePlayer { region, ign });
 }

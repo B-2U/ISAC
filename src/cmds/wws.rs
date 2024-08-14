@@ -13,7 +13,7 @@ use poise::{
 use crate::{
     dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
     structs::{
-        AutoCompletePlayer, Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic,
+        AutocompletePlayer, Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic,
         StatisticValueType,
     },
     template_data::{
@@ -42,7 +42,7 @@ pub async fn wws(
     ship_name: Option<String>,
     #[description = "player's ign, default: yourself"]
     #[autocomplete = "autocomplete::player"]
-    player: Option<AutoCompletePlayer>,
+    player: Option<AutocompletePlayer>,
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
