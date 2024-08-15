@@ -31,10 +31,7 @@ pub async fn clan_season(ctx: Context<'_>, season: u32) -> Result<(), Error> {
 pub async fn update_src(ctx: Context<'_>) -> Result<(), Error> {
     let _typing = ctx.typing().await;
     let api = WowsApi::new(&ctx);
-    if let Ok(res) = api.encyclopedia_vehicles().await {
-        res.save_json().await;
-        *ctx.data().ships.write() = res;
-    }
+
     let res = api.encyclopedia_vehicles().await?;
     res.save_json().await;
     *ctx.data().ships.write() = res;
