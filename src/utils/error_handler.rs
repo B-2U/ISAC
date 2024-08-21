@@ -38,11 +38,17 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
                 .await;
         }
         poise::FrameworkError::ArgumentParse {
-            error: _,
+            error,
             input: _,
             ctx,
             ..
-        } => isac_err_handler(&ctx, &IsacHelp::LackOfArguments.into()).await,
+        } => {
+            if let Some(isac_err) = error.downcast_ref::<IsacError>() {
+                isac_err_handler(&ctx, isac_err).await;
+            } else {
+                isac_err_handler(&ctx, &IsacHelp::LackOfArguments.into()).await;
+            }
+        }
         // make the error become `debug` from `warning`
         poise::FrameworkError::UnknownCommand {
             ctx: _,
