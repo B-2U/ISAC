@@ -32,13 +32,13 @@ pub async fn player(ctx: Context<'_>, input: &str) -> Vec<AutocompleteChoice> {
                 .map(|p| AutocompleteChoice::new(p.clone(), p.clone()))
                 .collect(),
             None => [
-                "Usage: [region] <ign>",
-                "Example: B2U",
-                "Example: asia B2U",
-                "Example: eu CVptsd",
+                ["Usage: [region] <ign>", "Usage: [region] <ign>"],
+                ["Example: B2U", "B2U (ASIA)"],
+                ["Example: asia B2U", "B2U (ASIA)"],
+                ["Example: eu CVptsd", "CVptsd (EU)"],
             ]
             .into_iter()
-            .map(|name| AutocompleteChoice::new(name.to_string(), name.to_string()))
+            .map(|[display, input]| AutocompleteChoice::new(display.to_string(), input.to_string()))
             .collect(),
         };
     };
