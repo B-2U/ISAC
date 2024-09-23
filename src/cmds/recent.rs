@@ -35,7 +35,7 @@ pub fn recent_hybrid() -> poise::Command<Data, Error> {
 }
 
 /// Last X days stats
-#[poise::command(slash_command, user_cooldown = 5)]
+#[poise::command(slash_command, user_cooldown = 3)]
 pub async fn recent(
     ctx: Context<'_>,
     #[description = "last 1~30 (90 for patreons) days of stats, default: 1"] days: Option<u64>,

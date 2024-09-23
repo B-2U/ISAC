@@ -19,7 +19,7 @@ pub fn server_top_hybrid() -> poise::Command<Data, Error> {
     }
 }
 
-#[poise::command(prefix_command, aliases("stop"))]
+#[poise::command(prefix_command, aliases("stop"), user_cooldown = 7)]
 pub async fn server_top_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let ship = args.parse_ship(&ctx).await?;
     func_server_top(ctx, ship).await
