@@ -91,6 +91,10 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         {
             Some((p_index, p))
         }
+        // if the author is not in the same region as the request, skip it
+        else if author_p.region != region {
+            None
+        }
         // author not in the leaderboard, try to fetch his stats
         else if let Some(stats) =
             author_p
@@ -145,19 +149,17 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         // not linked
         None
     };
-    let truncate_len = match author_rank {
-        Some((index, _)) => {
+    let truncate_len = {
+        let mut default_truncate_len: usize = 15;
+        if let Some((index, _)) = author_rank {
             // color author
             lb_players[index].color = "#ffcc66".to_string();
-            match index >= 15 {
-                true => {
-                    lb_players.swap(15, index);
-                    16 // author in top 100
-                }
-                false => 15, // author in top 15
-            }
+            if index >= 15 {
+                // add one more row in the leaderboard for author
+                default_truncate_len += 1;
+            };
         }
-        None => 15, // author not in leaderboard
+        default_truncate_len
     };
 
     lb_players.truncate(truncate_len);
