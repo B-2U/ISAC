@@ -62,7 +62,28 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     let mut lb_players = match lb_players {
         Some(p) => p,
         None => {
-            let lb_players = fetch_ship_leaderboard(&ctx, &region, &ship).await?;
+            let lb_players = match fetch_ship_leaderboard(&ctx, &region, &ship).await {
+                Ok(lb_players) => lb_players,
+                // parsing failed caused by cloudflare, give user the button to wows number
+                Err(err) => {
+                    let _msg = ctx
+                        .send(
+                            CreateReply::default()
+                                .content(err.to_string())
+                                .components(vec![CreateActionRow::Buttons(vec![
+                                    CreateButton::new_link(
+                                        region
+                                            .number_url(format!("/ship/{},/", ship.ship_id))
+                                            .to_string(),
+                                    )
+                                    .label("Stats & Numbers"),
+                                ])])
+                                .reply(true),
+                        )
+                        .await?;
+                    return Ok(());
+                }
+            };
             let mut lb_cache = ctx.data().leaderboard.lock().await;
 
             lb_cache.insert(
