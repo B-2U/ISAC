@@ -29,11 +29,7 @@ impl Display for PartialClan {
 impl PartialClan {
     /// https://asia.wows-numbers.com/clan/2000007634,Dont-Cap-Kill-All/
     pub fn wows_number_url(&self) -> Url {
-        self.region.number_url(format!(
-            "/clan/{},{}/",
-            self.id,
-            self.name.replace(' ', "-")
-        ))
+        self.region.number_url(format!("/clan/{},/", self.id,))
     }
     // TODO: make tests for these urls availability (returned status)
     /// https://clans.worldofwarships.asia/clan-profile/2000017937
