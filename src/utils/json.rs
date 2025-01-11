@@ -8,7 +8,6 @@ use tracing::warn;
 ///
 /// ## Panic
 /// panic when failing to load from the path
-
 pub trait LoadSaveFromJson {
     const PATH: &'static str;
     async fn load_json() -> Self
