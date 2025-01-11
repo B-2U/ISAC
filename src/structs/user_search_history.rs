@@ -38,7 +38,7 @@ impl SearchCache {
         self.users.get(user_id)
     }
 
-    /// search in cache first then disk, insert if no cache
+    // /// search in cache first then disk, insert if no cache
     // pub async fn get_or_insert<F>(&mut self, user_id: &UserId, f: F) -> &UserSearchCache
     // where
     //     F: FnOnce() -> UserSearchCache,

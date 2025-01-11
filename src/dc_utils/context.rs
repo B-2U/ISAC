@@ -8,7 +8,6 @@ pub trait ContextAddon {
 }
 
 /// a trait for `reply`
-
 impl ContextAddon for Context<'_> {
     async fn typing(&self) -> MyTyping {
         match self {
