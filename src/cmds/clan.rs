@@ -61,7 +61,7 @@ pub async fn clan(
         author
             .clan(&api)
             .await
-            .ok_or(IsacInfo::UserNoClan { user_name: None })?
+            .ok_or(IsacError::Info(IsacInfo::UserNoClan { user_name: None }))?
     };
 
     if let Some(season) = season {
