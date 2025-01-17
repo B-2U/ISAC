@@ -102,7 +102,7 @@ impl UserSearchCache {
             autocomplete_player,
         }
     }
-    /// load the player's recent data, return None if he is not inside
+    /// load the player's recent data, return None if he is not in the database
     pub async fn load(user_id: &UserId) -> Option<Self> {
         let path = Self::get_path(user_id);
         // std::fs::File::open() is as fast as path.exists()
