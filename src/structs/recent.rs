@@ -65,8 +65,8 @@ impl PlayerSnapshots {
         // std::fs::File::open() is as fast as path.exists()
         if let Ok(file) = std::fs::File::open(&path) {
             let mut data: PlayerSnapshots = tokio::task::spawn_blocking(move || {
-                let reader = std::io::BufReader::new(file);
-                serde_json::from_reader(reader)
+                let json_str = std::io::read_to_string(file).unwrap();
+                serde_json::from_str(&json_str)
             })
             .await
             .unwrap()

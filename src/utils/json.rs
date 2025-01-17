@@ -16,8 +16,8 @@ pub trait LoadSaveFromJson {
     {
         tokio::task::spawn_blocking(move || {
             if let Ok(file) = std::fs::File::open(Self::PATH) {
-                let reader = std::io::BufReader::new(file);
-                serde_json::from_reader(reader).unwrap_or_else(|err| {
+                let json_str = std::io::read_to_string(file).unwrap();
+                serde_json::from_str(&json_str).unwrap_or_else(|err| {
                     panic!(
                         "Failed to deserialize file: {:#?} to struct: {}\n Err: {err}",
                         Self::PATH,
@@ -43,8 +43,8 @@ pub trait LoadSaveFromJson {
         Self: DeserializeOwned + Serialize + Default,
     {
         if let Ok(file) = std::fs::File::open(Self::PATH) {
-            let reader = std::io::BufReader::new(file);
-            serde_json::from_reader(reader).unwrap_or_else(|err| {
+            let json_str = std::io::read_to_string(file).unwrap();
+            serde_json::from_str(&json_str).unwrap_or_else(|err| {
                 panic!(
                     "Failed to deserialize file: {:?} to struct: {}\n Err: {err}",
                     Self::PATH,
