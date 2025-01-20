@@ -10,7 +10,7 @@ use poise::{
 };
 
 use crate::{
-    utils::{self, IsacError, IsacHelp},
+    utils::{IsacError, IsacHelp},
     Context, Data, Error,
 };
 
@@ -102,12 +102,7 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
 pub async fn isac_err_handler(ctx: &Context<'_>, error: &IsacError) {
     match error {
         IsacError::Help(help) => {
-            let msg = match help {
-                utils::IsacHelp::LackOfArguments => {
-                    "Click the button to check commands' usage and examples".to_string()
-                }
-            };
-            isac_get_help(ctx, Some(msg.as_ref())).await;
+            isac_get_help(ctx, Some(help.to_string().as_str())).await;
         }
         IsacError::Info(info) => {
             let _r = ctx

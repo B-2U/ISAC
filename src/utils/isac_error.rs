@@ -7,9 +7,9 @@ use crate::{
 
 #[derive(Debug, thiserror::Error)]
 pub enum IsacError {
-    #[error("IsacError: {0}")]
+    #[error("IsacHelp: {0}")]
     Help(#[from] IsacHelp),
-    #[error("IsacError: {0}")]
+    #[error("IsacInfo: {0}")]
     Info(#[from] IsacInfo),
     #[error("IsacError: Cancelled")]
     Cancelled,
@@ -17,8 +17,9 @@ pub enum IsacError {
     UnknownError(#[from] Error),
 }
 
-#[derive(Debug, strum::Display, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum IsacHelp {
+    #[error("Click the button to check commands' usage and examples")]
     LackOfArguments,
 }
 #[derive(Debug, thiserror::Error)]
@@ -87,7 +88,7 @@ impl Display for IsacInfo {
         let msg = match self {
             IsacInfo::UserNotLinked { user_name } => match user_name.as_ref() {
                 Some(user_name) => {
-                    format!("**{user_name}** haven't linked to any wows account yet")
+                    format!("**{user_name}** hasn't linked to any wows account yet")
                 }
                 None => "You haven't linked your account yet.\nEnter `/link`".to_string(),
             },
