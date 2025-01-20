@@ -94,8 +94,6 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                     last_updated_at: timestamp.as_secs(),
                 },
             );
-            // TODO: disable saving temperally, need to fix it
-            // lb_cache.save_json_sync();
             lb_players
         }
     };
