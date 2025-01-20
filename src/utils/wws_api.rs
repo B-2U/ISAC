@@ -126,7 +126,8 @@ impl<'a> WowsApi<'a> {
             .await
             .unwrap();
 
-        res.try_into()
+        res.status.error_for_status()?;
+        Ok(res.data)
     }
     /// searching clan by its name or tag, It will never be a empty vec
     pub async fn clans(
@@ -405,17 +406,6 @@ impl VortexPlayerSearch {
             region,
             ign: self.name,
         }
-    }
-}
-
-// QA better way than impl to a Vec<>?
-impl TryFrom<VortexPlayerSearchAPIRes> for Vec<VortexPlayerSearch> {
-    type Error = IsacError;
-
-    fn try_from(res: VortexPlayerSearchAPIRes) -> Result<Self, Self::Error> {
-        res.status.error_for_status()?;
-
-        Ok(res.data)
     }
 }
 
