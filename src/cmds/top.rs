@@ -142,7 +142,6 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                 winrate: stats.winrate,
                 frags: stats.frags,
                 dmg: stats.dmg,
-                planes: stats.planes,
             };
             // if author in top 100, push him in, sort and rank
             if author_ship.pr.value > lb_players.last().unwrap().pr.value {
@@ -331,7 +330,6 @@ pub async fn fetch_ship_leaderboard(
             winrate: get_color_value(values[4]),
             frags: get_color_value(values[5]),
             dmg: get_color_value(values[7]),
-            planes: get_color_value(values[11]),
         };
         leader_board.push(player);
         // player.insert("rank".to_string(), values[0].text().collect::<String>());

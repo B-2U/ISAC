@@ -59,5 +59,5 @@ pub struct ShipLeaderboardPlayer {
     pub winrate: StatisticValue,
     pub frags: StatisticValue,
     pub dmg: StatisticValue,
-    pub planes: StatisticValue,
+    // pub planes: StatisticValue, planes got removed from wows number
 }
