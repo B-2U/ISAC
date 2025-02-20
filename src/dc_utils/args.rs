@@ -3,18 +3,18 @@ use std::{fmt::Write, str::FromStr, time::Duration};
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use poise::{
+    CreateReply,
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
         ReactionType, User, UserId,
     },
-    CreateReply,
 };
 use regex::Regex;
 
 use crate::{
-    structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
-    utils::{wws_api::WowsApi, IsacError, IsacHelp, IsacInfo},
     Context,
+    structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
+    utils::{IsacError, IsacHelp, IsacInfo, wws_api::WowsApi},
 };
 
 use super::{EasyEmbed, UserAddon};

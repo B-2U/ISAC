@@ -5,7 +5,7 @@ use poise::serenity_prelude::UserId;
 use serde::{Deserialize, Serialize};
 use tokio::io::AsyncWriteExt;
 
-use crate::structs::{lru_vector::LruVector, AutocompletePlayer};
+use crate::structs::{AutocompletePlayer, lru_vector::LruVector};
 
 /// users searching history in autocomplete::player()
 /// user's data is saved when getting evicted or bot shutting down

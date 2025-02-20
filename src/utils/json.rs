@@ -1,6 +1,6 @@
 use std::{fs, path::Path};
 
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{Serialize, de::DeserializeOwned};
 use tokio::io::AsyncWriteExt;
 use tracing::warn;
 

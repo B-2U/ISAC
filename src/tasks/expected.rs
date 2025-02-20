@@ -4,7 +4,7 @@ use parking_lot::RwLock;
 use reqwest::Client;
 use tracing::log::warn;
 
-use crate::{structs::ExpectedJs, LoadSaveFromJson};
+use crate::{LoadSaveFromJson, structs::ExpectedJs};
 
 pub async fn expected_updater(client: Client, expected_arc: Arc<RwLock<ExpectedJs>>) {
     let mut interval = tokio::time::interval(Duration::from_secs(86400));

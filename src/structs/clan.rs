@@ -1,15 +1,15 @@
 use std::{collections::HashSet, fmt::Display, ops::Deref};
 
-use super::{api, ClanDetail, Region, StatisticValueType};
+use super::{ClanDetail, Region, StatisticValueType, api};
 use crate::{
     template_data::{ClanTemplateSeason, ClanTemplateSeasonValue},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_repr::Deserialize_repr;
-use serde_with::{serde_as, DefaultOnError};
+use serde_with::{DefaultOnError, serde_as};
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, Hash)]
 pub struct PartialClan {

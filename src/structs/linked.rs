@@ -1,4 +1,4 @@
-use crate::{structs::PartialPlayer, LoadSaveFromJson};
+use crate::{LoadSaveFromJson, structs::PartialPlayer};
 
 use poise::serenity_prelude::UserId;
 

@@ -2,9 +2,9 @@ use poise::serenity_prelude::AutocompleteChoice;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    Context,
     structs::{ClanTag, PartialClan, Region},
     utils::wws_api::WowsApi,
-    Context,
 };
 
 pub async fn ship(ctx: Context<'_>, input: &str) -> impl Iterator<Item = AutocompleteChoice> {

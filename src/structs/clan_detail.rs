@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::{api, ClanTag};
+use super::{ClanTag, api};
 use crate::utils::IsacError;
 
 // #[derive(Debug, Deserialize, Serialize)]

@@ -5,13 +5,13 @@ use once_cell::sync::Lazy;
 use parking_lot::Mutex;
 
 use crate::{
+    Context,
     dc_utils::autocomplete::AutocompleteClan,
     structs::{
-        user_search_history::UserSearchCache, AutocompletePlayer, PartialClan, PartialPlayer,
-        Region,
+        AutocompletePlayer, PartialClan, PartialPlayer, Region,
+        user_search_history::UserSearchCache,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 /// searching player with the ign, with LRU cache

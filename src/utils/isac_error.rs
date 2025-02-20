@@ -1,8 +1,8 @@
 use std::fmt::{self, Display};
 
 use crate::{
-    structs::{Mode, PartialClan, Region},
     Error,
+    structs::{Mode, PartialClan, Region},
 };
 
 #[derive(Debug, thiserror::Error)]

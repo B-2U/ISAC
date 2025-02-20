@@ -2,16 +2,17 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use itertools::Itertools;
 use poise::{
+    CreateReply,
     serenity_prelude::{
         ComponentInteractionDataKind, CreateActionRow, CreateAttachment, CreateInteractionResponse,
         CreateInteractionResponseMessage, CreateSelectMenu, CreateSelectMenuOption,
         EditAttachments, EditMessage, Message, User,
     },
-    CreateReply,
 };
 
 use crate::{
-    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
+    Context, Data, Error,
+    dc_utils::{Args, ContextAddon, UserAddon, autocomplete},
     structs::{
         AutocompletePlayer, Mode, PartialPlayer, Player, PlayerSnapshots, PlayerSnapshotsType,
         Ship, ShipId, ShipModeStatsPair, ShipStatsCollection,
@@ -19,8 +20,7 @@ use crate::{
     template_data::{
         RecentTemplate, RecentTemplateDiv, RecentTemplateShip, Render, SingleShipTemplate,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 const RECENT_LAST_REQUEST_LIMIT: u64 = 14;

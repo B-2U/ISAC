@@ -3,12 +3,12 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use fuzzy_matcher::{skim::SkimMatcherV2, FuzzyMatcher};
+use fuzzy_matcher::{FuzzyMatcher, skim::SkimMatcherV2};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use unidecode::unidecode;
 
-use super::{api, Ship, ShipClass, ShipId, ShipTier};
+use super::{Ship, ShipClass, ShipId, ShipTier, api};
 use crate::utils::{IsacError, IsacInfo, LoadSaveFromJson};
 
 /// the struct for laoding ships_para.json

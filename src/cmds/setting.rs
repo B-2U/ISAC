@@ -1,8 +1,8 @@
 use crate::{
-    dc_utils::{autocomplete, UserAddon},
-    structs::{AutocompletePlayer, Region},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context, Data, Error,
+    dc_utils::{UserAddon, autocomplete},
+    structs::{AutocompletePlayer, Region},
+    utils::{IsacError, IsacInfo, LoadSaveFromJson, wws_api::WowsApi},
 };
 use poise;
 

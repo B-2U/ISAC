@@ -5,13 +5,13 @@ use std::{
 use tracing::{debug, error};
 
 use poise::{
-    serenity_prelude::{self as serenity, CreateActionRow, CreateButton, ExecuteWebhook, Webhook},
     CreateReply,
+    serenity_prelude::{self as serenity, CreateActionRow, CreateButton, ExecuteWebhook, Webhook},
 };
 
 use crate::{
-    utils::{IsacError, IsacHelp},
     Context, Data, Error,
+    utils::{IsacError, IsacHelp},
 };
 
 // TODO: might need to be moved to a file for consts
@@ -61,7 +61,8 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             ..
         } => {
             debug!(
-            "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`")
+                "Recognized prefix `{prefix}`, but didn't recognize command name in `{msg_content}`"
+            )
         }
 
         poise::FrameworkError::Command { error, ctx, .. } => {

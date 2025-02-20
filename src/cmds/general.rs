@@ -1,5 +1,5 @@
-use poise::serenity_prelude::CreateEmbed;
 use poise::CreateReply;
+use poise::serenity_prelude::CreateEmbed;
 
 use crate::dc_utils::EasyEmbed;
 use crate::{Context, Error};
