@@ -35,11 +35,7 @@ pub async fn background(
         })),
     }?;
 
-    let player = ctx
-        .author()
-        .get_player(&ctx)
-        .await
-        .ok_or(IsacError::Info(IsacInfo::UserNotLinked { user_name: None }))?;
+    let player = ctx.author().get_player(&ctx).await?;
     let _typing = ctx.typing().await;
     // download banner
     let img_byte = file.download().await?;

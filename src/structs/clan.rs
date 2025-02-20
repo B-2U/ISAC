@@ -102,21 +102,27 @@ pub struct PlayerClanAPIRes {
 }
 
 impl PlayerClanAPIRes {
-    pub fn into_partial_clan(self, region: Region) -> Result<PartialClan, IsacError> {
+    pub fn into_partial_clan(self, region: Region) -> Result<Option<PartialClan>, IsacError> {
         if let Some(err) = self.error {
-            Err(IsacInfo::APIError { msg: err })?;
+            // API will return "error": "Not Found" if a player haven't ever joined a clan
+            if err == "Not Found" {
+                return Ok(None);
+            } else {
+                Err(IsacInfo::APIError { msg: err })?;
+            };
         };
         let data = self.data.expect("should not happen");
         if data.clan_id == 0 {
-            Err(IsacInfo::UserNoClan { user_name: None })?
-        };
-        Ok(PartialClan {
-            tag: data.clan.tag,
-            color: PartialClan::decimal_to_hex(data.clan.color),
-            id: data.clan_id,
-            name: data.clan.name,
-            region,
-        })
+            Ok(None)
+        } else {
+            Ok(Some(PartialClan {
+                tag: data.clan.tag,
+                color: PartialClan::decimal_to_hex(data.clan.color),
+                id: data.clan_id,
+                name: data.clan.name,
+                region,
+            }))
+        }
     }
 }
 

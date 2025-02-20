@@ -18,8 +18,8 @@ use tokio::join;
 use crate::{
     Context, Data, Error,
     dc_utils::{
-        Args, ContextAddon, EasyEmbed,
         autocomplete::{self},
+        Args, ContextAddon, EasyEmbed, UserAddon,
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
@@ -51,17 +51,7 @@ pub async fn clan(
         let autocomplete_clan = parse::parse_region_clan(&clan_input)?;
         cache_methods::clan(&api, autocomplete_clan).await?
     } else {
-        let author = ctx
-            .data()
-            .link
-            .read()
-            .await
-            .get(&ctx.author().id)
-            .ok_or(IsacError::Info(IsacInfo::UserNotLinked { user_name: None }))?;
-        author
-            .clan(&api)
-            .await
-            .ok_or(IsacError::Info(IsacInfo::UserNoClan { user_name: None }))?
+        ctx.author().get_player(&ctx).await?.clan(&api).await?
     };
 
     if let Some(season) = season {

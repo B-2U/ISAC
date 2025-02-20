@@ -161,19 +161,22 @@ impl<'a> WowsApi<'a> {
             })?,
         }
     }
-    /// get a player clan by his uid, will return a default clan if the player is not in any clan
-    pub async fn player_clan(&self, region: &Region, player_uid: u64) -> Option<PartialClan> {
+    /// get a player clan by his uid
+    pub async fn player_clan(
+        &self,
+        region: &Region,
+        player_uid: u64,
+    ) -> Result<Option<PartialClan>, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"));
         let res = self
             ._get(url)
-            .await
+            .await?
             // return None if clan API is fucked
-            .ok()?
             .json::<PlayerClanAPIRes>()
             .await
             .unwrap();
-        // API will return error not found if a player haven't ever joined a clan, so we unwrap_or(None) here
-        res.into_partial_clan(*region).ok()
+
+        res.into_partial_clan(*region)
     }
 
     // wows api doesn't support basic_exp yet, so using vortex still

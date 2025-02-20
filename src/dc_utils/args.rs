@@ -30,23 +30,13 @@ impl Args {
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            match user.get_player(ctx).await {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    Ok(linked_user)
-                }
-                None => Err(IsacInfo::UserNotLinked {
-                    user_name: Some(user.name.clone()),
-                })?,
-            }
+            let player = user.get_player(ctx).await?;
+            self.remove(0)?;
+            Ok(player)
         } else if first_arg == "me" {
-            match ctx.author().get_player(ctx).await {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    Ok(linked_user)
-                }
-                None => Err(IsacInfo::UserNotLinked { user_name: None })?,
-            }
+            let player = ctx.author().get_player(ctx).await?;
+            self.remove(0)?;
+            Ok(player)
         } else {
             // parse region, player
             let region = self.parse_region(ctx).await?;
@@ -84,33 +74,13 @@ impl Args {
         if let Ok(user) =
             User::convert_strict(ctx.serenity_context(), ctx.guild_id(), None, first_arg).await
         {
-            let linked_user = user.get_player(ctx).await;
-            match linked_user {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    linked_user.clan(&api).await.ok_or(
-                        IsacInfo::UserNoClan {
-                            user_name: Some(user.name),
-                        }
-                        .into(),
-                    )
-                }
-                None => Err(IsacInfo::UserNotLinked {
-                    user_name: Some(user.name.clone()),
-                })?,
-            }
+            let linked_user = user.get_player(ctx).await?;
+            self.remove(0)?;
+            linked_user.clan(&api).await
         } else if first_arg == "me" {
-            let linked_user = ctx.author().get_player(ctx).await;
-            match linked_user {
-                Some(linked_user) => {
-                    self.remove(0)?;
-                    linked_user
-                        .clan(&api)
-                        .await
-                        .ok_or(IsacInfo::UserNoClan { user_name: None }.into())
-                }
-                None => Err(IsacInfo::UserNotLinked { user_name: None })?,
-            }
+            let linked_user = ctx.author().get_player(ctx).await?;
+            self.remove(0)?;
+            linked_user.clan(&api).await
         } else {
             // parse region, clan
             let region = self.parse_region(ctx).await?;

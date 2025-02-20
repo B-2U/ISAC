@@ -29,6 +29,9 @@ impl PartialPlayer {
     }
 
     /// turn partial player into [`Player`]
+    /// # Errors
+    /// [`IsacInfo::PlayerHidden`] if profile is hidden  
+    /// [`IsacInfo::PlayerNoBattle`] if battles = 0
     pub async fn full_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
         api.player_personal_data(self.region, self.uid).await
     }
@@ -40,9 +43,15 @@ impl PartialPlayer {
     pub fn profile_url(&self) -> Url {
         self.region.profile_url(format!("/statistics/{}", self.uid))
     }
-    /// player's clan data, only error when request or api issue
-    pub async fn clan(&self, api: &WowsApi<'_>) -> Option<PartialClan> {
-        api.player_clan(&self.region, self.uid).await
+    /// player's clan data
+    ///
+    /// # Errors
+    /// [`IsacInfo::UserNoClan`]  
+    /// [`IsacInfo::APIError`]
+    pub async fn clan(&self, api: &WowsApi<'_>) -> Result<PartialClan, IsacError> {
+        api.player_clan(&self.region, self.uid)
+            .await?
+            .ok_or(IsacInfo::UserNoClan.into())
     }
     /// all ships' statistics
     pub async fn all_ships(&self, api: &WowsApi<'_>) -> Result<ShipStatsCollection, IsacError> {
