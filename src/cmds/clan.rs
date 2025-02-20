@@ -18,8 +18,8 @@ use tokio::join;
 use crate::{
     Context, Data, Error,
     dc_utils::{
-        autocomplete::{self},
         Args, ContextAddon, EasyEmbed, UserAddon,
+        autocomplete::{self},
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
