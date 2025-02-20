@@ -3,15 +3,16 @@ use std::{collections::HashMap, time::Duration};
 use futures::StreamExt;
 use itertools::Itertools;
 use poise::{
+    CreateReply,
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateInteractionResponse,
         EditAttachments, EditMessage, User,
     },
-    CreateReply,
 };
 
 use crate::{
-    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
+    Context, Data, Error,
+    dc_utils::{Args, ContextAddon, UserAddon, autocomplete},
     structs::{
         AutocompletePlayer, Mode, PartialPlayer, Ship, ShipClass, ShipTier, Statistic,
         StatisticValueType,
@@ -20,8 +21,7 @@ use crate::{
         OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 pub fn wws_hybrid() -> poise::Command<Data, Error> {

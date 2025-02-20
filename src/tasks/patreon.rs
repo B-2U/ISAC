@@ -10,9 +10,9 @@ use poise::serenity_prelude::{Http, RoleId};
 use tracing::warn;
 
 use crate::{
+    Error,
     structs::{Linked, Patron, Patrons},
     utils::LoadSaveFromJson,
-    Error,
 };
 
 pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) {

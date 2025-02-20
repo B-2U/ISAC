@@ -1,13 +1,13 @@
-use futures::{future::join_all, StreamExt};
+use futures::{StreamExt, future::join_all};
 use itertools::Itertools;
-use poise::{serenity_prelude::CreateAttachment, CreateReply};
+use poise::{CreateReply, serenity_prelude::CreateAttachment};
 
 use crate::{
-    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
+    Context, Data, Error,
+    dc_utils::{Args, ContextAddon, UserAddon, autocomplete},
     structs::{PlayerSnapshots, Ship},
     template_data::{Render, ServerTopPlayer, ServerTopTemplate},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 pub fn server_top_hybrid() -> poise::Command<Data, Error> {

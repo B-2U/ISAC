@@ -2,7 +2,7 @@ use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
-use crate::structs::{color::ColorStats, ExpectedJs, ShipId};
+use crate::structs::{ExpectedJs, ShipId, color::ColorStats};
 
 #[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct Statistic {

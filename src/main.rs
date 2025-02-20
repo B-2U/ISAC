@@ -15,15 +15,15 @@ use poise::serenity_prelude::{
 };
 use std::{collections::HashSet, env, ops::Deref, sync::Arc};
 use tracing::{error, info, warn};
-use tracing_subscriber::{prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, prelude::*};
 
 use crate::{
     structs::{
-        user_search_history::SearchCache, Banner, ExpectedJs, GuildDefaultRegion, Linked,
-        LittleConstant, Patrons, ShipLeaderboard, ShipsPara,
+        Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipLeaderboard,
+        ShipsPara, user_search_history::SearchCache,
     },
     tasks::launch_renderer,
-    utils::{error_handler, LoadSaveFromJson},
+    utils::{LoadSaveFromJson, error_handler},
 };
 
 // Types used by all command functions

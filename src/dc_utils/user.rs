@@ -3,9 +3,9 @@ use poise::serenity_prelude::{
 };
 
 use crate::{
-    structs::{PartialPlayer, Player},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
     Error,
+    structs::{PartialPlayer, Player},
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 pub trait UserAddon: Sized {

@@ -2,20 +2,20 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use once_cell::sync::Lazy;
 use poise::{
-    serenity_prelude::{CreateActionRow, CreateAttachment, CreateButton},
     CreateReply,
+    serenity_prelude::{CreateActionRow, CreateAttachment, CreateButton},
 };
 use regex::Regex;
-use scraper::{node::Element, ElementRef, Html, Selector};
+use scraper::{ElementRef, Html, Selector, node::Element};
 
 use crate::{
-    dc_utils::{autocomplete, Args, ContextAddon, UserAddon},
+    Context, Data, Error,
+    dc_utils::{Args, ContextAddon, UserAddon, autocomplete},
     structs::{
-        color::ColorStats, Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue,
+        Region, Ship, ShipLeaderboardPlayer, ShipLeaderboardShip, StatisticValue, color::ColorStats,
     },
     template_data::{LeaderboardTemplate, Render},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 pub fn top_hybrid() -> poise::Command<Data, Error> {

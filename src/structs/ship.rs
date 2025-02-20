@@ -6,10 +6,10 @@ use serde_json::Value as JsonValue;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::{Display, EnumIter, IntoEnumIterator};
 
-use super::{api, ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType};
+use super::{ExpectedJs, Mode, ShipExpected, ShipsPara, Statistic, StatisticValueType, api};
 use crate::{
-    utils::{IsacError, IsacInfo},
     Context,
+    utils::{IsacError, IsacInfo},
 };
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, EnumIter, PartialEq, Eq, Hash)]

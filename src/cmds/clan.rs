@@ -7,26 +7,26 @@ use chrono::DateTime;
 use futures::StreamExt;
 use itertools::Itertools;
 use poise::{
+    CreateReply,
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
         CreateInteractionResponse, CreateInteractionResponseMessage, EditMessage, Message, UserId,
     },
-    CreateReply,
 };
 use tokio::join;
 
 use crate::{
+    Context, Data, Error,
     dc_utils::{
-        autocomplete::{self},
         Args, ContextAddon, EasyEmbed, UserAddon,
+        autocomplete::{self},
     },
     structs::{ClanMember, ClanStatsSeason, PartialClan, StatisticValueType},
     template_data::{
         ClanSeasonTemplate, ClanTemplate, ClanTemplateRename, ClanTemplateSeason,
         ClanTemplateStats, ClanTemplateWrDis, Render,
     },
-    utils::{cache_methods, parse, wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, LoadSaveFromJson, cache_methods, parse, wws_api::WowsApi},
 };
 
 pub fn clan_hybrid() -> poise::Command<Data, Error> {

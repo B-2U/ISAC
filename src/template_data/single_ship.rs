@@ -2,13 +2,13 @@ use bytes::Bytes;
 
 use reqwest::Client;
 
-use serde::{ser::SerializeStruct, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer, ser::SerializeStruct};
 
 use super::Render;
 use crate::{
+    Context,
     structs::{Mode, PartialClan, Player, Ship, ShipModeStatsPair, Statistic},
     utils::{IsacError, IsacInfo},
-    Context,
 };
 
 #[derive(Serialize, Deserialize, Debug)]

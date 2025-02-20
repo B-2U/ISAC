@@ -3,18 +3,18 @@ use std::time::Duration;
 use chrono::{DateTime, Utc};
 use futures::StreamExt;
 use poise::{
+    CreateReply,
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateInteractionResponse,
         CreateInteractionResponseMessage, EditMessage, Message, ReactionType, UserId,
     },
-    CreateReply,
 };
 use serde::Deserialize;
 
 use crate::{
+    Context, Error,
     structs::{ClanTag, Region},
     utils::IsacError,
-    Context, Error,
 };
 
 /// The Clan Battle leaderboard

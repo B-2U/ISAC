@@ -1,10 +1,10 @@
 use crate::{
-    structs::{
-        api, Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
-        ShipStatsCollection,
-    },
-    utils::{cache_methods, wws_api::WowsApi, IsacError, IsacInfo, LoadSaveFromJson},
     Context,
+    structs::{
+        Dogtag, PartialClan, PlayerClanBattle, Region, Ship, ShipModeStatsPair,
+        ShipStatsCollection, api,
+    },
+    utils::{IsacError, IsacInfo, LoadSaveFromJson, cache_methods, wws_api::WowsApi},
 };
 
 use once_cell::sync::Lazy;
@@ -13,7 +13,7 @@ use regex::Regex;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use serde_with::{serde_as, DefaultOnError};
+use serde_with::{DefaultOnError, serde_as};
 
 use std::{collections::HashMap, ops::Deref, str::FromStr};
 

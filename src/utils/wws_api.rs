@@ -5,13 +5,13 @@ use std::fmt::Display;
 use strum::IntoEnumIterator;
 
 use crate::{
-    structs::{
-        api, AutocompletePlayer, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes,
-        ClanMemberAPIRes, ClanTag, Mode, PartialClan, PartialPlayer, Player, PlayerClanAPIRes,
-        PlayerClanBattle, PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara,
-        VortexPlayer, VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes,
-    },
     Context, Data,
+    structs::{
+        AutocompletePlayer, Clan, ClanDetail, ClanDetailAPIRes, ClanInfoAPIRes, ClanMemberAPIRes,
+        ClanTag, Mode, PartialClan, PartialPlayer, Player, PlayerClanAPIRes, PlayerClanBattle,
+        PlayerClanBattleAPIRes, Region, ShipId, ShipStatsCollection, ShipsPara, VortexPlayer,
+        VortexPlayerAPIRes, VortexShipAPIRes, VortexVehicleAPIRes, api,
+    },
 };
 
 use super::{IsacError, IsacInfo};
