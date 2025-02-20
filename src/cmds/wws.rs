@@ -115,7 +115,7 @@ async fn func_ship(
     let _typing = ctx.typing().await;
     let api = WowsApi::new(ctx);
     let player = partial_player.full_player(&api).await?;
-    let clan = player.clan(&api).await;
+    let clan = player.clan(&api).await.ok();
     let ship_stats = player.single_ship(&api, &ship).await?.unwrap_or_default(); // let it default, we will raise error belowed
 
     // getting player rank in the leaderboard
@@ -159,7 +159,7 @@ pub async fn func_wws(ctx: &Context<'_>, partial_player: PartialPlayer) -> Resul
     let typing = ctx.typing().await;
     let api = WowsApi::new(ctx);
     let player = partial_player.full_player(&api).await?;
-    let clan = player.clan(&api).await;
+    let clan = player.clan(&api).await.ok();
 
     // wws
     let ships = player.all_ships(&api).await?;

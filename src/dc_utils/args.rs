@@ -76,21 +76,11 @@ impl Args {
         {
             let linked_user = user.get_player(ctx).await?;
             self.remove(0)?;
-            linked_user.clan(&api).await.ok_or(
-                IsacInfo::UserNoClan {
-                    user_name: Some(user.name),
-                }
-                .into(),
-            )
+            linked_user.clan(&api).await
         } else if first_arg == "me" {
             let linked_user = ctx.author().get_player(ctx).await?;
             self.remove(0)?;
-            linked_user.clan(&api).await.ok_or(
-                IsacInfo::UserNoClan {
-                    user_name: Some(ctx.author().name.clone()),
-                }
-                .into(),
-            )
+            linked_user.clan(&api).await
         } else {
             // parse region, clan
             let region = self.parse_region(ctx).await?;

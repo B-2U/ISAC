@@ -209,7 +209,7 @@ async fn func_recent(
     let _typing2 = ctx.typing().await;
     // parsing and render
     let expected = &ctx.data().expected;
-    let clan = player.clan(&api).await;
+    let clan = player.clan(&api).await.ok();
     // QA 這個超大的if else感覺好糟...
     let img = if let Some(ship) = specific_ship.as_ref() {
         // recent ship
