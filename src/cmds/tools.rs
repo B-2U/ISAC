@@ -4,23 +4,23 @@ use chrono::NaiveDate;
 use itertools::Itertools;
 use once_cell::sync::Lazy;
 use poise::{
+    CreateReply, FrameworkError,
     futures_util::StreamExt,
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
         CreateEmbedAuthor, CreateInteractionResponse, CreateInteractionResponseMessage,
         CreateMessage, EditMessage, Message, ReactionType, User, UserId,
     },
-    CreateReply, FrameworkError,
 };
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 use regex::Regex;
 use scraper::{Element, ElementRef, Html, Selector};
 
 use crate::{
+    Context, Data, Error,
     dc_utils::{Args, ContextAddon, EasyEmbed},
     structs::{PartialPlayer, Region, Ship},
-    utils::{wws_api::WowsApi, IsacError, IsacInfo},
-    Context, Data, Error,
+    utils::{IsacError, IsacInfo, wws_api::WowsApi},
 };
 
 /// The link to wargaming wiki maps page
@@ -369,7 +369,7 @@ impl RouletteView {
         let candidates: Vec<_> = candidates.into_iter().map(Arc::new).collect();
         RouletteView {
             ships: candidates
-                .choose_multiple(&mut rand::thread_rng(), players as usize)
+                .choose_multiple(&mut rand::rng(), players as usize)
                 .cloned()
                 .collect(),
             players,
@@ -381,11 +381,7 @@ impl RouletteView {
         }
     }
     fn reroll(&mut self, index: usize) -> &Self {
-        self.ships[index] = self
-            .candidates
-            .choose(&mut rand::thread_rng())
-            .unwrap()
-            .clone();
+        self.ships[index] = self.candidates.choose(&mut rand::rng()).unwrap().clone();
         self
     }
 
@@ -455,10 +451,12 @@ impl RouletteView {
     }
     /// build the [`Vec<CreateActionRow>`] with current components state
     fn build(&self) -> Vec<CreateActionRow> {
-        let mut btns = vec![CreateButton::new("roulette_1")
-            .label("1️⃣🔄")
-            .style(ButtonStyle::Secondary)
-            .disabled(self.btn_1_disabled)];
+        let mut btns = vec![
+            CreateButton::new("roulette_1")
+                .label("1️⃣🔄")
+                .style(ButtonStyle::Secondary)
+                .disabled(self.btn_1_disabled),
+        ];
         if self.players as usize >= 2 {
             btns.push(
                 CreateButton::new("roulette_2")

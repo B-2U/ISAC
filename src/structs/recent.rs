@@ -27,7 +27,7 @@ impl PlayerSnapshots {
         } else {
             self.data
                 .iter()
-                .find(|(&date, _)| date >= *timestamp)
+                .find(|&(date, _)| date >= timestamp)
                 .map(|(date, data)| (*date, data.clone()))
         }
     }
@@ -41,7 +41,7 @@ impl PlayerSnapshots {
     pub fn available_dates(&self, timestamp: &u64) -> Vec<u64> {
         self.data
             .iter()
-            .filter(|(&date, _)| date < *timestamp)
+            .filter(|&(date, _)| date < timestamp)
             .map(|(&date, _)| date)
             .collect()
     }
