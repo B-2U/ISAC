@@ -66,7 +66,7 @@ impl ClanTemplateWrDis {
     pub fn sort_wr(members: &[ClanMember]) -> Self {
         let dis = members.iter().fold((0, 0, 0, 0, 0, 0, 0), |mut acc, m| {
             match m.winrate {
-                v if v == 0.0 => (), // hidden stats players
+                0.0 => (), // hidden stats players
                 v if v < 45.0 => acc.0 += 1,
                 v if v < 50.0 => acc.1 += 1,
                 v if v < 55.0 => acc.2 += 1,
