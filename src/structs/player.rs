@@ -29,6 +29,9 @@ impl PartialPlayer {
     }
 
     /// turn partial player into [`Player`]
+    /// # Errors
+    /// [`IsacInfo::PlayerHidden`] if profile is hidden  
+    /// [`IsacInfo::PlayerNoBattle`] if battles = 0
     pub async fn full_player(&self, api: &WowsApi<'_>) -> Result<Player, IsacError> {
         api.player_personal_data(self.region, self.uid).await
     }

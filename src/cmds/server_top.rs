@@ -112,7 +112,7 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
         .collect::<Vec<_>>();
 
     // truncate, if user is in the leaderboard, set color and swap its index if needed
-    let author_player = ctx.author().get_player(&ctx).await;
+    let author_player = ctx.author().get_player(&ctx).await.ok();
     let truncate_len = if let Some((p_index, _p)) = author_player.and_then(|author_p| {
         lb_players
             .iter_mut()

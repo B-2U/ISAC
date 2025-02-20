@@ -99,10 +99,8 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     };
     let api = WowsApi::new(&ctx);
     // if author linked and not hidden
-    let author_rank = if let Some(author_p) = match ctx.author().get_player(&ctx).await {
-        Some(author_pp) => author_pp.full_player(&api).await.ok(),
-        None => None,
-    } {
+    let author_rank = if let Ok(author_p) = ctx.author().get_full_player(&ctx).await {
+        // author on the leaderboard, only highlight needed
         if let Some((p_index, p)) = lb_players
             .iter()
             .enumerate()
@@ -114,7 +112,7 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
         else if author_p.region != region {
             None
         }
-        // author not in the leaderboard, try to fetch his stats
+        // author not on the leaderboard, try to fetch his stats
         else if let Some(stats) =
             author_p
                 .single_ship(&api, &ship)
