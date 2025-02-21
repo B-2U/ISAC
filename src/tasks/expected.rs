@@ -1,10 +1,8 @@
-use std::{
-    sync::{Arc, mpsc::Sender},
-    time::Duration,
-};
+use std::{sync::Arc, time::Duration};
 
 use parking_lot::RwLock;
 use reqwest::Client;
+use tokio::sync::mpsc::Sender;
 
 use crate::{LoadSaveFromJson, structs::ExpectedJs};
 

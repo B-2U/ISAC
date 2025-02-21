@@ -139,13 +139,13 @@ async fn main() {
 
     // a webhook logger, send the received message to discord logging channel
     let webhook_http = bot.http.clone();
-    let (webhook_tx, webhook_rx) = std::sync::mpsc::channel::<String>();
+    let (webhook_tx, mut webhook_rx) = tokio::sync::mpsc::channel::<String>(5);
     tokio::spawn(async move {
         let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
             .await
             .unwrap();
         loop {
-            while let Ok(input) = webhook_rx.recv() {
+            while let Some(input) = webhook_rx.recv().await {
                 let _r = web_hook
                     .execute(&webhook_http, false, ExecuteWebhook::new().content(input))
                     .await;

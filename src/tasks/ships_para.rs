@@ -1,12 +1,9 @@
-use std::{
-    error::Error,
-    sync::{Arc, mpsc::Sender},
-    time::Duration,
-};
+use std::{error::Error, sync::Arc, time::Duration};
 
 use parking_lot::RwLock;
 use reqwest::Client;
 use serde_json::Value;
+use tokio::sync::mpsc::Sender;
 
 use crate::{
     structs::{ShipsPara, VortexVehicleAPIRes},

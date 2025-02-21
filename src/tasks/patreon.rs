@@ -1,12 +1,13 @@
 use std::{
     env::{self, VarError},
-    sync::{Arc, mpsc::Sender},
+    sync::Arc,
     time::Duration,
 };
 
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use poise::serenity_prelude::{Http, RoleId};
+use tokio::sync::mpsc::Sender;
 use tracing::warn;
 
 use crate::{
