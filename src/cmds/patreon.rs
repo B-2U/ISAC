@@ -22,18 +22,17 @@ pub async fn background(
             msg: "".to_string(),
         }))?
     }
-    let file_type = match &file.content_type {
-        Some(content_type) if content_type.contains("image") => content_type
-            .split('/')
-            .nth(1)
-            .ok_or(IsacError::Info(IsacInfo::GeneralError {
-                msg: "failed to get image type!".to_string(),
-            }))
-            .map(|s| s.to_string()),
-        _ => Err(IsacError::Info(IsacInfo::GeneralError {
-            msg: "It's not an image!".to_string(),
-        })),
-    }?;
+    let file_type = file
+        .content_type
+        .as_deref()
+        .filter(|ct| ct.starts_with("image/"))
+        .and_then(|ct| ct.split('/').nth(1))
+        .ok_or_else(|| {
+            IsacError::Info(IsacInfo::GeneralError {
+                msg: "Invalid or non-image file type".to_string(),
+            })
+        })?
+        .to_string();
 
     let player = ctx.author().get_player(&ctx).await?;
     let _typing = ctx.typing().await;

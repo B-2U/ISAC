@@ -21,7 +21,7 @@ use crate::{
         OverallCwTemplate, OverallCwTemplateSeason, OverallTemplate, OverallTemplateClass,
         OverallTemplateDiv, OverallTemplateTier, Render, SingleShipTemplate,
     },
-    utils::{IsacError, IsacInfo, wws_api::WowsApi},
+    utils::wws_api::WowsApi,
 };
 
 pub fn wws_hybrid() -> poise::Command<Data, Error> {
@@ -65,14 +65,7 @@ pub async fn wws(
         } else {
             ctx.author().clone()
         };
-        ctx.data()
-            .link
-            .read()
-            .await
-            .get(&user.id)
-            .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
-                user_name: Some(user.name.clone()),
-            }))?
+        user.get_player(&ctx).await?
     };
 
     if let Some(ship_name) = ship_name {

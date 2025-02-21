@@ -69,14 +69,7 @@ pub async fn recent(
         } else {
             ctx.author().clone()
         };
-        ctx.data()
-            .link
-            .read()
-            .await
-            .get(&user.id)
-            .ok_or(IsacError::Info(IsacInfo::UserNotLinked {
-                user_name: Some(user.name.clone()),
-            }))?
+        user.get_player(&ctx).await?
     };
     // keep None as None, and raise Err if ship_id is Some(), but no matched ship found
     let ship = ship_name
