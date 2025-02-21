@@ -65,7 +65,7 @@ pub async fn recent(
                 &discord_user_str,
             )
             .await
-            .unwrap_or(ctx.author().clone())
+            .unwrap_or_else(|_| ctx.author().clone())
         } else {
             ctx.author().clone()
         };
