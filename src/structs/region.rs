@@ -130,7 +130,7 @@ pub struct GuildDefaultRegion(pub HashMap<GuildId, Region>);
 
 impl GuildDefaultRegion {
     /// get the server default region if exist, return [`Region::Asia`] otherwise
-    pub fn get_default(&self, guild_id: Option<GuildId>) -> Region {
+    pub fn get_region(&self, guild_id: Option<GuildId>) -> Region {
         if let Some(guild_id) = guild_id {
             self.0.get(&guild_id).copied().unwrap_or_default()
         } else {

@@ -34,7 +34,7 @@ pub async fn clan_top(
             .guild_default
             .read()
             .await
-            .get_default(ctx.guild_id()),
+            .get_region(ctx.guild_id()),
     };
     let season = {
         let season = season.unwrap_or(-1);
