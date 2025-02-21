@@ -20,7 +20,9 @@ pub async fn expected_updater(
                 *expected_arc.write() = expected_js;
             }
             Err(err) => {
-                let _ = webhook_tx.send(format!("expected js updating fail!, err: \n{err}"));
+                let _ = webhook_tx
+                    .send(format!("expected js updating fail!, err: \n{err}"))
+                    .await;
             }
         }
     }

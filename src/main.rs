@@ -184,7 +184,7 @@ async fn main() {
 
     // send message to discord log channel
     if is_product {
-        let _ = webhook_tx.send("Bot shutting down...".into());
+        let _ = webhook_tx.send("Bot shutting down...".into()).await;
     }
     // TODO: use async drop trait?
     let lb_mg = arc_data.leaderboard.lock().await;

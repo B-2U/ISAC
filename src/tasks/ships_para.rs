@@ -32,7 +32,9 @@ pub async fn ships_para_updater(
                 //logging
             }
             Err(err) => {
-                let _ = webhook_tx.send(format!("ships para updating fail!, err: \n{err}"));
+                let _ = webhook_tx
+                    .send(format!("ships para updating fail!, err: \n{err}"))
+                    .await;
             }
         }
     }

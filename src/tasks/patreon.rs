@@ -30,7 +30,9 @@ pub async fn patron_updater(
             match get_patrons(&http, IDS.as_ref().unwrap()).await {
                 Ok(patrons) => *patrons_arc.write() = patrons,
                 Err(err) => {
-                    let _ = webhook_tx.send(format!("patrons task fail!, err: \n{err}"));
+                    let _ = webhook_tx
+                        .send(format!("patrons task fail!, err: \n{err}"))
+                        .await;
                 }
             }
         }
