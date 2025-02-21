@@ -137,16 +137,38 @@ async fn main() {
         });
     }
 
+    // a webhook logger, send the received message to discord logging channel
+    let webhook_http = bot.http.clone();
+    let (webhook_tx, webhook_rx) = std::sync::mpsc::channel::<String>();
+    tokio::spawn(async move {
+        let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
+            .await
+            .unwrap();
+        loop {
+            while let Ok(input) = webhook_rx.recv() {
+                let _r = web_hook
+                    .execute(&webhook_http, false, ExecuteWebhook::new().content(input))
+                    .await;
+            }
+        }
+    });
+
     // update patreon
     let http = bot.http.clone();
     let patron = Arc::clone(&arc_data.patron);
-    tokio::spawn(async move { tasks::patron_updater(http, patron).await });
+    let webhook_tx_new = webhook_tx.clone();
+    tokio::spawn(async move { tasks::patron_updater(http, patron, webhook_tx_new).await });
+    // update ShipsPara
+    let client = arc_data.client.clone();
+    let ships = Arc::clone(&arc_data.ships);
+    let webhook_tx_new = webhook_tx.clone();
+    tokio::spawn(async move { tasks::ships_para_updater(client, ships, webhook_tx_new).await });
     // update expected json
     let client = arc_data.client.clone();
     let expected = Arc::clone(&arc_data.expected);
-    tokio::spawn(async move { tasks::expected_updater(client, expected).await });
+    let webhook_tx_new = webhook_tx.clone();
 
-    let webhook_http = bot.http.clone();
+    tokio::spawn(async move { tasks::expected_updater(client, expected, webhook_tx_new).await });
 
     let _renderer = launch_renderer().await; // it's used in linux specific code below
 
@@ -162,16 +184,7 @@ async fn main() {
 
     // send message to discord log channel
     if is_product {
-        let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
-            .await
-            .unwrap();
-        let _r = web_hook
-            .execute(
-                webhook_http,
-                false,
-                ExecuteWebhook::new().content("Bot shutting down..."),
-            )
-            .await;
+        let _ = webhook_tx.send("Bot shutting down...".into());
     }
     // TODO: use async drop trait?
     let lb_mg = arc_data.leaderboard.lock().await;
@@ -215,7 +228,7 @@ pub struct DataInner {
     client: reqwest::Client,
     patron: Arc<parking_lot::RwLock<Patrons>>,
     expected: Arc<parking_lot::RwLock<ExpectedJs>>,
-    ships: parking_lot::RwLock<ShipsPara>,
+    ships: Arc<parking_lot::RwLock<ShipsPara>>,
     constant: parking_lot::RwLock<LittleConstant>,
     link: tokio::sync::RwLock<Linked>,
     wg_api_token: String,
@@ -231,7 +244,7 @@ impl DataInner {
             client: reqwest::Client::new(),
             patron: Arc::new(parking_lot::RwLock::new(Patrons::default())),
             expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
-            ships: parking_lot::RwLock::new(ShipsPara::load_json().await),
+            ships: Arc::new(parking_lot::RwLock::new(ShipsPara::load_json().await)),
             constant: parking_lot::RwLock::new(LittleConstant::load_json().await),
             link: tokio::sync::RwLock::new(Linked::load_json().await),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),

@@ -1,12 +1,18 @@
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::{Arc, mpsc::Sender},
+    time::Duration,
+};
 
 use parking_lot::RwLock;
 use reqwest::Client;
-use tracing::log::warn;
 
 use crate::{LoadSaveFromJson, structs::ExpectedJs};
 
-pub async fn expected_updater(client: Client, expected_arc: Arc<RwLock<ExpectedJs>>) {
+pub async fn expected_updater(
+    client: Client,
+    expected_arc: Arc<RwLock<ExpectedJs>>,
+    webhook_tx: Sender<String>,
+) {
     let mut interval = tokio::time::interval(Duration::from_secs(86400));
     loop {
         interval.tick().await;
@@ -15,7 +21,9 @@ pub async fn expected_updater(client: Client, expected_arc: Arc<RwLock<ExpectedJ
                 expected_js.save_json().await;
                 *expected_arc.write() = expected_js;
             }
-            Err(err) => warn!("expected js updating fail!, err: \n{err}"),
+            Err(err) => {
+                let _ = webhook_tx.send(format!("expected js updating fail!, err: \n{err}"));
+            }
         }
     }
 }

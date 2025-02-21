@@ -1,6 +1,6 @@
 use std::{
     env::{self, VarError},
-    sync::Arc,
+    sync::{Arc, mpsc::Sender},
     time::Duration,
 };
 
@@ -15,7 +15,11 @@ use crate::{
     utils::LoadSaveFromJson,
 };
 
-pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) {
+pub async fn patron_updater(
+    http: Arc<Http>,
+    patrons_arc: Arc<RwLock<Patrons>>,
+    webhook_tx: Sender<String>,
+) {
     let mut interval = tokio::time::interval(Duration::from_secs(300));
     static IDS: Lazy<Option<Ids>> = Lazy::new(|| load_ids().ok());
 
@@ -24,7 +28,9 @@ pub async fn patron_updater(http: Arc<Http>, patrons_arc: Arc<RwLock<Patrons>>) 
             interval.tick().await;
             match get_patrons(&http, IDS.as_ref().unwrap()).await {
                 Ok(patrons) => *patrons_arc.write() = patrons,
-                Err(err) => warn!("patrons task fail!, err: \n{err}"),
+                Err(err) => {
+                    let _ = webhook_tx.send(format!("patrons task fail!, err: \n{err}"));
+                }
             }
         }
     } else {
