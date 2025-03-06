@@ -3,7 +3,7 @@ use std::{error::Error, sync::Arc, time::Duration};
 use parking_lot::RwLock;
 use reqwest::Client;
 use serde_json::Value;
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::UnboundedSender;
 
 use crate::{
     structs::{ShipsPara, VortexVehicleAPIRes},
@@ -13,7 +13,7 @@ use crate::{
 pub async fn ships_para_updater(
     client: Client,
     ships_arc: Arc<RwLock<ShipsPara>>,
-    webhook_tx: Sender<String>,
+    webhook_tx: UnboundedSender<String>,
 ) {
     let mut interval = tokio::time::interval(Duration::from_secs(86400 * 7));
     let mut current_version = get_game_version(&client).await.unwrap();
@@ -32,9 +32,7 @@ pub async fn ships_para_updater(
                 //logging
             }
             Err(err) => {
-                let _ = webhook_tx
-                    .send(format!("ships para updating fail!, err: \n{err}"))
-                    .await;
+                let _ = webhook_tx.send(format!("ships para updating fail!, err: \n{err}"));
             }
         }
     }

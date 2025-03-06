@@ -7,7 +7,7 @@ use std::{
 use once_cell::sync::Lazy;
 use parking_lot::RwLock;
 use poise::serenity_prelude::{Http, RoleId};
-use tokio::sync::mpsc::Sender;
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::warn;
 
 use crate::{
@@ -19,7 +19,7 @@ use crate::{
 pub async fn patron_updater(
     http: Arc<Http>,
     patrons_arc: Arc<RwLock<Patrons>>,
-    webhook_tx: Sender<String>,
+    webhook_tx: UnboundedSender<String>,
 ) {
     let mut interval = tokio::time::interval(Duration::from_secs(300));
     static IDS: Lazy<Option<Ids>> = Lazy::new(|| load_ids().ok());
@@ -30,9 +30,7 @@ pub async fn patron_updater(
             match get_patrons(&http, IDS.as_ref().unwrap()).await {
                 Ok(patrons) => *patrons_arc.write() = patrons,
                 Err(err) => {
-                    let _ = webhook_tx
-                        .send(format!("patrons task fail!, err: \n{err}"))
-                        .await;
+                    let _ = webhook_tx.send(format!("patrons task fail!, err: \n{err}"));
                 }
             }
         }

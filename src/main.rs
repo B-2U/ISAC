@@ -139,7 +139,7 @@ async fn main() {
 
     // a webhook logger, send the received message to discord logging channel
     let webhook_http = bot.http.clone();
-    let (webhook_tx, mut webhook_rx) = tokio::sync::mpsc::channel::<String>(5);
+    let (webhook_tx, mut webhook_rx) = tokio::sync::mpsc::unbounded_channel::<String>();
     tokio::spawn(async move {
         let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
             .await
@@ -184,7 +184,7 @@ async fn main() {
 
     // send message to discord log channel
     if is_product {
-        let _ = webhook_tx.send("Bot shutting down...".into()).await;
+        let _ = webhook_tx.send("Bot shutting down...".into());
     }
     // TODO: use async drop trait?
     let lb_mg = arc_data.leaderboard.lock().await;
