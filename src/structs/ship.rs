@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt::Display, sync::Arc};
 
 use parking_lot::RwLock;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_json::Value as JsonValue;
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use strum::{Display, EnumIter, IntoEnumIterator};
@@ -404,10 +404,29 @@ impl Display for ShipId {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
-#[serde(try_from = "JsonValue")]
-#[derive(Default)]
-pub struct ShipModeStatsPair(pub HashMap<Mode, ShipStats>);
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Default)]
+pub struct ShipModeStatsPair(
+    #[serde(deserialize_with = "deserialize_mode_hashmap")] pub HashMap<Mode, ShipStats>,
+);
+
+fn deserialize_mode_hashmap<'de, D>(deserializer: D) -> Result<HashMap<Mode, ShipStats>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let raw_map: HashMap<String, serde_json::Value> = HashMap::deserialize(deserializer)?;
+    let mut mode_map = HashMap::new();
+
+    for (key, value) in raw_map {
+        // ignore new k&v added by WG, like mastery_sign: "No_Sign"
+        if let Ok(mode) = serde_json::from_str::<Mode>(&format!("\"{}\"", key)) {
+            if !value.as_object().unwrap().is_empty() {
+                mode_map.insert(mode, serde_json::from_value(value).unwrap());
+            }
+        }
+    }
+
+    Ok(mode_map)
+}
 
 impl ShipModeStatsPair {
     /// a shorcut of `self.0.get
