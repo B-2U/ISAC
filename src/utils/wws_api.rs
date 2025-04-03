@@ -223,14 +223,8 @@ impl<'a> WowsApi<'a> {
         ship_id: Option<ShipId>,
     ) -> Result<ShipStatsCollection, IsacError> {
         let urls: Vec<Url> = if let Some(ship_id) = ship_id {
-            Mode::iter()
-                .map(|mode| {
-                    region.vortex_url(format!(
-                        "/api/accounts/{uid}/ships/{ship_id}/{}/",
-                        mode.api_name()
-                    ))
-                })
-                .collect()
+            // wg include all modes in one response now, no need to request and merge all modes
+            vec![region.vortex_url(format!("/api/accounts/{uid}/ships/{ship_id}/"))]
         } else {
             Mode::iter()
                 .map(|mode| {
