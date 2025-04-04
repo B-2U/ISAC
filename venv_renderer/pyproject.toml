@@ -1,22 +1,13 @@
-[tool.poetry]
+[project]
 name = "venv-renderer"
 version = "0.1.0"
-description = ""
-authors = ["Your Name <you@example.com>"]
+description = "Add your description here"
 readme = "README.md"
-package-mode = false
-
-[tool.poetry.dependencies]
-python = "^3.10"
-pystache = "^0.6.5"
-quart = "^0.19.4"
-playwright = "^1.42.0"
-
-# for run.py
-apscheduler = "^3.10.4"
-aiohttp = "^3.11.11"
-python-dotenv = "^1.0.1"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">=3.12"
+dependencies = [
+    "apscheduler>=3.11.0",
+    "playwright>=1.51.0",
+    "pystache>=0.6.8",
+    "python-dotenv>=1.1.0",
+    "quart>=0.20.0",
+]
