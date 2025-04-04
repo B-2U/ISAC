@@ -145,9 +145,8 @@ impl<'a> WowsApi<'a> {
         region: &Region,
         clan_name: &str,
     ) -> Result<Vec<PartialClan>, IsacError> {
-        if !clan_name
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        if clan_name.len() <= 1
+        // api now requires at least 2 chars
         {
             Err(IsacInfo::InvalidClan {
                 clan: clan_name.to_string(),
