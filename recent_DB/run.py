@@ -58,7 +58,9 @@ async def statistics_of_players_ships(
     new_data = {}
     for ship_id, stats in main_res["data"][str(account_id)]["statistics"].items():
         new_stats = {}
-        for mode, mode_stats in stats.items():
+        for mode in modes:
+            # iter the modes instead of items() to avoid new keys like "mastery_sign" fuck it up
+            mode_stats = stats.get(mode, {})
             if mode_stats.get("battles_count", 0) != 0:
                 # reserve the keys we wanted
                 trim_mode_stats = {
@@ -197,4 +199,5 @@ async def test():
 
 
 if __name__ == "__main__":
+    # asyncio.run(test())
     sched.start()
