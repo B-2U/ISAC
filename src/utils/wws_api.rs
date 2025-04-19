@@ -3,6 +3,7 @@ use reqwest::{Client, IntoUrl, Response, Url};
 use serde::Deserialize;
 use std::fmt::{Debug, Display};
 use strum::IntoEnumIterator;
+use ureq::typestate::WithoutBody;
 
 use crate::{
     Context, Data,
@@ -33,7 +34,7 @@ impl<'a> WowsApi<'a> {
     }
 
     /// Helper function to handle errors, wrapped reqwest error into [`IsacInfo::APIError`]
-    pub async fn send_request<F>(
+    pub async fn reqwest<F>(
         &self,
         url: impl IntoUrl + Display + Clone,
         builder: F,
@@ -51,13 +52,29 @@ impl<'a> WowsApi<'a> {
             .map_err(|err| Self::_err_wrap(&url, err))
     }
 
-    /// easily wrapped [`reqwest::Error`] with [`IsacInfo::APIError`]
-    fn _err_wrap(url: &(impl IntoUrl + Display), err: reqwest::Error) -> IsacError {
+    /// Helper function to handle errors, wrapped ureq error into [`IsacInfo::APIError`]
+    pub async fn ureq<F>(
+        &self,
+        url: impl IntoUrl + Display + Clone,
+        builder: F,
+    ) -> Result<ureq::Body, IsacError>
+    where
+        F: FnOnce(ureq::RequestBuilder<WithoutBody>) -> ureq::RequestBuilder<WithoutBody>,
+    {
+        let url = url.to_string();
+        let request_builder = ureq::get(&url);
+        let request_builder = builder(request_builder);
+        tokio::task::spawn_blocking(|| request_builder.call())
+            .await
+            .unwrap()
+            .map_err(|err| Self::_err_wrap(&url, err))
+            .map(|res| res.into_body())
+    }
+
+    /// log error and return [`IsacError`]
+    fn _err_wrap(url: &impl Display, err: impl Debug + Into<IsacError>) -> IsacError {
         tracing::warn!("url: {}\n{:#?}", url, err);
-        IsacInfo::APIError {
-            msg: err.to_string(),
-        }
-        .into()
+        err.into()
     }
 
     /// get player's details with region and uid
@@ -69,7 +86,7 @@ impl<'a> WowsApi<'a> {
         let url = region.vortex_url(format!("/api/accounts/{uid}"));
 
         let res: VortexPlayer = self
-            .send_request(url, |b| b)
+            .reqwest(url, |b| b)
             .await?
             .json::<VortexPlayerAPIRes>()
             .await?
@@ -130,7 +147,7 @@ impl<'a> WowsApi<'a> {
             "/api/accounts/search/autocomplete/{ign}/?limit={limit}"
         ));
         let res = self
-            .send_request(url, |b| b)
+            .reqwest(url, |b| b)
             .await?
             .json::<VortexPlayerSearchAPIRes>()
             .await
@@ -156,7 +173,7 @@ impl<'a> WowsApi<'a> {
             "/api/search/autocomplete/?search={clan_name}&type=clans"
         ));
         let mut res = self
-            .send_request(url, |b| b)
+            .reqwest(url, |b| b)
             .await?
             .json::<ClanSearchRes>()
             .await
@@ -183,7 +200,7 @@ impl<'a> WowsApi<'a> {
     ) -> Result<Option<PartialClan>, IsacError> {
         let url = region.vortex_url(format!("/api/accounts/{player_uid}/clans/"));
         let res = self
-            .send_request(url, |b| b)
+            .reqwest(url, |b| b)
             .await?
             // return None if clan API is fucked
             .json::<PlayerClanAPIRes>()
@@ -240,7 +257,7 @@ impl<'a> WowsApi<'a> {
         let requests: Vec<_> = urls
             .into_iter()
             .map(|url| async move {
-                let res = self.send_request(url.clone(), |b| b).await?;
+                let res = self.reqwest(url.clone(), |b| b).await?;
                 res.json::<VortexShipAPIRes>()
                     .await
                     .map_err(|err| Self::_err_wrap(&url, err))
@@ -263,7 +280,7 @@ impl<'a> WowsApi<'a> {
     pub async fn clan_stats(&self, region: Region, clan_id: u64) -> Result<Clan, IsacError> {
         let url = region.clan_url(format!("/api/clanbase/{clan_id}/claninfo/"));
         let mut clan: Clan = self
-            .send_request(url, |b| b)
+            .reqwest(url, |b| b)
             .await?
             .json::<ClanInfoAPIRes>()
             .await
@@ -290,7 +307,7 @@ impl<'a> WowsApi<'a> {
             query.push(("season", season.to_string()))
         }
         let clan = self
-            .send_request(url, |b| b.query(&query))
+            .reqwest(url, |b| b.query(&query))
             .await?
             .json::<ClanMemberAPIRes>()
             .await
@@ -335,7 +352,7 @@ impl<'a> WowsApi<'a> {
         // }
 
         let clan_res: ClanDetailAPIRes = self
-            .send_request(url, |b| b.query(&query))
+            .reqwest(url, |b| b.query(&query))
             .await?
             .json::<ClanDetailAPIRes>()
             .await
@@ -356,7 +373,7 @@ impl<'a> WowsApi<'a> {
             ("account_id", uid.to_string()),
         ];
         let mut res: PlayerClanBattle = self
-            .send_request(url, |b| b.query(&query))
+            .reqwest(url, |b| b.query(&query))
             .await?
             .json::<PlayerClanBattleAPIRes>()
             .await?
@@ -367,7 +384,7 @@ impl<'a> WowsApi<'a> {
     }
 
     pub async fn encyclopedia_vehicles(&self) -> Result<ShipsPara, IsacError> {
-        self.send_request(
+        self.reqwest(
             "https://vortex.worldofwarships.com/api/encyclopedia/en/vehicles/",
             |b| b,
         )

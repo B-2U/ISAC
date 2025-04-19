@@ -147,6 +147,15 @@ impl From<reqwest::Error> for IsacError {
     }
 }
 
+impl From<ureq::Error> for IsacError {
+    fn from(err: ureq::Error) -> Self {
+        IsacInfo::APIError {
+            msg: err.to_string(),
+        }
+        .into()
+    }
+}
+
 const PREMIUM: &str =
     "Seems you haven't join our Patreon, or link your discord account on Patreon yet :(
 If you do like ISAC, [take a look?]( https://www.patreon.com/ISAC_bot )";
