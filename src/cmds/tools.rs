@@ -158,17 +158,13 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
     let player = args.parse_user(&ctx).await?;
     // this is just for rasing error when player profile is hidden
     let _ = player.full_player(&api).await?;
-    let res_text = ctx
-        .data()
-        .client
-        .get(player.wows_number_url())
-        .send()
+    let res_text = api
+        .ureq(player.wows_number_url(), |b| b)
         .await?
-        .text()
-        .await?;
+        .read_to_string()?;
     // all the clans the player have been in
     let record_clans = {
-        let html = Html::parse_document(res_text.as_str());
+        let html = Html::parse_document(&res_text);
 
         let transfer_header_selector = Selector::parse(".section-header").unwrap();
         let table_selector = Selector::parse(".table-styled").unwrap();
@@ -222,19 +218,16 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
 
     let mut name_history = vec![];
     for (clan_uid, clan_tag) in record_clans {
-        let res = ctx
-            .data()
-            .client
-            .get(
+        let res_text = api
+            .ureq(
                 player
                     .region
                     .number_url(format!("/clan/transfers/{clan_uid},/")),
+                |b| b,
             )
-            .send()
-            .await
-            .map_err(|err| IsacError::UnknownError(Box::new(err)))?;
-        let text = res.text().await.unwrap();
-        let transfers = _rename_parse_clan(text, &player).map_err(IsacError::UnknownError)?;
+            .await?
+            .read_to_string()?;
+        let transfers = _rename_parse_clan(res_text, &player).map_err(IsacError::UnknownError)?;
         name_history.extend(
             transfers
                 .into_iter()

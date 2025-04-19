@@ -218,14 +218,13 @@ pub async fn fetch_ship_leaderboard(
     region: &Region,
     ship: &Ship,
 ) -> Result<Vec<ShipLeaderboardPlayer>, IsacError> {
-    let res_text = ctx
-        .data()
-        .client
-        .get(region.number_url(format!("/ship/{},/", ship.ship_id)))
-        .send()
+    let res_text = WowsApi::new(ctx)
+        .ureq(
+            region.number_url(format!("/ship/{},/", ship.ship_id)),
+            |b| b,
+        )
         .await?
-        .text()
-        .await?;
+        .read_to_string()?;
     let html = Html::parse_document(&res_text);
     // Find the ranking table
     let table_selector = Selector::parse(".ranking-table").unwrap();
