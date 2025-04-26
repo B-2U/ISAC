@@ -40,6 +40,14 @@ impl LoadSaveFromJson for ShipLeaderboard {
     const PATH: &'static str = "./web_src/cache/leaderboard.json";
 }
 
+impl Drop for ShipLeaderboard {
+    fn drop(&mut self) {
+        // save the leaderboard to json
+        self.save_json_sync();
+        tracing::info!("Saved leaderboard.json");
+    }
+}
+
 #[derive(Serialize, Deserialize, Default)]
 pub struct KokomiShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
 
@@ -70,6 +78,14 @@ impl KokomiShipLeaderboard {
 
 impl LoadSaveFromJson for KokomiShipLeaderboard {
     const PATH: &'static str = "./web_src/cache/kokomi_leaderboard.json";
+}
+
+impl Drop for KokomiShipLeaderboard {
+    fn drop(&mut self) {
+        // save the leaderboard to json
+        self.save_json_sync();
+        tracing::info!("Saved kleaderboard.json");
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]

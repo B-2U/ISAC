@@ -1,5 +1,6 @@
 use std::{num::NonZeroUsize, path::PathBuf};
 
+use futures::future::join_all;
 use lru::LruCache;
 use poise::serenity_prelude::UserId;
 use serde::{Deserialize, Serialize};
@@ -12,6 +13,18 @@ use crate::structs::{AutocompletePlayer, lru_vector::LruVector};
 #[derive(Debug)]
 pub struct SearchCache {
     pub users: LruCache<UserId, UserSearchCache>,
+}
+
+impl Drop for SearchCache {
+    fn drop(&mut self) {
+        tokio::task::block_in_place(|| {
+            // Run the async code synchronously
+            tokio::runtime::Handle::current().block_on(async {
+                join_all(self.users.iter().map(|(_, data)| data.save())).await;
+            });
+        });
+        tracing::info!("Saved users' history cache");
+    }
 }
 
 impl SearchCache {
