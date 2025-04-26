@@ -40,6 +40,29 @@ impl LoadSaveFromJson for ShipLeaderboard {
     const PATH: &'static str = "./web_src/cache/leaderboard.json";
 }
 
+#[derive(Serialize, Deserialize, Default)]
+pub struct KokomiShipLeaderboard(ShipLeaderboard);
+
+impl KokomiShipLeaderboard {
+    // Delegate methods to the inner ShipLeaderboard
+    pub fn get_ship(
+        &mut self,
+        region: &Region,
+        ship_id: &ShipId,
+        timeout_check: bool,
+    ) -> Option<Vec<ShipLeaderboardPlayer>> {
+        self.0.get_ship(region, ship_id, timeout_check)
+    }
+
+    pub fn insert(&mut self, region: &Region, ship_id: ShipId, ship: ShipLeaderboardShip) {
+        self.0.insert(region, ship_id, ship);
+    }
+}
+
+impl LoadSaveFromJson for KokomiShipLeaderboard {
+    const PATH: &'static str = "./web_src/cache/alternate_leaderboard.json";
+}
+
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ShipLeaderboardShip {
     pub players: Vec<ShipLeaderboardPlayer>,
@@ -59,5 +82,7 @@ pub struct ShipLeaderboardPlayer {
     pub winrate: StatisticValue,
     pub frags: StatisticValue,
     pub dmg: StatisticValue,
+    #[serde(default)] // this field in for kokomi leaderboard
+    pub exp: StatisticValue,
     // pub planes: StatisticValue, planes got removed from wows number
 }

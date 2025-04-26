@@ -134,6 +134,12 @@ async def leaderboard():
     html = render_html(f"{TEMPLATE_PATH}/leaderboard.hbs", data)
     return await return_png(await renderer.screenshot(html))
 
+@app.route("/kleaderboard", methods=["POST"])
+async def kleaderboard():
+    data = await request.get_json()
+    html = render_html(f"{TEMPLATE_PATH}/kleaderboard.hbs", data)
+    return await return_png(await renderer.screenshot(html))
+
 
 @app.route("/server_top", methods=["POST"])
 async def server_top():

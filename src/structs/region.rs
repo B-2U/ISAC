@@ -22,6 +22,11 @@ pub enum Region {
     #[name = "EU"]
     Eu,
 }
+impl Display for Region {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.upper())
+    }
+}
 impl Region {
     pub fn upper(&self) -> &'static str {
         match self {
@@ -37,13 +42,22 @@ impl Region {
             Region::Eu => "eu",
         }
     }
-}
-impl Display for Region {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.upper())
+    /// get the region id for kokomi api
+    pub fn kokomi_region_id(&self) -> u8 {
+        match self {
+            Region::Asia => 1,
+            Region::Eu => 2,
+            Region::Na => 3,
+        }
     }
-}
-impl Region {
+    /// get the region name for kokomi api
+    pub fn kokomi_region(&self) -> &'static str {
+        match self {
+            Region::Asia => "asia",
+            Region::Eu => "eu",
+            Region::Na => "na",
+        }
+    }
     /// try to parse argument into region, None if none of the regions match
     pub fn parse(value: &str) -> Option<Self> {
         match value.to_lowercase().as_str() {
