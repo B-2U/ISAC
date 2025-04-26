@@ -189,11 +189,12 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
     };
     let truncate_len = {
         let mut default_truncate_len: usize = 15;
-        if let Some((index, _)) = author_rank {
+        if let Some((author_index, _)) = author_rank {
             // color author
-            lb_players[index].color = "#ffcc66".to_string();
-            if index >= 15 {
+            lb_players[author_index].color = "#ffcc66".to_string();
+            if author_index >= default_truncate_len {
                 // add one more row in the leaderboard for author
+                lb_players[default_truncate_len] = lb_players.remove(author_index);
                 default_truncate_len += 1;
             };
         }
@@ -317,9 +318,9 @@ async fn func_ktop(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), E
                 exp: stats.exp,
             };
             // if author in top 100, push him in, sort and rank
-            if author_ship.pr.value > lb_players.last().unwrap().pr.value {
+            if author_ship.exp.value > lb_players.last().unwrap().exp.value {
                 lb_players.push(author_ship);
-                lb_players.sort_by(|a, b| b.pr.value.partial_cmp(&a.pr.value).unwrap());
+                lb_players.sort_by(|a, b| b.exp.value.partial_cmp(&a.exp.value).unwrap());
                 lb_players
                     .iter_mut()
                     .enumerate()
@@ -342,11 +343,12 @@ async fn func_ktop(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), E
     };
     let truncate_len = {
         let mut default_truncate_len: usize = 15;
-        if let Some((index, _)) = author_rank {
+        if let Some((author_index, _)) = author_rank {
             // color author
-            lb_players[index].color = "#ffcc66".to_string();
-            if index >= 15 {
+            lb_players[author_index].color = "#ffcc66".to_string();
+            if author_index >= default_truncate_len {
                 // add one more row in the leaderboard for author
+                lb_players[default_truncate_len] = lb_players.remove(author_index);
                 default_truncate_len += 1;
             };
         }

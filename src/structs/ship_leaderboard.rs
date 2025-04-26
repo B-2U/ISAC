@@ -41,26 +41,35 @@ impl LoadSaveFromJson for ShipLeaderboard {
 }
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct KokomiShipLeaderboard(ShipLeaderboard);
+pub struct KokomiShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
 
 impl KokomiShipLeaderboard {
-    // Delegate methods to the inner ShipLeaderboard
+    /// get the players on the ship's leaderboard
     pub fn get_ship(
         &mut self,
         region: &Region,
         ship_id: &ShipId,
         timeout_check: bool,
     ) -> Option<Vec<ShipLeaderboardPlayer>> {
-        self.0.get_ship(region, ship_id, timeout_check)
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_secs();
+        self.0
+            .entry(*region)
+            .or_default()
+            .get(ship_id)
+            // if `timeout_check` is required && `last_updated_at` over 3600 sec, filter it
+            .filter(|ship_cache| !timeout_check || now - ship_cache.last_updated_at <= 3600)
+            .map(|ship_cache| ship_cache.players.clone())
     }
-
     pub fn insert(&mut self, region: &Region, ship_id: ShipId, ship: ShipLeaderboardShip) {
-        self.0.insert(region, ship_id, ship);
+        self.0.entry(*region).or_default().insert(ship_id, ship);
     }
 }
 
 impl LoadSaveFromJson for KokomiShipLeaderboard {
-    const PATH: &'static str = "./web_src/cache/alternate_leaderboard.json";
+    const PATH: &'static str = "./web_src/cache/kokomi_leaderboard.json";
 }
 
 #[derive(Serialize, Deserialize, Clone)]
