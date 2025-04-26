@@ -59,7 +59,7 @@ pub fn ktop_hybrid() -> poise::Command<Data, Error> {
     }
 }
 
-#[poise::command(prefix_command)]
+#[poise::command(prefix_command, aliases("btop"))]
 pub async fn ktop_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let region = args.parse_region(&ctx).await?;
     let ship = args.parse_ship(&ctx).await?;
