@@ -614,7 +614,7 @@ async fn fetch_ship_leaderboard_kokomi(
         fn parse_clan(input: &serde_json::Value) -> String {
             let clan = input.as_str().unwrap();
             if clan == "nan" {
-                return "".to_string();
+                "".to_string()
             } else {
                 format!("[{clan}]")
             }
