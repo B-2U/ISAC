@@ -13,3 +13,10 @@ pub struct LeaderboardTemplate {
 impl Render for LeaderboardTemplate {
     const RENDER_URL: &'static str = "leaderboard";
 }
+
+#[derive(Debug, Serialize, Clone)]
+pub struct KLeaderboardTemplate(pub LeaderboardTemplate);
+
+impl Render for KLeaderboardTemplate {
+    const RENDER_URL: &'static str = "kleaderboard";
+}

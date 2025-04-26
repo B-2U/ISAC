@@ -29,6 +29,24 @@ pub enum ColorStats {
     White,
 }
 
+impl ColorStats {
+    /// parse kokomi color classes
+    pub fn parse_kokomi_class(class: u64) -> Self {
+        match class {
+            8 => ColorStats::SuperUnicum,
+            7 => ColorStats::Unicum,
+            6 => ColorStats::Great,
+            5 => ColorStats::VeryGood,
+            4 => ColorStats::Good,
+            3 => ColorStats::Average,
+            2 => ColorStats::BelowAverage,
+            1 => ColorStats::Bad,
+            0 => ColorStats::White,
+            _ => ColorStats::Grey,
+        }
+    }
+}
+
 impl FromStr for ColorStats {
     type Err = IsacError;
 

@@ -9,7 +9,6 @@ mod tasks;
 mod template_data;
 mod utils;
 
-use futures::future::join_all;
 use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
@@ -19,8 +18,8 @@ use tracing_subscriber::{EnvFilter, prelude::*};
 
 use crate::{
     structs::{
-        Banner, ExpectedJs, GuildDefaultRegion, Linked, LittleConstant, Patrons, ShipLeaderboard,
-        ShipsPara, user_search_history::SearchCache,
+        Banner, ExpectedJs, GuildDefaultRegion, KokomiShipLeaderboard, Linked, LittleConstant,
+        Patrons, ShipLeaderboard, ShipsPara, user_search_history::SearchCache,
     },
     tasks::launch_renderer,
     utils::{LoadSaveFromJson, error_handler},
@@ -71,6 +70,7 @@ async fn main() {
             tools::clanuid(),
             wws::wws_hybrid(),
             top::top_hybrid(),
+            top::ktop_hybrid(),
             setting::link_hybrid(),
             setting::wows_region(),
             patreon::background(),
@@ -170,7 +170,7 @@ async fn main() {
 
     tokio::spawn(async move { tasks::expected_updater(client, expected, webhook_tx_new).await });
 
-    let _renderer = launch_renderer().await; // it's used in linux specific code below
+    let mut _renderer = launch_renderer().await; // it's used in linux specific code below
 
     tokio::spawn(async move {
         if let Err(why) = bot.start().await {
@@ -180,21 +180,10 @@ async fn main() {
     if rx.recv().is_err() {
         error!("All signal handlers hung up, shutting down...");
     }
-    // cleaning up
-
     // send message to discord log channel
     if is_product {
         let _ = webhook_tx.send("Bot shutting down...".into());
     }
-    // TODO: use async drop trait?
-    let lb_mg = arc_data.leaderboard.lock().await;
-    lb_mg.save_json().await;
-    info!("Saved leaderboard.json");
-
-    let cache_mg = arc_data.cache.lock().await;
-    join_all(cache_mg.users.iter().map(|(_, data)| data.save())).await;
-    info!("Saved users' history cache");
-
     // close renderer
     #[cfg(target_os = "linux")]
     if let Some(renderer_pid) = _renderer.id() {
@@ -235,6 +224,7 @@ pub struct DataInner {
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
     leaderboard: tokio::sync::Mutex<ShipLeaderboard>,
+    kleaderboard: tokio::sync::Mutex<KokomiShipLeaderboard>,
     cache: tokio::sync::Mutex<SearchCache>,
 }
 
@@ -251,6 +241,7 @@ impl DataInner {
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json().await),
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
             leaderboard: tokio::sync::Mutex::new(ShipLeaderboard::load_json().await),
+            kleaderboard: tokio::sync::Mutex::new(KokomiShipLeaderboard::load_json().await),
             cache: tokio::sync::Mutex::new(SearchCache::new()),
         }
     }
