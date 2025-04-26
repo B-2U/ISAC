@@ -191,6 +191,9 @@ async fn main() {
     let lb_mg = arc_data.leaderboard.lock().await;
     lb_mg.save_json().await;
     info!("Saved leaderboard.json");
+    let klb_mg = arc_data.kleaderboard.lock().await;
+    klb_mg.save_json().await;
+    info!("Saved leaderboard.json");
 
     let cache_mg = arc_data.cache.lock().await;
     join_all(cache_mg.users.iter().map(|(_, data)| data.save())).await;
