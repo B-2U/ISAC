@@ -554,7 +554,7 @@ async fn fetch_ship_leaderboard_kokomi(
     ship: &Ship,
 ) -> Result<Vec<ShipLeaderboardPlayer>, IsacError> {
     let res_json = WowsApi::new(ctx)
-        .send_request(
+        .reqwest(
             format!(
                 "http://129.226.90.10:8010/api/v1/robot/leaderboard/page/{}/{}/",
                 region.kokomi_region(),
