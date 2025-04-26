@@ -611,11 +611,19 @@ async fn fetch_ship_leaderboard_kokomi(
         // "win_rate_class": 7,
         // "avg_dmg_class": 8,
         // "avg_frags_class": 7
+        fn parse_clan(input: &serde_json::Value) -> String {
+            let clan = input.as_str().unwrap();
+            if clan == "nan" {
+                return "".to_string();
+            } else {
+                format!("[{clan}]")
+            }
+        }
         let player = ShipLeaderboardPlayer {
             color: "".to_string(),
             // we sort it by ourself, so the rank is not the same as the original
             rank: index as u64 + 1,
-            clan: format!("[{}]", row["clan_tag"].as_str().unwrap()), // NOTICE: Ahh backward compatibility
+            clan: parse_clan(&row["clan_tag"]), // NOTICE: Ahh backward compatibility
             ign: row["user_name"].as_str().unwrap().to_string(),
             uid: row["account_id"].as_str().unwrap().parse().unwrap(),
             battles: row["battles_count"].as_str().unwrap().parse().unwrap(),
