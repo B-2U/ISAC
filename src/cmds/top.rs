@@ -584,7 +584,7 @@ async fn fetch_ship_leaderboard_kokomi(
         players
     };
     for (index, row) in players.into_iter().enumerate() {
-        let row = dbg!(row.as_object().unwrap());
+        let row = row.as_object().unwrap();
         // "rank": "1",
         // "region": "Asia",
         // "region_id": "1",
