@@ -65,7 +65,7 @@ pub async fn who(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> 
         rwg.0
             .iter()
             .filter(|(_, v)| **v == partial_player)
-            .map(|(k, _)| k.clone())
+            .map(|(k, _)| *k)
             .collect::<Vec<_>>()
     };
     let output_str = linked_users
