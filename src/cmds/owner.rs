@@ -2,7 +2,9 @@ use crate::dc_utils::{Args, ContextAddon};
 use crate::utils::LoadSaveFromJson;
 use crate::utils::wws_api::WowsApi;
 use crate::{Context, Error};
-use poise::serenity_prelude::{ArgumentConvert, Channel, ReactionType};
+use itertools::Itertools;
+use poise::CreateReply;
+use poise::serenity_prelude::{ArgumentConvert, Channel, CreateAllowedMentions, ReactionType};
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
 pub async fn test(_ctx: Context<'_>, #[rest] _args: Args) -> Result<(), Error> {
@@ -50,6 +52,33 @@ pub async fn guilds(ctx: Context<'_>) -> Result<(), Error> {
 pub async fn users(ctx: Context<'_>) -> Result<(), Error> {
     let len = ctx.data().link.read().await.0.len();
     let _a = ctx.reply(len.to_string()).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, owners_only, hide_in_help)]
+pub async fn who(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+    let typing = ctx.typing().await;
+    let partial_player = args.parse_user(&ctx).await?;
+    typing.stop();
+    let linked_users = {
+        let rwg = ctx.data().link.read().await;
+        rwg.0
+            .iter()
+            .filter(|(_, v)| **v == partial_player)
+            .map(|(k, _)| k.clone())
+            .collect::<Vec<_>>()
+    };
+    let output_str = linked_users
+        .into_iter()
+        .map(|user_id| format!("<@{user_id}>"))
+        .join("\n");
+    let _a = ctx
+        .send(
+            CreateReply::default()
+                .content(output_str)
+                .allowed_mentions(CreateAllowedMentions::default()),
+        )
+        .await?;
     Ok(())
 }
 
