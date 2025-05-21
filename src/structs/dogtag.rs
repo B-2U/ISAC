@@ -5,13 +5,17 @@ use serde::{Deserialize, Serialize};
 
 use crate::utils::LoadSaveFromJson;
 
-static DOGTAGS: Lazy<HashMap<u64, String>> = Lazy::new(|| Dogtag::load_json_sync().into());
+static DOGTAGS: Lazy<HashMap<u64, HashMap<String, String>>> =
+    Lazy::new(|| Dogtag::load_json_sync().into());
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct Dogtag(pub HashMap<u64, String>);
+pub struct Dogtag(
+    /// the inner hashmap is just "index": key
+    pub HashMap<u64, HashMap<String, String>>,
+);
 
 impl LoadSaveFromJson for Dogtag {
-    const PATH: &'static str = "./web_src/dogtag.json";
+    const PATH: &'static str = "./web_src/wowsinfo_data/live/shared/dogtag.json";
 }
 
 impl Dogtag {
@@ -21,12 +25,13 @@ impl Dogtag {
         } else {
             DOGTAGS
                 .get(&input)
-                .map(|str| format!("./web_src/dogtags/{str}.png"))
+                .and_then(|inner_map| inner_map.get("index"))
+                .map(|tag| format!("./web_src/wowsinfo_data/live/shared/dogtags/{tag}.png"))
         }
     }
 }
 
-impl From<Dogtag> for HashMap<u64, String> {
+impl From<Dogtag> for HashMap<u64, HashMap<String, String>> {
     fn from(value: Dogtag) -> Self {
         value.0
     }

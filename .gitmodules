@@ -1,0 +1,3 @@
+[submodule "web_src/wowsinfo_data"]
+	path = web_src/wowsinfo_data
+	url = https://github.com/wowsinfo/data
