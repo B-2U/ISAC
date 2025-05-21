@@ -101,7 +101,9 @@ async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Er
                     let _msg = ctx
                         .send(
                             CreateReply::default()
-                                .content(err.to_string())
+                                .content(format!(
+                                    "{err}\n`top` is currently unavailable, try `btop` instead"
+                                ))
                                 .components(vec![CreateActionRow::Buttons(vec![
                                     CreateButton::new_link(
                                         region
