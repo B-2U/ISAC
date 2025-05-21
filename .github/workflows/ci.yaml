@@ -49,7 +49,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: rustfmt --all -- --check
 
       # - name: Build debug profile
       #   id: build
