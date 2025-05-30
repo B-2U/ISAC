@@ -15,7 +15,7 @@ pub struct Dogtag(
 );
 
 impl LoadSaveFromJson for Dogtag {
-    const PATH: &'static str = "./web_src/wowsinfo_data/live/shared/dogtag.json";
+    const PATH: &'static str = "./wowsinfo_data/live/shared/dogtag.json";
 }
 
 impl Dogtag {
@@ -26,7 +26,7 @@ impl Dogtag {
             DOGTAGS
                 .get(&input)
                 .and_then(|inner_map| inner_map.get("index"))
-                .map(|tag| format!("./web_src/wowsinfo_data/live/shared/dogtags/{tag}.png"))
+                .map(|tag| format!("./wowsinfo_data/live/shared/dogtags/{tag}.png"))
         }
     }
 }
