@@ -40,7 +40,7 @@ jobs:
           deploy_key: ${{ secrets.DEPLOY_SSH_KEY }}
         
 
-      - name: restart service
+      - name: pull resources and restart service
         if: ${{ steps.build.outcome == 'success' }}
         uses: appleboy/ssh-action@master
         with:
@@ -49,4 +49,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             git pull # sync templates
+            git submodule update --init --recursive # sync submodules
+            
             systemctl --user restart isac
