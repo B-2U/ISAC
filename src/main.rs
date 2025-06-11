@@ -13,6 +13,7 @@ use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
 use std::{collections::HashSet, env, ops::Deref, sync::Arc};
+use tokio::sync::mpsc::UnboundedSender;
 use tracing::{error, info, warn};
 use tracing_subscriber::{EnvFilter, prelude::*};
 
@@ -139,37 +140,31 @@ async fn main() {
     }
 
     // a webhook logger, send the received message to discord logging channel
-    let webhook_http = bot.http.clone();
-    let (webhook_tx, mut webhook_rx) = tokio::sync::mpsc::unbounded_channel::<String>();
-    tokio::spawn(async move {
-        let web_hook = Webhook::from_url(&webhook_http, &env::var("ERR_WEB_HOOK").unwrap())
-            .await
-            .unwrap();
-        loop {
-            while let Some(input) = webhook_rx.recv().await {
-                let _r = web_hook
-                    .execute(&webhook_http, false, ExecuteWebhook::new().content(input))
-                    .await;
-            }
-        }
-    });
+    let webhook_tx = init_webhook_logger(bot.http.clone()).await;
 
     // update patreon
-    let http = bot.http.clone();
-    let patron = Arc::clone(&arc_data.patron);
-    let webhook_tx_new = webhook_tx.clone();
-    tokio::spawn(async move { tasks::patron_updater(http, patron, webhook_tx_new).await });
-    // update ShipsPara
-    let client = arc_data.client.clone();
-    let ships = Arc::clone(&arc_data.ships);
-    let webhook_tx_new = webhook_tx.clone();
-    tokio::spawn(async move { tasks::ships_para_updater(client, ships, webhook_tx_new).await });
-    // update expected json
-    let client = arc_data.client.clone();
-    let expected = Arc::clone(&arc_data.expected);
-    let webhook_tx_new = webhook_tx.clone();
+    tokio::spawn({
+        let http = bot.http.clone();
+        let patron = Arc::clone(&arc_data.patron);
+        let webhook_tx_new = webhook_tx.clone();
+        async move { tasks::patron_updater(http, patron, webhook_tx_new).await }
+    });
 
-    tokio::spawn(async move { tasks::expected_updater(client, expected, webhook_tx_new).await });
+    // update ShipsPara
+    tokio::spawn({
+        let client = arc_data.client.clone();
+        let ships = Arc::clone(&arc_data.ships);
+        let webhook_tx_new = webhook_tx.clone();
+        async move { tasks::ships_para_updater(client, ships, webhook_tx_new).await }
+    });
+
+    // update expected json
+    tokio::spawn({
+        let client = arc_data.client.clone();
+        let expected = Arc::clone(&arc_data.expected);
+        let webhook_tx_new = webhook_tx.clone();
+        async move { tasks::expected_updater(client, expected, webhook_tx_new).await }
+    });
 
     let mut _renderer = launch_renderer().await; // it's used in linux specific code below
 
@@ -188,7 +183,7 @@ async fn main() {
     // close renderer
     #[cfg(target_os = "linux")]
     if let Some(renderer_pid) = _renderer.id() {
-        unsafe { libc::kill(renderer_pid as i32, libc::SIGINT) };
+        unsafe { libc::kill(renderer_pid as i32, libc::SIGTERM) };
     }
     shard_manager.shutdown_all().await;
 }
@@ -246,4 +241,32 @@ impl DataInner {
             cache: tokio::sync::Mutex::new(SearchCache::new()),
         }
     }
+}
+
+/// A webhook logger, send the received message to discord logging channel
+async fn init_webhook_logger(webhook_http: Arc<serenity::Http>) -> UnboundedSender<String> {
+    let (webhook_tx, mut webhook_rx) = tokio::sync::mpsc::unbounded_channel::<String>();
+    tokio::spawn(async move {
+        let err_webhook = env::var("ERR_WEB_HOOK");
+        match err_webhook {
+            Ok(webhook_url) => {
+                let web_hook = Webhook::from_url(&webhook_http, &webhook_url)
+                    .await
+                    .unwrap();
+                loop {
+                    while let Some(input) = webhook_rx.recv().await {
+                        let _r = web_hook
+                            .execute(&webhook_http, false, ExecuteWebhook::new().content(input))
+                            .await;
+                    }
+                }
+            }
+            Err(_) => {
+                warn!("ERR_WEB_HOOK not set, webhook logger will not work!");
+                // Hold the sender so the channel doesn't close immediately
+                std::future::pending::<()>().await;
+            }
+        }
+    });
+    webhook_tx
 }

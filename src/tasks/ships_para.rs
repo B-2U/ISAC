@@ -30,6 +30,8 @@ pub async fn ships_para_updater(
 
                 *ships_arc.write() = new_ships_para;
                 //logging
+                let _ =
+                    webhook_tx.send(format!("ships para updated to version {current_version}!"));
             }
             Err(err) => {
                 let _ = webhook_tx.send(format!("ships para updating fail!, err: \n{err}"));
