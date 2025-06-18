@@ -9,7 +9,7 @@ use poise::{
     serenity_prelude::{
         ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateEmbed,
         CreateEmbedAuthor, CreateInteractionResponse, CreateInteractionResponseMessage,
-        CreateMessage, EditMessage, Message, ReactionType, User, UserId,
+        EditMessage, Message, ReactionType, User, UserId,
     },
 };
 use rand::seq::IndexedRandom;
@@ -75,80 +75,47 @@ pub async fn code(
             .await;
         return Ok(());
     };
-    let codes_vec = codes.split_whitespace().collect::<Vec<_>>();
-    // if there's more than one code, adding a code block for user to copy
-    let addition = match codes_vec.len() {
-        1 => String::new(),
-        _ => format!("```.code {codes}```\n"),
-    };
-    for (index, code) in codes_vec.iter().enumerate() {
-        let view = BonusView::new(code);
-        let last_msg = match index {
-            0 => {
-                ctx.send(
-                    CreateReply::default()
-                        .content(format!("{addition}wows code: **{code}**"))
-                        .components(view.build())
-                        .reply(true),
-                )
-                .await?
-                .into_message()
-                .await?
-            }
-            _ => {
-                ctx.channel_id()
-                    .send_message(
-                        &ctx,
-                        CreateMessage::default()
-                            .components(view.build())
-                            .content(format!("wows code: **{code}**")),
-                    )
-                    .await?
-            }
-        };
-        if index == codes_vec.len() - 1 {
-            let _r = last_msg
-                .react(ctx, ReactionType::Unicode("❤️".to_string()))
-                .await;
-        }
+    let codes_vec = codes
+        .split_whitespace()
+        .filter(|code| code.len() <= 80 && code.chars().all(|c| c.is_ascii_alphanumeric()))
+        .collect::<Vec<_>>();
+
+    if codes_vec.len() > 10 {
+        Err(IsacInfo::GeneralError {
+            msg: "Too many codes, max 10 codes at once".to_string(),
+        })?
     }
+
+    let code_buttons: Vec<CreateActionRow> = codes_vec
+        .chunks(5)
+        .map(|code_chunk| {
+            CreateActionRow::Buttons(
+                code_chunk
+                    .iter()
+                    .map(|&code| {
+                        CreateButton::new_link(format!(
+                            "https://wargaming.net/shop/redeem/?bonus_mode={code}"
+                        ))
+                        .label(code)
+                    })
+                    .collect(),
+            )
+        })
+        .collect();
+    let msg = ctx
+        .send(
+            CreateReply::default()
+                .content("dorodoro, here are the codes:")
+                .components(code_buttons)
+                .reply(true),
+        )
+        .await?
+        .into_message()
+        .await?;
+    let _r = msg
+        .react(ctx, ReactionType::Unicode("❤️".to_string()))
+        .await;
     Ok(())
-}
-
-struct BonusView<'a> {
-    code: &'a str,
-}
-
-impl<'a> BonusView<'a> {
-    fn new(code: &'a str) -> Self {
-        Self { code }
-    }
-    fn build(&self) -> Vec<CreateActionRow> {
-        // sepereated them to 2 array becuz with a Array<Tuple> it formatted ugly
-        const LABEL: [&str; 4] = ["Asia", "Na", "Eu", "Ru"];
-        let urls = [
-            format!(
-                "https://asia.wargaming.net/shop/bonus/?bonus_mode={}",
-                self.code
-            ),
-            format!(
-                "https://na.wargaming.net/shop/bonus/?bonus_mode={}",
-                self.code
-            ),
-            format!(
-                "https://eu.wargaming.net/shop/bonus/?bonus_mode={}",
-                self.code
-            ),
-            format!("https://lesta.ru/shop/bonus/?bonus_mode={}", self.code),
-        ];
-        vec![CreateActionRow::Buttons(
-            LABEL
-                .iter()
-                .zip(urls.iter())
-                .map(|(label, url)| CreateButton::new_link(url).label(*label))
-                .collect(),
-        )]
-    }
 }
 
 #[poise::command(prefix_command)]
