@@ -35,7 +35,12 @@ pub trait LoadSaveFromJson {
             }
         })
         .await
-        .unwrap()
+        .unwrap_or_else(|err| {
+            panic!(
+                "Failed to join async load_json for file: {:?}. Err: {err}",
+                Self::PATH
+            )
+        })
     }
 
     fn load_json_sync() -> Self
