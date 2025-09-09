@@ -16,7 +16,7 @@ pub async fn ships_para_updater(
     webhook_tx: UnboundedSender<String>,
 ) {
     let mut interval = tokio::time::interval(Duration::from_secs(86400 * 7));
-    let mut current_version = get_game_version(&client).await.unwrap();
+    let mut current_version = get_game_version(&client).await.unwrap_or_default();
     loop {
         interval.tick().await;
         match get_game_version(&client).await {
@@ -25,8 +25,10 @@ pub async fn ships_para_updater(
                     continue;
                 };
                 // new version, update src
+                let Ok(new_ships_para) = encyclopedia_vehicles(&client).await else {
+                    continue;
+                };
                 current_version = version;
-                let new_ships_para = encyclopedia_vehicles(&client).await.unwrap();
 
                 *ships_arc.write() = new_ships_para;
                 //logging
