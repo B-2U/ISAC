@@ -8,11 +8,12 @@ use tracing::warn;
 ///
 /// ## Panic
 /// panic when failing to load from the path
-pub trait LoadSaveFromJson {
+pub trait LoadSaveFromJson: Serialize + DeserializeOwned {
     const PATH: &'static str;
+
     async fn load_json() -> Self
     where
-        Self: Default + Serialize + DeserializeOwned + Sized + Send + 'static,
+        Self: Default + Sized + Send + 'static,
     {
         tokio::task::spawn_blocking(move || {
             if let Ok(file) = std::fs::File::open(Self::PATH) {
@@ -45,7 +46,7 @@ pub trait LoadSaveFromJson {
 
     fn load_json_sync() -> Self
     where
-        Self: DeserializeOwned + Serialize + Default,
+        Self: Default,
     {
         if let Ok(file) = std::fs::File::open(Self::PATH) {
             let json_str = std::io::read_to_string(file).unwrap();
@@ -69,9 +70,8 @@ pub trait LoadSaveFromJson {
 
     async fn save_json(&self)
     where
-        Self: Serialize + Sized,
+        Self: Sized,
     {
-        // Create the parent directories if they don't exist
         if let Some(parent) = Path::new(Self::PATH).parent() {
             tokio::fs::create_dir_all(parent).await.unwrap();
         }
@@ -88,19 +88,9 @@ pub trait LoadSaveFromJson {
         if let Err(err) = file.write_all(&json_bytes).await {
             panic!("Failed to write JSON to file: {:?}. Err: {err}", Self::PATH,);
         }
-        // serde_json::to_writer(file, &self).unwrap_or_else(|err| {
-        //     panic!(
-        //         "Failed to serialze struct: {:?} to file: {}\n Err: {err}",
-        //         std::any::type_name::<Self>(),
-        //         Self::PATH,
-        //     )
-        // })
     }
 
-    fn save_json_sync(&self)
-    where
-        Self: Serialize,
-    {
+    fn save_json_sync(&self) {
         if let Some(parent_dir) = std::path::Path::new(Self::PATH).parent() {
             fs::create_dir_all(parent_dir).unwrap();
         }
