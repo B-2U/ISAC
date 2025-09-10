@@ -115,6 +115,9 @@ async fn main() {
     .activity(ActivityData::listening(".help"))
     .await
     .unwrap();
+    if let Err(why) = bot.start_autosharded().await {
+        println!("Err with client: {:?}", why);
+    }
     let shard_manager = bot.shard_manager.clone();
 
     // ctrl_c catcher for both Win and Unix
