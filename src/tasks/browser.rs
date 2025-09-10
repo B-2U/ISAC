@@ -20,5 +20,5 @@ pub async fn launch_renderer() -> tokio::process::Child {
     tokio::process::Command::new(python)
         .arg("./renderer/renderer.py")
         .spawn()
-        .expect("Failed to start subprocess")
+        .unwrap_or_else(|err| panic!("Failed to start subprocess: {}", err))
 }
