@@ -229,7 +229,7 @@ impl DataInner {
     pub async fn new() -> Self {
         DataInner {
             client: reqwest::Client::new(),
-            patron: Arc::new(parking_lot::RwLock::new(Patrons::default())),
+            patron: Arc::new(parking_lot::RwLock::new(Patrons::load_json().await)),
             expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
             ships: Arc::new(parking_lot::RwLock::new(ShipsPara::load_json().await)),
             constant: parking_lot::RwLock::new(LittleConstant::load_json().await),

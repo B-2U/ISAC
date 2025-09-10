@@ -28,7 +28,10 @@ pub async fn patron_updater(
         loop {
             interval.tick().await;
             match get_patrons(&http, IDS.as_ref().unwrap()).await {
-                Ok(patrons) => *patrons_arc.write() = patrons,
+                Ok(patrons) => {
+                    patrons.save_json().await;
+                    *patrons_arc.write() = patrons
+                }
                 Err(err) => {
                     let _ = webhook_tx.send(format!("patrons task fail!, err: \n{err}"));
                 }
@@ -53,6 +56,8 @@ async fn get_patrons(http: &Arc<Http>, ids: &Ids) -> Result<Patrons, Error> {
                 .map(|linked_user| linked_user.uid)
                 .unwrap_or(0),
             discord_id: m.user.id,
+            discord_nick: m.nick,
+            discord_name: m.user.name,
         })
         .collect::<Vec<_>>();
     Ok(Patrons(patron_vec))
