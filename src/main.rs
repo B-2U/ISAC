@@ -169,7 +169,7 @@ async fn main() {
         async move { tasks::expected_updater(client, expected, webhook_tx_new).await }
     });
 
-    tracing::debug!("Launching renderer...");
+    info!("Launching renderer...");
     let mut _renderer = launch_renderer().await; // it's used in linux specific code below
 
     tokio::spawn(async move {
