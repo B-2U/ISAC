@@ -419,8 +419,14 @@ where
     for (key, value) in raw_map {
         // ignore new k&v added by WG, like mastery_sign: "No_Sign"
         if let Ok(mode) = serde_json::from_str::<Mode>(&format!("\"{}\"", key)) {
-            if !value.as_object().unwrap().is_empty() {
-                mode_map.insert(mode, serde_json::from_value(value).unwrap());
+            let obj = value
+                .as_object()
+                .ok_or_else(|| serde::de::Error::custom("Expected object for ShipStats"))?;
+            if !obj.is_empty() {
+                let stats = serde_json::from_value(value).map_err(|e| {
+                    serde::de::Error::custom(format!("ShipStats deserialization error: {}", e))
+                })?;
+                mode_map.insert(mode, stats);
             }
         }
     }
