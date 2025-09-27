@@ -39,11 +39,10 @@ impl SearchCache {
         if self.users.get(user_id).is_none() {
             if let Some(cache) = UserSearchCache::load(user_id).await {
                 // if someone evicted, save it
-                if let Some((evicted_id, evicted_data)) = self.users.push(*user_id, cache) {
-                    if &evicted_id != user_id {
+                if let Some((evicted_id, evicted_data)) = self.users.push(*user_id, cache)
+                    && &evicted_id != user_id {
                         evicted_data.save().await;
-                    }
-                };
+                    };
             } else {
                 return None;
             };
@@ -92,11 +91,10 @@ impl SearchCache {
     }
     /// insert new child, save the evicted one to disk
     pub async fn push_save(&mut self, user_id: UserId, cache: UserSearchCache) {
-        if let Some((evicted_id, evicted_data)) = self.users.push(user_id, cache) {
-            if evicted_id != user_id {
+        if let Some((evicted_id, evicted_data)) = self.users.push(user_id, cache)
+            && evicted_id != user_id {
                 evicted_data.save().await;
-            }
-        };
+            };
     }
 }
 

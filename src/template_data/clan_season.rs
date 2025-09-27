@@ -47,7 +47,7 @@ impl ClanSeasonTemplate {
 
     fn _seperate_members(mut members: Vec<ClanMember>) -> (Vec<ClanMember>, Vec<ClanMember>) {
         let len = members.len();
-        let half = match len % 2 == 0 {
+        let half = match len.is_multiple_of(2) {
             true => len / 2,
             false => (len / 2) + 1,
         };
