@@ -271,9 +271,10 @@ impl ShipStatsCollection {
             let ship_js = ctx.data().ships.read();
             for (ship_id, ship_modes) in self.0 {
                 if let Some(ship_para) = ship_js.get(&ship_id)
-                    && let Some(class_collection) = map.get_mut(&ship_para.tier) {
-                        class_collection.0.insert(ship_id, ship_modes);
-                    }
+                    && let Some(class_collection) = map.get_mut(&ship_para.tier)
+                {
+                    class_collection.0.insert(ship_id, ship_modes);
+                }
             }
         }
         map

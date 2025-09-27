@@ -157,9 +157,10 @@ async fn func_server_top(ctx: Context<'_>, ship: Ship) -> Result<(), Error> {
                 p.color = "#e85a6b".to_string();
             }
             if let Some(author_p) = author_player
-                && author_p.uid == p.player.uid {
-                    p.color = "#ffcc66".to_string();
-                }
+                && author_p.uid == p.player.uid
+            {
+                p.color = "#ffcc66".to_string();
+            }
         })
     };
     let data = ServerTopTemplate {
