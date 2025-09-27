@@ -5,7 +5,6 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use tokio::io::AsyncWriteExt;
 
 use crate::structs::{PartialPlayer, ShipStatsCollection};
 
@@ -102,18 +101,13 @@ impl PlayerSnapshots {
     pub async fn save(&self) {
         let path = Self::get_path(&self.player);
 
-        let mut file = tokio::fs::File::create(&path)
-            .await
-            .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", path));
         let json_bytes = serde_json::to_vec(&self).unwrap_or_else(|err| {
             panic!(
                 "Failed to serialize struct: {:?} to JSON. Err: {err}",
                 std::any::type_name::<Self>(),
             )
         });
-        if let Err(err) = file.write_all(&json_bytes).await {
-            panic!("Failed to write JSON to file: {:?}. Err: {err}", path,);
-        }
+        crate::utils::save_file_with_lock(path, &json_bytes);
     }
 
     /// get player's file path

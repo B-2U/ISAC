@@ -7,4 +7,4 @@ mod isac_error;
 pub use isac_error::{IsacError, IsacHelp, IsacInfo};
 
 mod json;
-pub use json::LoadSaveFromJson;
+pub use json::*;
