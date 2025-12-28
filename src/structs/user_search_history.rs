@@ -137,22 +137,33 @@ impl UserSearchCache {
     /// save player data
     pub async fn save(&self) {
         let path = Self::get_path(&self.user_id);
+
         // Create the parent directories if they don't exist
         if let Some(parent) = path.parent() {
-            tokio::fs::create_dir_all(parent).await.unwrap();
+            if let Err(err) = tokio::fs::create_dir_all(parent).await {
+                tracing::error!("Failed to create directory {:?}: {}", parent, err);
+                return;
+            }
         }
 
-        let mut file = tokio::fs::File::create(&path)
-            .await
-            .unwrap_or_else(|err| panic!("failed to create file: {:?}, Err: {err}", path));
-        let json_bytes = serde_json::to_vec(&self).unwrap_or_else(|err| {
-            panic!(
-                "Failed to serialize struct: {:?} to JSON. Err: {err}",
-                std::any::type_name::<Self>(),
-            )
-        });
+        let mut file = match tokio::fs::File::create(&path).await {
+            Ok(file) => file,
+            Err(err) => {
+                tracing::error!("Failed to create file {:?}: {}", path, err);
+                return;
+            }
+        };
+
+        let json_bytes = match serde_json::to_vec(&self) {
+            Ok(bytes) => bytes,
+            Err(err) => {
+                tracing::error!("Failed to serialize struct to JSON: {}", err);
+                return;
+            }
+        };
+
         if let Err(err) = file.write_all(&json_bytes).await {
-            panic!("Failed to write JSON to file: {:?}. Err: {err}", path,);
+            tracing::error!("Failed to write JSON to file {:?}: {}", path, err);
         }
     }
 
