@@ -139,12 +139,11 @@ impl UserSearchCache {
         let path = Self::get_path(&self.user_id);
 
         // Create the parent directories if they don't exist
-        if let Some(parent) = path.parent() {
-            if let Err(err) = tokio::fs::create_dir_all(parent).await {
+        if let Some(parent) = path.parent()
+            && let Err(err) = tokio::fs::create_dir_all(parent).await {
                 tracing::error!("Failed to create directory {:?}: {}", parent, err);
                 return;
             }
-        }
 
         let mut file = match tokio::fs::File::create(&path).await {
             Ok(file) => file,

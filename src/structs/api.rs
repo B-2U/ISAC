@@ -23,7 +23,7 @@ impl Status {
             })?,
         }
     }
-    /// true if the status code is "ok"
+    /// true if the status code is "okru"
     pub fn ok(&self) -> bool {
         matches!(self.status.as_str(), "ok")
     }
