@@ -132,9 +132,16 @@ impl TryFrom<VortexVehicleAPIRes> for ShipsPara {
     fn try_from(res: VortexVehicleAPIRes) -> Result<Self, Self::Error> {
         res.status.error_for_status()?;
 
+        /// Ship IDs that should always be excluded
+        const EXCLUDED_SHIPS: &[ShipId] = &[
+            ShipId(3330225968), // fake Schlieffen
+            ShipId(3256792848), // fake Vrijheid
+        ];
+
         let output = res
             .data
             .into_iter()
+            .filter(|(ship_id, _)| !EXCLUDED_SHIPS.contains(ship_id))
             .map(|(k, mut v)| {
                 let class = v
                     .tags
