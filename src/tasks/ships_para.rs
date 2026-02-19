@@ -15,7 +15,7 @@ pub async fn ships_para_updater(
     ships_arc: Arc<RwLock<ShipsPara>>,
     webhook_tx: UnboundedSender<String>,
 ) {
-    let mut interval = tokio::time::interval(Duration::from_secs(86400 * 7));
+    let mut interval = tokio::time::interval(Duration::from_secs(86400 / 2));
     let mut current_version = get_game_version(&client).await.unwrap_or_default();
     loop {
         interval.tick().await;
@@ -36,7 +36,7 @@ pub async fn ships_para_updater(
                     webhook_tx.send(format!("ships para updated to version {current_version}!"));
             }
             Err(err) => {
-                let _ = webhook_tx.send(format!("ships para updating fail!, err: \n{err}"));
+                let _ = webhook_tx.send(format!("get_game_version fail!, err: \n{err}"));
             }
         }
     }
@@ -57,8 +57,14 @@ async fn get_game_version(client: &Client) -> Result<String, Box<dyn Error + Sen
     let url = "https://vortex.worldofwarships.com/api/encyclopedia/en/";
 
     let res: Value = client.get(url).send().await?.json().await?;
-    res["data"]["game_version"]
+    let Some(data) = res.get("data") else {
+        return Err(r#"["data"] not found in encyclopedia"#.into());
+    };
+    let Some(game_version) = data.get("game_version") else {
+        return Err(r#"["data"]["game_version"] not found in encyclopedia"#.into());
+    };
+    game_version
         .as_str()
         .map(ToString::to_string)
-        .ok_or_else(|| "Failed to retrieve game version".into())
+        .ok_or_else(|| r#"["data"]["game_version"] is not a string"#.into())
 }
