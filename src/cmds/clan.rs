@@ -108,14 +108,14 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         lock.save_json_sync();
     }
 
-    let clan_rename = if clan_detail.old_tag.is_some() {
+    let clan_rename = if let Some(old_tag) = clan_detail.old_tag {
         // old_name and rename_at is possible to be null, thx WG
         let rename_at = clan_detail.renamed_at.unwrap_or(1);
         let old_name = clan_detail.old_name.unwrap_or_default();
 
         let datetime = DateTime::from_timestamp(rename_at as i64, 0).unwrap();
         Some(ClanTemplateRename {
-            tag: clan_detail.old_tag.unwrap(),
+            tag: old_tag,
             name: old_name,
             time: datetime.format("%B %e, %Y").to_string(),
         })

@@ -392,7 +392,16 @@ impl<'a> AskDay<'a> {
             content
         };
         // sending ask message
-        if self.ask_msg.is_none() {
+        if let Some(self_ask_msg) = self.ask_msg.as_mut() {
+            // edit
+            self_ask_msg
+                .edit(self.ctx, {
+                    EditMessage::default()
+                        .content(msg_content)
+                        .components(if has_choices { view } else { vec![] })
+                })
+                .await?;
+        } else {
             // first time
             let msg = self
                 .ctx
@@ -406,17 +415,6 @@ impl<'a> AskDay<'a> {
                 .into_message()
                 .await?;
             self.ask_msg = Some(msg);
-        } else {
-            // edit
-            self.ask_msg
-                .as_mut()
-                .expect("it shouldn't happen")
-                .edit(self.ctx, {
-                    EditMessage::default()
-                        .content(msg_content)
-                        .components(if has_choices { view } else { vec![] })
-                })
-                .await?;
         }
         if !has_choices {
             Err(IsacError::Cancelled)?
