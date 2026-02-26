@@ -25,15 +25,23 @@ pub async fn patron_updater(
     static IDS: Lazy<Option<Ids>> = Lazy::new(|| load_ids().ok());
 
     if IDS.is_some() {
+        // only send when fail count >= 2, and reset it when success
+        let mut fail_count = 0;
         loop {
             interval.tick().await;
             match get_patrons(&http, IDS.as_ref().unwrap()).await {
                 Ok(patrons) => {
                     patrons.save_json().await;
-                    *patrons_arc.write() = patrons
+                    *patrons_arc.write() = patrons;
+                    fail_count = 0;
                 }
                 Err(err) => {
-                    let _ = webhook_tx.send(format!("patrons task fail!, err: \n{err}"));
+                    let err_msg = format!("patrons task fail!, err: \n{err}");
+                    warn!("{err_msg}");
+                    fail_count += 1;
+                    if fail_count >= 2 {
+                        let _ = webhook_tx.send(err_msg);
+                    }
                 }
             }
         }
