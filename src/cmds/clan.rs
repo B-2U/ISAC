@@ -167,7 +167,7 @@ async fn func_clan(ctx: &Context<'_>, partial_clan: PartialClan) -> Result<(), E
         .collect::<Vec<_>>();
     if !missing_seasons.is_empty() {
         clan_seasons.extend(missing_seasons);
-        clan_seasons.sort_by(|a, b| b.season.cmp(&a.season));
+        clan_seasons.sort_by_key(|season| std::cmp::Reverse(season.season));
     }
 
     let data = ClanTemplate {

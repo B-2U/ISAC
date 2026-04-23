@@ -201,7 +201,7 @@ pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Err
                 .map(|(date, ign)| (date, ign, clan_tag.clone())),
         );
     }
-    name_history.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+    name_history.sort_unstable_by_key(|record| record.0);
 
     let output = name_history
         .iter()
