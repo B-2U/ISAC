@@ -47,7 +47,9 @@ pub async fn top(
 ) -> Result<(), Error> {
     let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();
     let region = region.unwrap_or_default();
-    func_top(ctx, region, ship).await
+    // Redirect to Kokomi leaderboard
+    func_ktop(ctx, region, ship).await
+    // func_top(ctx, region, ship).await
 }
 
 pub fn ktop_hybrid() -> poise::Command<Data, Error> {
