@@ -323,7 +323,7 @@ async fn func_ktop(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), E
                 exp: stats.exp,
             };
             // if author in top 100, push him in, sort and rank
-            if author_ship.exp.value > lb_players.last().unwrap().exp.value {
+            if author_ship.exp.value > lb_players.last().map(|p| p.exp.value).unwrap_or(0.0) {
                 lb_players.push(author_ship);
                 lb_players.sort_by(|a, b| b.exp.value.partial_cmp(&a.exp.value).unwrap());
                 lb_players
