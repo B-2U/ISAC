@@ -47,7 +47,9 @@ pub async fn top(
 ) -> Result<(), Error> {
     let ship = ctx.data().ships.read().search_name(&ship_name, 1)?.first();
     let region = region.unwrap_or_default();
-    func_top(ctx, region, ship).await
+    // Redirect to Kokomi leaderboard
+    func_ktop(ctx, region, ship).await
+    // func_top(ctx, region, ship).await
 }
 
 pub fn ktop_hybrid() -> poise::Command<Data, Error> {
@@ -557,112 +559,102 @@ async fn fetch_ship_leaderboard_kokomi(
     region: &Region,
     ship: &Ship,
 ) -> Result<Vec<ShipLeaderboardPlayer>, IsacError> {
+    let kokomi_token = ctx
+        .data()
+        .kokomi_api_token
+        .as_deref()
+        .ok_or(IsacInfo::GeneralError {
+            msg: "Kokomi API token not set in env".to_string(),
+        })?;
+
     let res_json = WowsApi::new(ctx)
         .reqwest(
-            format!(
-                "http://129.226.90.10:8010/api/v1/robot/leaderboard/page/{}/{}/",
-                region.kokomi_region(),
-                ship.ship_id
-            ),
-            |b| b.query(&[("language", "english")]),
+            region.kokomi_url(format!(
+                "/api/external/ship/ranking/{ship_id}/",
+                ship_id = ship.ship_id
+            )),
+            |b| {
+                b.header("Access-Token", kokomi_token)
+                    .query(&[("size", "100"), ("dogtag", "0")])
+            },
         )
         .await?
         .json::<serde_json::Value>()
         .await?;
-    let mut leader_board = vec![];
+
+    if res_json.get("status") != Some(&serde_json::Value::String("ok".to_string())) {
+        Err(IsacInfo::GeneralError {
+            msg: format!(
+                "Kokomi API error: {}",
+                res_json
+                    .get("message")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("Unknown error")
+            ),
+        })?
+    }
 
     let players = {
-        let Some(res_data) = res_json["data"].as_object() else {
+        let Some(players) = res_json["data"].as_array() else {
             Err(IsacInfo::GeneralError {
                 msg: format!("No one on the leaderboard of `{}` yet", ship.name),
             })?
         };
-        let mut players = res_data["leaderboard"]
-            .as_array()
-            .cloned()
-            .unwrap_or_default();
-
-        players.sort_unstable_by_key(|v| {
-            std::cmp::Reverse(v["avg_exp"].as_str().unwrap().parse::<u64>().unwrap())
-        });
-        players
+        // "rank": 1,
+        // "account_id": 2019176341,
+        // "username": "Honoka_Sukidayo",
+        // "clan_id": 2000038692,
+        // "clan_tag": "FOCAL",
+        // "clan_league": 4,
+        // "battles": 82,
+        // "rating": 3572,
+        // "win_rate": 80.49,
+        // "win_rate_level": 8,
+        // "avg_damage": 144484,
+        // "avg_damage_level": 8,
+        // "avg_frags": 1.67,
+        // "avg_frags_level": 8,
+        // "avg_exp": 1704,
+        players.clone()
     };
+
+    let mut leader_board = vec![];
     for (index, row) in players.into_iter().enumerate() {
-        let row = row.as_object().unwrap();
-        // "rank": "1",
-        // "region": "Asia",
-        // "region_id": "1",
-        // "clan_tag": "RINA",
-        // "clan_id": "2000038851",
-        // "user_name": "Blanquillo",
-        // "account_id": "2024413063",
-        // "battles_count": "2961",
-        // "battle_type": "88.65%",
-        // "rating": "3365",
-        // "rating_info": "3394 - 29",
-        // "win_rate": "68.93%",
-        // "avg_dmg": "145366",
-        // "avg_frags": "1.41",
-        // "avg_exp": "1783",
-        // "max_dmg": "361274",
-        // "max_frags": "8",
-        // "max_exp": "3948",
-        // "clan_tag_class": 1,
-        // "battle_type_class": 8,
-        // "rating_class": 8,
-        // "win_rate_class": 7,
-        // "avg_dmg_class": 8,
-        // "avg_frags_class": 7
         fn parse_clan(input: &serde_json::Value) -> String {
-            let clan = input.as_str().unwrap();
-            if clan == "nan" {
-                "".to_string()
-            } else {
-                format!("[{clan}]")
+            match input.as_str() {
+                Some(tag) => format!("[{tag}]"),
+                None => "".to_string(), // null when no clan
             }
         }
         let player = ShipLeaderboardPlayer {
             color: "".to_string(),
-            // we sort it by ourself, so the rank is not the same as the original
             rank: index as u64 + 1,
-            clan: parse_clan(&row["clan_tag"]), // NOTICE: Ahh backward compatibility
-            ign: row["user_name"].as_str().unwrap().to_string(),
-            uid: row["account_id"].as_str().unwrap().parse().unwrap(),
-            battles: row["battles_count"].as_str().unwrap().parse().unwrap(),
+            clan: parse_clan(&row["clan_tag"]),
+            ign: row["username"].as_str().unwrap().to_string(),
+            uid: row["account_id"].as_u64().unwrap(),
+            battles: row["battles"].as_u64().unwrap(),
             pr: StatisticValue {
-                value: row["rating"].as_str().unwrap().parse().unwrap(),
-                color: ColorStats::parse_kokomi_class(row["rating_class"].as_u64().unwrap()),
+                value: row["rating"].as_f64().unwrap(),
+                color: ColorStats::parse_kokomi_class(row["win_rate_level"].as_u64().unwrap()),
             },
             winrate: StatisticValue {
-                value: row["win_rate"]
-                    .as_str()
-                    .unwrap()
-                    .strip_suffix("%")
-                    .unwrap()
-                    .parse()
-                    .unwrap(),
-                color: ColorStats::parse_kokomi_class(row["win_rate_class"].as_u64().unwrap()),
+                value: row["win_rate"].as_f64().unwrap(),
+                color: ColorStats::parse_kokomi_class(row["win_rate_level"].as_u64().unwrap()),
             },
             frags: StatisticValue {
-                value: row["avg_frags"].as_str().unwrap().parse().unwrap(),
-                color: ColorStats::parse_kokomi_class(row["avg_frags_class"].as_u64().unwrap()),
+                value: row["avg_frags"].as_f64().unwrap(),
+                color: ColorStats::parse_kokomi_class(row["avg_frags_level"].as_u64().unwrap()),
             },
             dmg: StatisticValue {
-                value: row["avg_dmg"].as_str().unwrap().parse().unwrap(),
-                color: ColorStats::parse_kokomi_class(row["avg_dmg_class"].as_u64().unwrap()),
+                value: row["avg_damage"].as_f64().unwrap(),
+                color: ColorStats::parse_kokomi_class(row["avg_damage_level"].as_u64().unwrap()),
             },
             exp: StatisticValueType::Exp {
-                value: row["avg_exp"].as_str().unwrap().parse().unwrap(),
+                value: row["avg_exp"].as_f64().unwrap(),
             }
             .into(),
         };
         leader_board.push(player);
-        // player.insert("rank".to_string(), values[0].text().collect::<String>());
-
-        // Continue parsing other values similarly...
-        // You can adapt the code to handle more complex parsing
-
-        // Print the parsed player data
     }
     Ok(leader_board)
 }

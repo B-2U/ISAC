@@ -116,6 +116,16 @@ impl Region {
         Self::_construct_url(base, sub_url)
     }
 
+    /// kokomi url ( http://43.160.202.239:8000/docs )
+    pub fn kokomi_url(&self, sub_url: impl AsRef<str>) -> Url {
+        let base = match self {
+            Region::Asia => "http://43.160.202.239:8000",
+            Region::Na => "http://43.165.127.36:8000",
+            Region::Eu => "http://43.165.3.119:8000",
+        };
+        Self::_construct_url(base, sub_url)
+    }
+
     fn _construct_url(base: &str, sub: impl AsRef<str>) -> Url {
         let fmt_url = format!("{}{}", base, sub.as_ref());
         Url::parse(&fmt_url).unwrap_or_else(|err| {
