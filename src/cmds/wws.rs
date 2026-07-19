@@ -114,7 +114,7 @@ async fn func_ship(
     // getting player rank in the leaderboard
     let ranking = ctx
         .data()
-        .leaderboard
+        .kleaderboard
         .lock()
         .await
         .get_ship(&player.region, &ship.ship_id, false)
