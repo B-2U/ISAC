@@ -32,7 +32,7 @@ pub fn top_hybrid() -> poise::Command<Data, Error> {
 pub async fn top_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
     let region = args.parse_region(&ctx).await?;
     let ship = args.parse_ship(&ctx).await?;
-    func_ktop(ctx, region, ship).await
+    func_top(ctx, region, ship).await
 }
 
 /// The top players on the specific ship's leaderboard
@@ -81,7 +81,6 @@ pub async fn ktop(
     func_ktop(ctx, region, ship).await
 }
 
-#[expect(unused)]
 async fn func_top(ctx: Context<'_>, region: Region, ship: Ship) -> Result<(), Error> {
     let _typing = ctx.typing().await;
     let lb_players = ctx
