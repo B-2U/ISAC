@@ -22,7 +22,7 @@ If this error keep coming out, please join our support server to report it
 
 pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
     match error {
-        poise::FrameworkError::NotAnOwner { ctx: _, .. } => {}
+        poise::FrameworkError::NotAnOwner { .. } => {}
         poise::FrameworkError::CooldownHit {
             remaining_cooldown,
             ctx,
@@ -55,9 +55,6 @@ pub async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
             msg: _,
             prefix,
             msg_content,
-            framework: _,
-            invocation_data: _,
-            trigger: _,
             ..
         } => {
             debug!(

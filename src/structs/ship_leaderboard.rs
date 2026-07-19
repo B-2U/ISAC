@@ -9,46 +9,6 @@ use super::{Region, ShipId, StatisticValue};
 use crate::utils::LoadSaveFromJson;
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct ShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
-
-impl ShipLeaderboard {
-    /// get the players on the ship's leaderboard
-    pub fn get_ship(
-        &mut self,
-        region: &Region,
-        ship_id: &ShipId,
-        timeout_check: bool,
-    ) -> Option<Vec<ShipLeaderboardPlayer>> {
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_secs();
-        self.0
-            .entry(*region)
-            .or_default()
-            .get(ship_id)
-            // if `timeout_check` is required && `last_updated_at` over 3600 sec, filter it
-            .filter(|ship_cache| !timeout_check || now - ship_cache.last_updated_at <= 3600)
-            .map(|ship_cache| ship_cache.players.clone())
-    }
-    pub fn insert(&mut self, region: &Region, ship_id: ShipId, ship: ShipLeaderboardShip) {
-        self.0.entry(*region).or_default().insert(ship_id, ship);
-    }
-}
-
-impl LoadSaveFromJson for ShipLeaderboard {
-    const PATH: &'static str = "./web_src/cache/leaderboard.json";
-}
-
-impl Drop for ShipLeaderboard {
-    fn drop(&mut self) {
-        // save the leaderboard to json
-        self.save_json_sync();
-        tracing::info!("Saved leaderboard.json");
-    }
-}
-
-#[derive(Serialize, Deserialize, Default)]
 pub struct KokomiShipLeaderboard(pub HashMap<Region, HashMap<ShipId, ShipLeaderboardShip>>);
 
 impl KokomiShipLeaderboard {
@@ -84,7 +44,7 @@ impl Drop for KokomiShipLeaderboard {
     fn drop(&mut self) {
         // save the leaderboard to json
         self.save_json_sync();
-        tracing::info!("Saved kleaderboard.json");
+        tracing::info!("Saved kokomi_leaderboard.json");
     }
 }
 
@@ -109,5 +69,4 @@ pub struct ShipLeaderboardPlayer {
     pub dmg: StatisticValue,
     #[serde(default)] // this field in for kokomi leaderboard
     pub exp: StatisticValue,
-    // pub planes: StatisticValue, planes got removed from wows number
 }

@@ -20,7 +20,7 @@ use tracing_subscriber::{EnvFilter, prelude::*};
 use crate::{
     structs::{
         Banner, ExpectedJs, GuildDefaultRegion, KokomiShipLeaderboard, Linked, LittleConstant,
-        Patrons, ShipLeaderboard, ShipsPara, user_search_history::SearchCache,
+        Patrons, ShipsPara, user_search_history::SearchCache,
     },
     tasks::launch_renderer,
     utils::{LoadSaveFromJson, error_handler},
@@ -72,7 +72,7 @@ async fn main() {
             tools::clanuid(),
             wws::wws_hybrid(),
             top::top_hybrid(),
-            top::ktop_hybrid(),
+            top::btop_hybrid(),
             setting::link_hybrid(),
             setting::wows_region(),
             patreon::background(),
@@ -221,7 +221,6 @@ pub struct DataInner {
     kokomi_api_token: Option<String>,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
-    leaderboard: tokio::sync::Mutex<ShipLeaderboard>,
     kleaderboard: tokio::sync::Mutex<KokomiShipLeaderboard>,
     cache: tokio::sync::Mutex<SearchCache>,
 }
@@ -239,7 +238,6 @@ impl DataInner {
             kokomi_api_token: env::var("KOKOMI_API").ok(),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json().await),
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
-            leaderboard: tokio::sync::Mutex::new(ShipLeaderboard::load_json().await),
             kleaderboard: tokio::sync::Mutex::new(KokomiShipLeaderboard::load_json().await),
             cache: tokio::sync::Mutex::new(SearchCache::new()),
         }

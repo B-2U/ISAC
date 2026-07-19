@@ -37,15 +37,14 @@ impl SearchCache {
     pub async fn get(&mut self, user_id: &UserId) -> Option<&UserSearchCache> {
         // no cache, try load from disk first
         if self.users.get(user_id).is_none() {
-            if let Some(cache) = UserSearchCache::load(user_id).await {
+            {
+                let cache = UserSearchCache::load(user_id).await?;
                 // if someone evicted, save it
                 if let Some((evicted_id, evicted_data)) = self.users.push(*user_id, cache)
                     && &evicted_id != user_id
                 {
                     evicted_data.save().await;
                 };
-            } else {
-                return None;
             };
         };
         self.users.get(user_id)
