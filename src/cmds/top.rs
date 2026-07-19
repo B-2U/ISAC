@@ -104,7 +104,7 @@ async fn fetch_and_cache_kokomi(
         .await?;
 
     if res_json.get("status") != Some(&serde_json::Value::String("ok".to_string())) {
-        return Err(IsacInfo::GeneralError {
+        Err(IsacInfo::GeneralError {
             msg: format!(
                 "Kokomi API error: {}",
                 res_json

@@ -414,7 +414,7 @@ pub struct VortexPlayerSearch {
 }
 impl Display for VortexPlayerSearch {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", &self.name.replace('_', r"\_"))
+        write!(f, "{}", self.name.replace('_', r"\_"))
     }
 }
 
