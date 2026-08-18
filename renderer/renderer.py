@@ -15,6 +15,8 @@ from playwright._impl._browser_context import BrowserContext
 from playwright._impl._page import Page
 
 TEMPLATE_PATH = "./renderer/template"
+# set ISAC_RENDERER_DEBUG=1 to dump rendered json/html for inspection, on any OS
+DEBUG = os.environ.get("ISAC_RENDERER_DEBUG") == "1"
 
 app = Quart(__name__)
 
@@ -56,7 +58,7 @@ def no_fract_float_to_int(value):
 
 
 def render_html(template_path: str, data: dict) -> str:
-    if os.name != "posix":
+    if DEBUG:
         # json for debug
         with open(f"{template_path}.json", "w", encoding="UTF-8") as f:
             json.dump(data, f, indent=2)
@@ -203,7 +205,7 @@ class Renderer:
         return self
 
     async def screenshot(self, html) -> io.BytesIO:
-        if os.name != "posix":
+        if DEBUG:
             # html for debug
             try:
                 with open("./temp/screenshot_output.html", "w", encoding="UTF-8") as f:
