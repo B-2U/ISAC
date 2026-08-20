@@ -29,7 +29,7 @@
     gap: 0.2em;
     justify-content: center;
     align-items: center;
-    height: 152;
+    height: 152px;
     font-size: 1.3em;
     text-align: center;
     white-space: nowrap;
@@ -67,8 +67,8 @@
 
 .dogtag-container {
     position: relative;
-    height: 90;
-    width: 90;
+    height: 90px;
+    width: 90px;
 }
 
 .dogtag-dogtag {
@@ -79,8 +79,8 @@
 .dogtag-dogtag_bg {
     z-index: -1;
     position: absolute;
-    height: 90;
-    width: 90;
+    height: 90px;
+    width: 90px;
     top: 0;
     left: 0;
 }
