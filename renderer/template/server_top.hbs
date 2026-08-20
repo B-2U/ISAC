@@ -4,88 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="./renderer/template/common.css">
+    <link rel="stylesheet" href="./renderer/template/leaderboard_common.css">
     <style>
-        @font-face {
-            font-family: "Roboto";
-            src: url("./renderer/font/Roboto.ttf") format('truetype');
-        }
-
-        .main {
-            font-family: "Roboto";
-            position: relative;
-            box-sizing: border-box;
-            width: 1000px;
-            padding: 1rem;
-            display: grid;
-            justify-items: stretch;
-            gap: 0.5rem 0;
-            grid-template-columns: 1fr;
-            grid-auto-flow: row;
-            font-family: roboto, sans-serif;
-            font-size: 1.8em;
-            color: white;
-            background-color: #343434;
-        }
-
-        .region-box {
-            background-color: rgba(200, 200, 200, 0.15);
-            justify-content: center;
-            border-radius: 10px;
-            font-size: 0.5em;
-            align-content: center;
-            padding: 0.5em;
-            vertical-align: middle;
-        }
-
-        .divider {
-            padding: 2px 0 0 0;
-            background-color: grey;
-        }
-
-        /* Global stats section */
-
-        .global-section {
-            display: grid;
-            justify-items: center;
-            grid-template-columns: 1fr;
-            grid-auto-flow: row;
-            font-size: 1.2em;
-        }
-
-        .data {
-            font-weight: bold;
-        }
-
-        .warship {
-            padding-top: 0.5em;
-            font-size: 1.3em;
-        }
-
-        /* Division stats section */
-
-        .division-stats-section {
-            display: grid;
-            justify-content: stetch;
-        }
-
-        .division-stats-title {
-            justify-self: center;
-            padding: 0.4rem 0;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .per-ship-table {
-            position: relative;
-            display: grid;
-            justify-items: stretch;
-            grid-template-columns: 1fr;
-            grid-auto-flow: row;
-            font-family: roboto, sans-serif;
-            border-radius: 10px;
-            background-color: #404040;
-        }
-
         .ship-table-row {
             justify-self: stretch;
             display: grid;
@@ -95,20 +16,6 @@
             grid-template-columns: 0.5fr 2.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr;
             font-size: 0.9em;
             align-items: center;
-        }
-
-        .ship-table-row:nth-child(2n) {
-            background-color: #404040;
-        }
-
-        .per-ship-name {
-            justify-self: left;
-            overflow-wrap: break-word;
-            font-size: 0.9em;
-        }
-
-        .break {
-            word-break: break-all;
         }
     </style>
 

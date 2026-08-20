@@ -1,0 +1,158 @@
+/* Shared CSS rules extracted from the individual .hbs templates.
+   Only rules that were byte-for-byte identical across templates live here. */
+
+@font-face {
+    font-family: "Roboto";
+    src: url("../font/Roboto.ttf") format('truetype');
+}
+
+.z-index-container {
+    z-index: 2
+}
+
+.divider {
+    padding: 2px 0 0 0;
+    background-color: grey;
+}
+
+.global-section {
+    display: grid;
+    justify-items: center;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    font-size: 1.2em
+}
+
+.user {
+    display: grid;
+    grid-template-columns: repeat(5, min-content);
+    gap: 0.2em;
+    justify-content: center;
+    align-items: center;
+    height: 152px;
+    font-size: 1.3em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.region-box {
+    background-color: rgba(200, 200, 200, 0.15);
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 0.5em;
+    align-content: center;
+    display: grid;
+    padding: 0.2em;
+}
+
+.global-title {
+    padding: 0.4rem 0;
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+}
+
+.background {
+    top: 16px;
+    left: 16px;
+    width: 968px;
+    height: 216px;
+    object-fit: cover;
+    position: absolute;
+    -webkit-mask-image: linear-gradient(rgb(0 0 0 / 0.8),
+            rgb(0 0 0 / 0.8));
+    mask-image: linear-gradient(rgb(0 0 0 / 0.8),
+            rgb(0 0 0 / 0.8));
+}
+
+.dogtag-container {
+    position: relative;
+    height: 90px;
+    width: 90px;
+}
+
+.dogtag-dogtag {
+    height: 90px;
+    width: 90px;
+}
+
+.dogtag-dogtag_bg {
+    z-index: -1;
+    position: absolute;
+    height: 90px;
+    width: 90px;
+    top: 0;
+    left: 0;
+}
+
+.global-pr {
+    justify-self: stretch;
+    padding: 0.8rem 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 1.1em;
+}
+
+.global-stats-box {
+    background-color: #393939;
+    border-radius: 10px;
+    padding: 0.3em;
+    gap: 0.3em;
+    justify-self: stretch;
+    display: grid;
+    justify-items: center;
+}
+
+.global-stats-label {
+    padding-top: 0.8em;
+    padding-bottom: 0.4em;
+}
+
+.data {
+    font-weight: bold;
+}
+
+.warship {
+    padding-top: 0.5em;
+    font-size: 1.3em;
+}
+
+.per-ship-name {
+    justify-self: left;
+    overflow-wrap: break-word;
+    font-size: 0.9em;
+}
+
+.break {
+    word-break: break-all;
+}
+
+.ship-storo {
+    font-weight: bold;
+}
+
+.ship-table-row:nth-child(2n) {
+    background-color: #404040;
+}
+
+.division-stats-table {
+    background-color: #404040;
+    border-radius: 10px;
+}
+
+.division-stats-data {
+    font-weight: bold;
+}
+
+.ship-class-stats-graph {
+    grid-area: graph;
+    max-width: 300px;
+    max-height: 240px;
+}
+
+.ship-class-stats-table {
+    justify-self: stretch;
+    background-color: #404040;
+    border-radius: 10px;
+}
