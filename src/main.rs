@@ -12,7 +12,7 @@ mod utils;
 use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
-use std::{collections::HashSet, env, ops::Deref, sync::Arc};
+use std::{collections::HashSet, env, ops::Deref, sync::Arc, time::Duration};
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{error, info, warn};
 use tracing_subscriber::{EnvFilter, prelude::*};
@@ -228,7 +228,11 @@ pub struct DataInner {
 impl DataInner {
     pub async fn new() -> Self {
         DataInner {
-            client: reqwest::Client::new(),
+            client: reqwest::Client::builder()
+                // no timeout leaves the caller hanging forever if an API stalls
+                .timeout(Duration::from_secs(30))
+                .build()
+                .expect("failed to build reqwest client"),
             patron: Arc::new(parking_lot::RwLock::new(Patrons::load_json().await)),
             expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
             ships: Arc::new(parking_lot::RwLock::new(ShipsPara::load_json().await)),
