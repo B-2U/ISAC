@@ -5,7 +5,7 @@ on:
     paths:
       - 'src/**'
     branches:
-      - master
+      - main
   workflow_dispatch:
 jobs:
   get-msrv:
