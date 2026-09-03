@@ -1,10 +1,12 @@
 use std::sync::Arc;
 
 use crate::Context;
-use poise::serenity_prelude::Typing;
+use poise::serenity_prelude::{Attachment, Typing};
 
 pub trait ContextAddon {
     async fn typing(&self) -> MyTyping;
+
+    fn first_image_attachment(&self) -> Option<&Attachment>;
 }
 
 /// a trait for `reply`
@@ -23,6 +25,19 @@ impl ContextAddon for Context<'_> {
                 MyTyping::Thinking
             }
         }
+    }
+
+    /// Try to get the first image attachment from the message, return None if not found
+    fn first_image_attachment(&self) -> Option<&Attachment> {
+        let Context::Prefix(prefix_ctx) = self else {
+            return None;
+        };
+        prefix_ctx.msg.attachments.iter().find(|attachment| {
+            attachment
+                .content_type
+                .as_deref()
+                .is_some_and(|content_type| content_type.starts_with("image/"))
+        })
     }
 }
 

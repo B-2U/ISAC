@@ -4,9 +4,9 @@ use itertools::Itertools;
 use poise::{
     CreateReply,
     serenity_prelude::{
-        ComponentInteractionDataKind, CreateActionRow, CreateAttachment, CreateInteractionResponse,
-        CreateInteractionResponseMessage, CreateSelectMenu, CreateSelectMenuOption,
-        EditAttachments, EditMessage, Message, User,
+        Attachment, ComponentInteractionDataKind, CreateActionRow, CreateAttachment,
+        CreateInteractionResponse, CreateInteractionResponseMessage, CreateSelectMenu,
+        CreateSelectMenuOption, EditAttachments, EditMessage, Message, User,
     },
 };
 
@@ -45,13 +45,16 @@ pub async fn recent(
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
+    #[description = "in-game screenshot containing the player's IGN"] image: Option<Attachment>,
     #[description = "specific warship, default: all ships' recent"]
     #[rename = "warship"]
     #[autocomplete = "autocomplete::ship"]
     ship_name: Option<String>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(autocomplete_player) = player {
+    let partial_player = if let Some(image) = image.as_ref() {
+        Args::ocr_player(&ctx, image).await?
+    } else if let Some(autocomplete_player) = player {
         autocomplete_player.save_user_search_history(&ctx).await;
         autocomplete_player
             .fetch_partial_player(&WowsApi::new(&ctx))
@@ -93,8 +96,9 @@ pub async fn recent(
 }
 
 #[poise::command(prefix_command)]
-pub async fn recent_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
-    let partial_player = args.parse_user(&ctx).await?;
+pub async fn recent_prefix(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
+    let mut args = args.unwrap_or_default();
+    let partial_player: PartialPlayer = args.parse_user(&ctx).await?;
     let mode = args.parse_mode().unwrap_or_default();
     let day = args.parse_day().unwrap_or(1);
     let ship = if !args.is_empty() {

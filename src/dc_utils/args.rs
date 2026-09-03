@@ -5,14 +5,15 @@ use once_cell::sync::Lazy;
 use poise::{
     CreateReply,
     serenity_prelude::{
-        ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor, Message,
-        ReactionType, User, UserId,
+        Attachment, ButtonStyle, CreateActionRow, CreateButton, CreateEmbed, CreateEmbedAuthor,
+        Message, ReactionType, User, UserId,
     },
 };
 use regex::Regex;
 
 use crate::{
     Context,
+    dc_utils::ContextAddon,
     structs::{Mode, PartialClan, PartialPlayer, Region, Ship},
     utils::{IsacError, IsacHelp, IsacInfo, wws_api::WowsApi},
 };
@@ -23,8 +24,16 @@ use super::{EasyEmbed, UserAddon};
 pub struct Args(Vec<String>);
 
 impl Args {
-    /// try to parse discord user at first, if none, parsing region and searching ign
+    /// Try to parse the user from with below order:
+    /// 1. OCR from the first image attachment, if any
+    /// 2. Discord user mention or ID
+    /// 3. "me" keyword for the invoking user
+    /// 4. Region and IGN search
     pub async fn parse_user(&mut self, ctx: &Context<'_>) -> Result<PartialPlayer, IsacError> {
+        if let Some(attachment) = ctx.first_image_attachment() {
+            return Self::ocr_player(ctx, attachment).await;
+        }
+
         let first_arg = self.check(0)?;
 
         if let Ok(user) =
@@ -42,28 +51,42 @@ impl Args {
             let region = self.parse_region(ctx).await?;
             let ign = self.check(0)?;
 
-            let api = WowsApi::new(ctx);
-            let candidates = api.players(&region, ign, 4).await?;
-            let player = match candidates.len() {
-                0 => Err(IsacInfo::PlayerIgnNotFound {
-                    ign: ign.to_string(),
-                    region,
-                })?,
-                1 => {
-                    self.remove(0)?;
-                    &candidates[0]
-                }
-                _ => {
-                    let index = self._pick(ctx, &candidates).await?;
-                    self.remove(0)?;
-                    &candidates[index]
-                }
-            };
-            Ok(PartialPlayer {
-                region,
-                uid: player.uid,
-            })
+            Self::search_player(ctx, region, ign).await
         }
+    }
+
+    pub async fn ocr_player(
+        ctx: &Context<'_>,
+        attachment: &Attachment,
+    ) -> Result<PartialPlayer, IsacError> {
+        let ign = ctx.data().ocr.recognize_attachment(attachment).await?;
+        tracing::info!("OCR recognized IGN: {}", ign);
+        let region = Region::guild_default(ctx).await;
+        Self::search_player(ctx, region, &ign).await
+    }
+
+    async fn search_player(
+        ctx: &Context<'_>,
+        region: Region,
+        ign: &str,
+    ) -> Result<PartialPlayer, IsacError> {
+        let api = WowsApi::new(ctx);
+        let candidates = api.players(&region, ign, 4).await?;
+        let player = match candidates.len() {
+            0 => Err(IsacInfo::PlayerIgnNotFound {
+                ign: ign.to_string(),
+                region,
+            })?,
+            1 => &candidates[0],
+            _ => {
+                let index = Self::_pick(ctx, &candidates).await?;
+                &candidates[index]
+            }
+        };
+        Ok(PartialPlayer {
+            region,
+            uid: player.uid,
+        })
     }
 
     /// try to parse discord user at first, if none, parsing region and searching ign
@@ -138,13 +161,12 @@ impl Args {
 
         let index = match candidates.len() == 1 {
             true => 0,
-            false => self._pick(ctx, &candidates).await?,
+            false => Self::_pick(ctx, &candidates).await?,
         };
         Ok(candidates.remove(index))
     }
     /// let user select the ship or player from candidates
     async fn _pick<T: std::fmt::Display>(
-        &self,
         ctx: &Context<'_>,
         candidates: &[T],
     ) -> Result<usize, IsacError> {

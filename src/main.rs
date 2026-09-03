@@ -91,7 +91,9 @@ async fn main() {
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    let data = Data::new().await;
+    let data = Data::new()
+        .await
+        .expect("failed to initialize application data and OCR service");
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
     let mut bot = ClientBuilder::new(
@@ -195,10 +197,10 @@ pub struct Data {
     pub inner: Arc<DataInner>,
 }
 impl Data {
-    async fn new() -> Self {
-        Self {
-            inner: Arc::new(DataInner::new().await),
-        }
+    async fn new() -> Result<Self, Error> {
+        Ok(Self {
+            inner: Arc::new(DataInner::new().await?),
+        })
     }
 }
 
@@ -223,16 +225,20 @@ pub struct DataInner {
     banner: tokio::sync::RwLock<Banner>,
     kleaderboard: tokio::sync::Mutex<KokomiShipLeaderboard>,
     cache: tokio::sync::Mutex<SearchCache>,
+    ocr: Arc<utils::ocr::OcrService>,
 }
 
 impl DataInner {
-    pub async fn new() -> Self {
-        DataInner {
-            client: reqwest::Client::builder()
-                // no timeout leaves the caller hanging forever if an API stalls
-                .timeout(Duration::from_secs(30))
-                .build()
-                .expect("failed to build reqwest client"),
+    pub async fn new() -> Result<Self, Error> {
+        let client = reqwest::Client::builder()
+            // no timeout leaves the caller hanging forever if an API stalls
+            .timeout(Duration::from_secs(30))
+            .build()
+            .expect("failed to build reqwest client");
+        let ocr = Arc::new(utils::ocr::OcrService::new(&client).await?);
+
+        Ok(DataInner {
+            client,
             patron: Arc::new(parking_lot::RwLock::new(Patrons::load_json().await)),
             expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
             ships: Arc::new(parking_lot::RwLock::new(ShipsPara::load_json().await)),
@@ -244,7 +250,8 @@ impl DataInner {
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
             kleaderboard: tokio::sync::Mutex::new(KokomiShipLeaderboard::load_json().await),
             cache: tokio::sync::Mutex::new(SearchCache::new()),
-        }
+            ocr,
+        })
     }
 }
 
