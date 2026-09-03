@@ -12,10 +12,15 @@ chrono = "0.4.31"
 dotenv = "0.15.0"
 futures = "0.3.28"
 fuzzy-matcher = "0.3.7"
+image = { version = "0.25.10", default-features = false, features = [
+    "jpeg",
+    "png",
+] }
 itertools = "0.14.0"
 libc = "0.2.153"
 lru = "0.16.3"
 once_cell = "1.18.0"
+ocrs = "0.13.0"
 parking_lot = "0.12.1"
 
 
@@ -25,6 +30,7 @@ poise = "0.6.1"
 rand = "0.9.3"
 regex = "1.10.5"
 reqwest = { version = "0.12.4", features = ["json"] }
+rten = "0.26.0"
 scraper = "0.22.0"
 serde = { version = "1.0.189", features = ["derive"] }
 serde_json = "1.0.140"

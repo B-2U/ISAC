@@ -5,8 +5,8 @@ use itertools::Itertools;
 use poise::{
     CreateReply,
     serenity_prelude::{
-        ButtonStyle, CreateActionRow, CreateAttachment, CreateButton, CreateInteractionResponse,
-        EditAttachments, EditMessage, User,
+        Attachment, ButtonStyle, CreateActionRow, CreateAttachment, CreateButton,
+        CreateInteractionResponse, EditAttachments, EditMessage, User,
     },
 };
 
@@ -46,9 +46,12 @@ pub async fn wws(
     #[description = "@ping / discord user's ID, default: yourself"]
     #[rename = "user"]
     discord_user: Option<String>,
+    #[description = "in-game screenshot containing the player's IGN"] image: Option<Attachment>,
     #[description = "battle type, default: pvp"] battle_type: Option<Mode>,
 ) -> Result<(), Error> {
-    let partial_player = if let Some(autocomplete_player) = player {
+    let partial_player = if let Some(image) = image.as_ref() {
+        Args::ocr_player(&ctx, image).await?
+    } else if let Some(autocomplete_player) = player {
         autocomplete_player.save_user_search_history(&ctx).await;
         autocomplete_player
             .fetch_partial_player(&WowsApi::new(&ctx))
@@ -81,8 +84,9 @@ pub async fn wws(
 }
 
 #[poise::command(prefix_command)]
-pub async fn wws_prefix(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn wws_prefix(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
     let typing = ctx.typing().await;
+    let mut args = args.unwrap_or_default();
 
     let partial_player = args.parse_user(&ctx).await?;
     typing.stop();

@@ -21,6 +21,7 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
   | `<@mention>`      | `.wws @B2U#0900`              |
   | `<discordUserID>` | `.wws 930855839961591849`     |
   | `me`              | `.wws me`                     |
+  | attached image    | attach a screenshot containing the player's IGN |
 
 | Command name               | Usage                                             | Example                                                                            | Description                                                                                                                                                                    |
 | -------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -34,6 +35,12 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
 | `.server_top` <br> `.stop` | `.server_top <shipName>`                          | `.server_top Yamato`                                                               | Top 15 players in the ship in the discord server (min battles = 10)                                                                                                            |
 | `.clan`                    | `.clan [region] <clanName>`                       | `.clan me` <br> `.clan PANTS` <br> `.clan eu TCL`                                  | Show the clan's overview & stats                                                                                                                                               |
 | `.clan season`             | `.clan [region] <clanName> <season>`              | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15`                       | Show the clan members' clan battle stats in particular season                                                                                                                  |
+
+### Player screenshots
+
+Attach an in-game screenshot to `/wws`, `/recent`, `.wws`, `.recent`, `.uid`, or `.history` to look up the player without typing the IGN. OCR uses the server's default World of Warships region, even when a region is written in a prefix command.
+
+The attached image is authoritative: when an image is present, its OCR result is used and typed player arguments are ignored. The image must be at most 2 MiB, no more than 4096 pixels wide or high, and contain one clearly readable IGN. OCR accepts only ASCII letters, numbers, `_`, `[`, and `]`, with 3 to 24 characters. The OCR models are downloaded on first startup and cached under `user_data/ocr`.
 
 ### Others general commands
 
