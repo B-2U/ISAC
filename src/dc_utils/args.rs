@@ -49,9 +49,9 @@ impl Args {
         } else {
             // parse region, player
             let region = self.parse_region(ctx).await?;
-            let ign = self.check(0)?;
+            let ign = self.remove(0)?;
 
-            Self::search_player(ctx, region, ign).await
+            Self::search_player(ctx, region, &ign).await
         }
     }
 
