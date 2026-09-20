@@ -83,7 +83,7 @@ async fn main() {
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
-            mention_as_prefix: false,
+            mention_as_prefix: true,
             ..Default::default()
         },
         // The global error handler for all error cases that may occur
