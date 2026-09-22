@@ -30,6 +30,22 @@ use crate::{
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
+const PREFIX_WARNING: &str = "Warning: `.` prefix will no longer work after `October 14, 2026`, when Discord removes ISAC's Message Content Intent. Please use slash commands or mention the bot instead (`@ISAC wws me`).";
+
+fn warn_on_dot_prefix(ctx: Context<'_>) -> futures::future::BoxFuture<'_, ()> {
+    Box::pin(async move {
+        let poise::Context::Prefix(prefix_ctx) = ctx else {
+            return;
+        };
+
+        if ![".", "-"].contains(&prefix_ctx.prefix()) || ctx.guild().is_none() {
+            return;
+        }
+
+        let _ = ctx.reply(PREFIX_WARNING).await;
+    })
+}
+
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().expect("Failed to load .env file, check .env.example!");
@@ -86,6 +102,7 @@ async fn main() {
             mention_as_prefix: true,
             ..Default::default()
         },
+        pre_command: warn_on_dot_prefix,
         // The global error handler for all error cases that may occur
         on_error: |error| Box::pin(error_handler::on_error(error)),
         skip_checks_for_owners: true,
