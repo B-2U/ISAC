@@ -56,8 +56,9 @@ pub async fn users(ctx: Context<'_>) -> Result<(), Error> {
 }
 
 #[poise::command(prefix_command, owners_only, hide_in_help)]
-pub async fn who(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn who(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
     let typing = ctx.typing().await;
+    let mut args = args.unwrap_or_default();
     let partial_player = args.parse_user(&ctx).await?;
     typing.stop();
     let linked_users = {

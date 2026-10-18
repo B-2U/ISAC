@@ -12,7 +12,7 @@ mod utils;
 use poise::serenity_prelude::{
     self as serenity, ActivityData, ClientBuilder, ExecuteWebhook, UserId, Webhook,
 };
-use std::{collections::HashSet, env, ops::Deref, sync::Arc};
+use std::{collections::HashSet, env, ops::Deref, sync::Arc, time::Duration};
 use tokio::sync::mpsc::UnboundedSender;
 use tracing::{error, info, warn};
 use tracing_subscriber::{EnvFilter, prelude::*};
@@ -20,7 +20,7 @@ use tracing_subscriber::{EnvFilter, prelude::*};
 use crate::{
     structs::{
         Banner, ExpectedJs, GuildDefaultRegion, KokomiShipLeaderboard, Linked, LittleConstant,
-        Patrons, ShipLeaderboard, ShipsPara, user_search_history::SearchCache,
+        Patrons, ShipsPara, user_search_history::SearchCache,
     },
     tasks::launch_renderer,
     utils::{LoadSaveFromJson, error_handler},
@@ -29,6 +29,22 @@ use crate::{
 // Types used by all command functions
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
+
+const PREFIX_WARNING: &str = "Warning: `.` prefix will no longer work after `October 14, 2026`, when Discord removes ISAC's Message Content Intent. Please use slash commands or mention the bot instead (`@ISAC wws me`).";
+
+fn warn_on_dot_prefix(ctx: Context<'_>) -> futures::future::BoxFuture<'_, ()> {
+    Box::pin(async move {
+        let poise::Context::Prefix(prefix_ctx) = ctx else {
+            return;
+        };
+
+        if ![".", "-"].contains(&prefix_ctx.prefix()) || ctx.guild().is_none() {
+            return;
+        }
+
+        let _ = ctx.reply(PREFIX_WARNING).await;
+    })
+}
 
 #[tokio::main]
 async fn main() {
@@ -72,7 +88,7 @@ async fn main() {
             tools::clanuid(),
             wws::wws_hybrid(),
             top::top_hybrid(),
-            top::ktop_hybrid(),
+            top::btop_hybrid(),
             setting::link_hybrid(),
             setting::wows_region(),
             patreon::background(),
@@ -83,38 +99,37 @@ async fn main() {
         ],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some(prefix.into()),
-            mention_as_prefix: false,
+            mention_as_prefix: true,
             ..Default::default()
         },
+        pre_command: warn_on_dot_prefix,
         // The global error handler for all error cases that may occur
         on_error: |error| Box::pin(error_handler::on_error(error)),
         skip_checks_for_owners: true,
         ..Default::default()
     };
-    let data = Data::new().await;
+    let data = Data::new()
+        .await
+        .expect("failed to initialize application data and OCR service");
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
-    let mut bot = ClientBuilder::new(
-        token,
-        serenity::GatewayIntents::non_privileged()
-            | serenity::GatewayIntents::MESSAGE_CONTENT
-            | serenity::GatewayIntents::GUILD_MEMBERS,
-    )
-    .framework(
-        poise::Framework::builder()
-            .setup(move |ctx, ready, framework| {
-                Box::pin(async move {
-                    info!("Logged in as {}", ready.user.name);
-                    poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                    Ok(data)
+    let mut bot = ClientBuilder::new(token, serenity::GatewayIntents::non_privileged())
+        .framework(
+            poise::Framework::builder()
+                .setup(move |ctx, ready, framework| {
+                    Box::pin(async move {
+                        info!("Logged in as {}", ready.user.name);
+                        poise::builtins::register_globally(ctx, &framework.options().commands)
+                            .await?;
+                        Ok(data)
+                    })
                 })
-            })
-            .options(options)
-            .build(),
-    )
-    .activity(ActivityData::listening(".help"))
-    .await
-    .unwrap();
+                .options(options)
+                .build(),
+        )
+        .activity(ActivityData::listening(".help"))
+        .await
+        .unwrap();
     let shard_manager = bot.shard_manager.clone();
 
     // ctrl_c catcher for both Win and Unix
@@ -195,10 +210,10 @@ pub struct Data {
     pub inner: Arc<DataInner>,
 }
 impl Data {
-    async fn new() -> Self {
-        Self {
-            inner: Arc::new(DataInner::new().await),
-        }
+    async fn new() -> Result<Self, Error> {
+        Ok(Self {
+            inner: Arc::new(DataInner::new().await?),
+        })
     }
 }
 
@@ -218,29 +233,38 @@ pub struct DataInner {
     constant: parking_lot::RwLock<LittleConstant>,
     link: tokio::sync::RwLock<Linked>,
     wg_api_token: String,
+    kokomi_api_token: Option<String>,
     guild_default: tokio::sync::RwLock<GuildDefaultRegion>,
     banner: tokio::sync::RwLock<Banner>,
-    leaderboard: tokio::sync::Mutex<ShipLeaderboard>,
     kleaderboard: tokio::sync::Mutex<KokomiShipLeaderboard>,
     cache: tokio::sync::Mutex<SearchCache>,
+    ocr: Arc<utils::ocr::OcrService>,
 }
 
 impl DataInner {
-    pub async fn new() -> Self {
-        DataInner {
-            client: reqwest::Client::new(),
+    pub async fn new() -> Result<Self, Error> {
+        let client = reqwest::Client::builder()
+            // no timeout leaves the caller hanging forever if an API stalls
+            .timeout(Duration::from_secs(30))
+            .build()
+            .expect("failed to build reqwest client");
+        let ocr = Arc::new(utils::ocr::OcrService::new(&client).await?);
+
+        Ok(DataInner {
+            client,
             patron: Arc::new(parking_lot::RwLock::new(Patrons::load_json().await)),
             expected: Arc::new(parking_lot::RwLock::new(ExpectedJs::load_json().await)),
             ships: Arc::new(parking_lot::RwLock::new(ShipsPara::load_json().await)),
             constant: parking_lot::RwLock::new(LittleConstant::load_json().await),
             link: tokio::sync::RwLock::new(Linked::load_json().await),
             wg_api_token: env::var("WG_API").expect("Missing WG_API TOKEN"),
+            kokomi_api_token: env::var("KOKOMI_API").ok(),
             guild_default: tokio::sync::RwLock::new(GuildDefaultRegion::load_json().await),
             banner: tokio::sync::RwLock::new(Banner::load_json().await),
-            leaderboard: tokio::sync::Mutex::new(ShipLeaderboard::load_json().await),
             kleaderboard: tokio::sync::Mutex::new(KokomiShipLeaderboard::load_json().await),
             cache: tokio::sync::Mutex::new(SearchCache::new()),
-        }
+            ocr,
+        })
     }
 }
 

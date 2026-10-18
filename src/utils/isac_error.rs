@@ -141,7 +141,7 @@ impl Display for IsacInfo {
 impl From<reqwest::Error> for IsacError {
     fn from(err: reqwest::Error) -> Self {
         IsacInfo::APIError {
-            msg: err.to_string(),
+            msg: err.without_url().to_string(), // Strip the URL from the error message to avoid leaking sensitive information
         }
         .into()
     }

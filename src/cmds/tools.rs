@@ -119,9 +119,10 @@ pub async fn code(
 }
 
 #[poise::command(prefix_command)]
-pub async fn history(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn history(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
     let _typing = ctx.typing().await;
     let api = WowsApi::new(&ctx);
+    let mut args = args.unwrap_or_default();
     let player = args.parse_user(&ctx).await?;
     // this is just for rasing error when player profile is hidden
     let _ = player.full_player(&api).await?;
@@ -464,7 +465,8 @@ pub enum RouletteTier {
 }
 
 #[poise::command(prefix_command)]
-pub async fn uid(ctx: Context<'_>, #[rest] mut args: Args) -> Result<(), Error> {
+pub async fn uid(ctx: Context<'_>, #[rest] args: Option<Args>) -> Result<(), Error> {
+    let mut args = args.unwrap_or_default();
     let player = args.parse_user(&ctx).await?;
     let _r = ctx.reply(player.uid.to_string()).await;
     Ok(())

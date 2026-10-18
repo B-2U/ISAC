@@ -1,0 +1,42 @@
+/* Shared CSS rules for the leaderboard-family templates:
+   kleaderboard.hbs, leaderboard.hbs, server_top.hbs */
+
+.main {
+    font-family: "Roboto";
+    position: relative;
+    box-sizing: border-box;
+    width: 1000px;
+    padding: 1rem;
+    display: grid;
+    justify-items: stretch;
+    gap: 0.5rem 0;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    font-family: roboto, sans-serif;
+    font-size: 1.8em;
+    color: white;
+    background-color: #343434;
+}
+
+.division-stats-section {
+    display: grid;
+    justify-content: stetch;
+}
+
+.division-stats-title {
+    justify-self: center;
+    padding: 0.4rem 0;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.per-ship-table {
+    position: relative;
+    display: grid;
+    justify-items: stretch;
+    grid-template-columns: 1fr;
+    grid-auto-flow: row;
+    font-family: roboto, sans-serif;
+    border-radius: 10px;
+    background-color: #404040;
+}

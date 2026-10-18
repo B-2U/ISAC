@@ -101,12 +101,26 @@ pub enum ShipTierRoman {
     XI,
 }
 
+#[allow(dead_code)]
 fn add_glossary_url_prefix<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let s: String = Deserialize::deserialize(deserializer)?;
     Ok(format!("https://wows-gloss-icons.wgcdn.co/icons/{}", s))
+}
+
+fn to_local_icon_path<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = Deserialize::deserialize(deserializer)?;
+    let filename = s.split('/').next_back().unwrap_or(&s);
+    let base_name = filename.split('_').next().unwrap_or(filename);
+    Ok(format!(
+        "wowsinfo_data/live/app/assets/ships/{}.png",
+        base_name
+    ))
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -118,7 +132,7 @@ pub struct Ship {
     pub name: String,
     pub short_name: String,
     pub nation: String,
-    #[serde(deserialize_with = "add_glossary_url_prefix")]
+    #[serde(deserialize_with = "to_local_icon_path")]
     pub icon: String,
 }
 

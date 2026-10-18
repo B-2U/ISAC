@@ -1,6 +1,6 @@
 ![](https://i.imgur.com/YT4ZlZc.png)
 
-**English** | [中文](https://github.com/B-2U/ISAC/blob/master/README_zh.md) | [日本語](https://github.com/B-2U/ISAC/blob/master/README_ja.md)
+**English** | [中文](https://github.com/B-2U/ISAC/blob/main/README_zh.md) | [日本語](https://github.com/B-2U/ISAC/blob/main/README_ja.md)
 
 ## A World of Warships stats discord bot
 
@@ -21,6 +21,7 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
   | `<@mention>`      | `.wws @B2U#0900`              |
   | `<discordUserID>` | `.wws 930855839961591849`     |
   | `me`              | `.wws me`                     |
+  | attached image    | attach a screenshot containing the player's IGN |
 
 | Command name               | Usage                                             | Example                                                                            | Description                                                                                                                                                                    |
 | -------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -29,11 +30,17 @@ Or join our Discord server? [Here](https://discord.gg/z6sV6kEZGV)
 | `.wws ship`                | `.wws <player> <shipName> [battleType]`           | `.wws asia B2U Ise`<br>`.wws B2U Yamato`<br>`.wws me Slava rank`                   | Show player's stats of a particular ship<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                                                                    |
 | `.recent`                  | `.recent <player> [battleType] [days]`            | `.recent asia B2U`<br>`.recent B2U 7`<br>`.recent me rank 30`                      | Show player's recent stats<br>`[days]`: `1`~`30`(`90` for premium user) (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank`                      |
 | `.recent ship`             | `.recent <player> <shipName> [battleType] [days]` | `.recent asia B2U Z42`<br>`.recent B2U Halford 7`<br>`.recent me Kitakaze rank 30` | Show player's recent stats of a particular ship<br>`[days]`: `1`~`30`(`90` for premium user) (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank` |
-| `.top`<br>`.dalao`         | `.top [region] <shipName>`                        | `.top Yamato` <br> `.top NA Slava`                                                 | Show the top 15 players in that ship in the region <br> from <https://wows-numbers.com/>                                                                                        |
+| `.top`<br>`.dalao`         | `.top [region] <shipName>`                        | `.top Yamato` <br> `.top NA Slava`                                                 | Show the top 15 players in that ship in the region <br> from [Kokomi API](https://github.com/SangonomiyaKoko/Kokomi_Backend)                                                                                        |
 | `.btop`<br>`.ktop`         | `.btop [region] <shipName>`                        | `.btop Yamato` <br> `.btop NA Slava`                                                 | Show the top 15 players in that ship in the region <br> ranking by *base exp* from **Kokomi API**.                                                                                        |
 | `.server_top` <br> `.stop` | `.server_top <shipName>`                          | `.server_top Yamato`                                                               | Top 15 players in the ship in the discord server (min battles = 10)                                                                                                            |
 | `.clan`                    | `.clan [region] <clanName>`                       | `.clan me` <br> `.clan PANTS` <br> `.clan eu TCL`                                  | Show the clan's overview & stats                                                                                                                                               |
 | `.clan season`             | `.clan [region] <clanName> <season>`              | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15`                       | Show the clan members' clan battle stats in particular season                                                                                                                  |
+
+### Player screenshots
+
+Attach an in-game screenshot to `/wws`, `/recent`, `.wws`, `.recent`, `.uid`, or `.history` to look up the player without typing the IGN. OCR uses the server's default World of Warships region, even when a region is written in a prefix command.
+
+The attached image is authoritative: when an image is present, its OCR result is used and typed player arguments are ignored. The image must be at most 2 MiB, no more than 4096 pixels wide or high, and contain one clearly readable IGN. OCR accepts only ASCII letters, numbers, `_`, `[`, and `]`, with 3 to 24 characters. The OCR models are downloaded on first startup and cached under `user_data/ocr`.
 
 ### Others general commands
 

@@ -1,5 +1,6 @@
 pub mod cache_methods;
 pub mod error_handler;
+pub mod ocr;
 pub mod parse;
 pub mod wws_api;
 

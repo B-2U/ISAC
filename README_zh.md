@@ -1,6 +1,6 @@
 ![](https://i.imgur.com/YT4ZlZc.png)
 
-[English](https://github.com/B-2U/ISAC/blob/master/README.md) | **中文** | [日本語](https://github.com/B-2U/ISAC/blob/master/README_ja.md)
+[English](https://github.com/B-2U/ISAC/blob/main/README.md) | **中文** | [日本語](https://github.com/B-2U/ISAC/blob/main/README_ja.md)
 
 ## 戰艦世界戰績查詢機器人
 
@@ -21,6 +21,7 @@
   | `<@mention>`      | `.wws @B2U#0900`              |
   | `<discordUserID>` | `.wws 930855839961591849`     |
   | `me`              | `.wws me`                     |
+  | 圖片附件           | 附加包含玩家遊戲ID的遊戲內截圖                 |
 
 | 指令名稱                   | 用法                                              | 範例                                                                               | 指令用途                                                                                                                                                       |
 | -------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -29,11 +30,17 @@
 | `.wws ship`                | `.wws <player> <船名> [戰鬥模式]`                 | `.wws asia B2U Ise`<br>`.wws B2U Yamato`<br>`.wws me Slava rank`                   | 顯示該玩家指定戰艦的戰績<br>`[戰鬥模式]`: `pvp` (預設), `solo`, `div2`, `div3`, `rank`                                                                         |
 | `.recent`                  | `.recent <player> [戰鬥模式] [天數]`              | `.recent asia B2U`<br>`.recent B2U 7`<br>`.recent me rank 30`                      | 顯示該玩家最近X天的戰績<br>`[天數]`: `1`~`30`(`90` for premium user) (預設: `1`)<br>`[戰鬥模式]`: `pvp` (預設), `solo`, `div2`, `div3`, `rank`                 |
 | `.recent ship`             | `.recent <player> <shipName> [battleType] [days]` | `.recent asia B2U Z42`<br>`.recent B2U Halford 7`<br>`.recent me Kitakaze rank 30` | 顯示該玩家指定戰艦最近X天的戰績<br>`[days]`: `1`~`30`(`90` for premium user) (default: `1`)<br>`[battleType]`: `pvp` (default), `solo`, `div2`, `div3`, `rank` |
-| `.top`<br>`.dalao`         | `.top [地區] <船名>`                              | `.top Yamato` <br> `.top NA Slava`                                                 | 顯示該地區中這艘戰艦PR排行榜前15名的玩家數據 <br> 來自 <https://wows-numbers.com/>                                                                               |
+| `.top`<br>`.dalao`         | `.top [地區] <船名>`                              | `.top Yamato` <br> `.top NA Slava`                                                 | 顯示該地區中這艘戰艦PR排行榜前15名的玩家數據 <br> 來自 [Kokomi API](https://github.com/SangonomiyaKoko/Kokomi_Backend)                                                                               |
 | `.btop`<br>`.ktop`         | `.btop [region] <shipName>`                        | `.btop Yamato` <br> `.btop NA Slava`                                                 | 顯示該地區中這艘戰艦PR排行榜前15名的玩家數據 <br> 以*基礎經驗*排名，資料來自 **Kokomi API**.  
 | `.server_top` <br> `.stop` | `.server_top <shipName>`                          | `.server_top Yamato`                                                               | Top 15 players in the ship in the discord server (min battles = 10)                                                                                            |
 | `.clan`                    | `.clan [地區] <公會名>`                           | `.clan me` <br> `.clan PANTS` <br> `.clan eu TCL`                                  | 顯示該公會的平均戰績和公會戰紀錄                                                                                                                               |
 | `.clan season`             | `.clan [地區] <公會名> <賽季>`                    | `.clan me S15` <br> `.clan PANTS S14` <br> `.clan eu TCL 15`                       | 顯示該公會成員們在指定公會戰賽季的戰績                                                                                                                         |
+
+### 玩家截圖
+
+在 `/wws`、`/recent`、`.wws`、`.recent`、`.uid`、`.history`附加遊戲內截圖，即可不用手動輸入遊戲 ID。OCR 會使用伺服器預設的遊戲伺服器地區，即使 prefix 指令中輸入了其他地區也一樣。
+
+附加的圖片具有優先權：有圖片時會使用 OCR 結果並忽略輸入的玩家參數。圖片大小上限為 2 MiB，寬度和高度不可超過 4096 像素，且應只包含一個清晰可讀的遊戲 ID。OCR 支援 ASCII 英文字母、數字、`_`、`[` 和 `]`，長度為 3 到 24 個字元。OCR 模型會在第一次啟動時下載，並快取在 `user_data/ocr`。
 
 ### 其他指令
 

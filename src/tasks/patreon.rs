@@ -19,7 +19,7 @@ use crate::{
 pub async fn patron_updater(
     http: Arc<Http>,
     patrons_arc: Arc<RwLock<Patrons>>,
-    webhook_tx: UnboundedSender<String>,
+    _webhook_tx: UnboundedSender<String>,
 ) {
     let mut interval = tokio::time::interval(Duration::from_secs(300));
     static IDS: Lazy<Option<Ids>> = Lazy::new(|| load_ids().ok());
@@ -40,7 +40,7 @@ pub async fn patron_updater(
                     warn!("{err_msg}");
                     fail_count += 1;
                     if fail_count >= 2 {
-                        let _ = webhook_tx.send(err_msg);
+                        // let _ = webhook_tx.send(err_msg);
                     }
                 }
             }

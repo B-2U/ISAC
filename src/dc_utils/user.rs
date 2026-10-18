@@ -10,7 +10,6 @@ use crate::{
 
 pub trait UserAddon: Sized {
     /// will only convert by user_id or mention, but not username
-    #[must_use]
     async fn convert_strict(
         ctx: &Context,
         guild_id: Option<GuildId>,
