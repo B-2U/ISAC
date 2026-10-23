@@ -113,23 +113,25 @@ async fn main() {
         .expect("failed to initialize application data and OCR service");
     let arc_data = data.clone();
     let (tx, rx) = std::sync::mpsc::channel::<()>();
-    let mut bot = ClientBuilder::new(token, serenity::GatewayIntents::non_privileged())
-        .framework(
-            poise::Framework::builder()
-                .setup(move |ctx, ready, framework| {
-                    Box::pin(async move {
-                        info!("Logged in as {}", ready.user.name);
-                        poise::builtins::register_globally(ctx, &framework.options().commands)
-                            .await?;
-                        Ok(data)
-                    })
+    let mut bot = ClientBuilder::new(
+        token,
+        serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::GUILD_MEMBERS,
+    )
+    .framework(
+        poise::Framework::builder()
+            .setup(move |ctx, ready, framework| {
+                Box::pin(async move {
+                    info!("Logged in as {}", ready.user.name);
+                    poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                    Ok(data)
                 })
-                .options(options)
-                .build(),
-        )
-        .activity(ActivityData::listening(".help"))
-        .await
-        .unwrap();
+            })
+            .options(options)
+            .build(),
+    )
+    .activity(ActivityData::listening(".help"))
+    .await
+    .unwrap();
     let shard_manager = bot.shard_manager.clone();
 
     // ctrl_c catcher for both Win and Unix
